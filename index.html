@@ -3,253 +3,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cheap Sheet NYC — The Exact Dish. The Exact Price.</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>CheapSheet NYC — The Exact Dish. The Exact Price.</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  :root {
-    --orange: #D85A30;
-    --orange-dark: #993C1D;
-    --cream: #F7F4EE;
-    --ink: #1A1814;
-    --ink-muted: #5A5750;
-    --ink-faint: #A09B94;
-    --border: rgba(26,24,20,0.12);
-    --red-pin: #E02020;
-    --blue-pin: #1D6FD4;
-    --purple-pin: #6B44C9;
-    --green-tag: #2A7A4B;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); height: 100%; overflow: hidden; }
+:root {
+  --orange: #D85A30;
+  --orange-dim: #A8431F;
+  --bg: #0D0D0D;
+  --bg2: #141414;
+  --bg3: #1A1A1A;
+  --bg4: #222;
+  --border: #242424;
+  --border2: #2E2E2E;
+  --text: #E8E8E8;
+  --text2: #888;
+  --text3: #444;
+  --red: #E02020;
+  --blue: #2B7FE0;
+  --purple: #7B52D4;
+  --green: #3A9A5C;
+  --amber: #C8820A;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100%; overflow:hidden; }
 
-  header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-    background: var(--ink);
-    display: flex; align-items: center; gap: 1.5rem;
-    padding: 0 2rem; height: 56px;
-  }
-  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; letter-spacing: -0.5px; white-space: nowrap; }
-  .logo span { color: var(--orange); }
-  .search-wrap { flex: 1; max-width: 400px; position: relative; }
-  .search-wrap input {
-    width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 0 12px 0 36px; height: 36px; outline: none; transition: border-color 0.15s;
-  }
-  .search-wrap input::placeholder { color: rgba(255,255,255,0.35); }
-  .search-wrap input:focus { border-color: var(--orange); }
-  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4); font-size: 15px; pointer-events: none; }
-  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-  .btn-submit { background: var(--orange); color: #fff; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 0 16px; height: 34px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
-  .btn-submit:hover { background: var(--orange-dark); }
-  .view-toggle { display: flex; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-  .view-toggle button { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 0 12px; height: 34px; font-size: 13px; font-family: 'DM Sans', sans-serif; }
-  .view-toggle button.active { background: rgba(255,255,255,0.14); color: #fff; }
+/* HEADER */
+header {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  background:var(--bg); border-bottom:1px solid var(--border);
+  height:58px; display:flex; align-items:center; padding:0 24px; gap:20px;
+}
+.logo {
+  font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1.5px;
+  color:var(--text); line-height:1; white-space:nowrap; flex-shrink:0;
+}
+.logo em { color:var(--orange); font-style:normal; }
+.logo-sub {
+  font-family:'DM Mono',monospace; font-size:8px; color:var(--text3);
+  letter-spacing:2px; text-transform:uppercase; margin-top:-2px; display:block;
+}
+.search-wrap { flex:1; max-width:360px; position:relative; }
+.search-wrap input {
+  width:100%; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:3px; font-family:'DM Mono',monospace; font-size:12px;
+  color:var(--text); padding:0 12px 0 34px; height:36px; outline:none;
+  transition:border-color 0.15s; letter-spacing:0.3px;
+}
+.search-wrap input::placeholder { color:var(--text3); }
+.search-wrap input:focus { border-color:var(--orange); }
+.search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:13px; pointer-events:none; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.view-btns { display:flex; border:1px solid var(--border2); border-radius:3px; overflow:hidden; }
+.view-btn { background:none; border:none; font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); padding:0 14px; height:34px; cursor:pointer; letter-spacing:0.5px; transition:all 0.12s; }
+.view-btn.on { background:var(--bg3); color:var(--text); }
+.btn-submit {
+  background:var(--orange); border:none; color:#fff;
+  font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:1px;
+  padding:0 18px; height:36px; border-radius:3px; cursor:pointer;
+  transition:background 0.12s; white-space:nowrap;
+}
+.btn-submit:hover { background:var(--orange-dim); }
 
-  .filter-bar {
-    position: fixed; top: 56px; left: 0; right: 0; z-index: 999;
-    background: #fff; border-bottom: 1px solid var(--border);
-    padding: 0 2rem; display: flex; align-items: center; gap: 8px;
-    overflow-x: auto; height: 48px; scrollbar-width: none;
-  }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .chip { flex-shrink: 0; background: none; border: 1px solid var(--border); border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 12.5px; color: var(--ink-muted); padding: 0 13px; height: 30px; cursor: pointer; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
-  .chip:hover { border-color: var(--orange); color: var(--orange); }
-  .chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+/* FILTER BAR */
+.filter-bar {
+  position:fixed; top:58px; left:0; right:0; z-index:999;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  height:44px; display:flex; align-items:center; padding:0 24px; gap:6px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.chip {
+  flex-shrink:0; background:none; border:1px solid var(--border2);
+  border-radius:2px; font-family:'DM Mono',monospace; font-size:11px;
+  color:var(--text3); padding:0 12px; height:28px; cursor:pointer;
+  transition:all 0.12s; white-space:nowrap; display:flex; align-items:center; gap:6px;
+  letter-spacing:0.3px;
+}
+.chip:hover { border-color:var(--orange); color:var(--orange); }
+.chip.on { background:var(--orange); border-color:var(--orange); color:#fff; }
+.chip-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.fsep { width:1px; height:16px; background:var(--border2); flex-shrink:0; margin:0 4px; }
 
-  .layout { position: fixed; top: 104px; left: 0; right: 0; bottom: 0; display: flex; }
+/* LAYOUT */
+.app { position:fixed; top:102px; left:0; right:0; bottom:0; display:flex; }
 
-  #map { flex: 1; height: 100%; z-index: 1; }
+/* MAP */
+#map { flex:1; height:100%; background:var(--bg); }
 
-  .sidebar { width: 360px; flex-shrink: 0; background: var(--cream); overflow-y: auto; border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 2; }
-  .sidebar-header { padding: 14px 18px 10px; border-bottom: 1px solid var(--border); background: #fff; position: sticky; top: 0; z-index: 5; }
-  .sidebar-header h2 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--ink); }
-  .sidebar-header p { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
-  .meal-list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+/* Leaflet dark overrides */
+.leaflet-tile { filter:brightness(0.18) saturate(0.3) contrast(1.1); }
+.leaflet-control-zoom a { background:var(--bg3) !important; color:var(--text2) !important; border-color:var(--border2) !important; font-family:'DM Mono',monospace !important; }
+.leaflet-control-zoom a:hover { background:var(--bg4) !important; color:var(--orange) !important; }
+.leaflet-control-attribution { background:rgba(13,13,13,0.8) !important; color:var(--text3) !important; font-size:9px !important; }
+.leaflet-control-attribution a { color:var(--text3) !important; }
 
-  .meal-card { background: #fff; border-radius: 10px; border: 1px solid var(--border); padding: 12px 14px 10px; cursor: pointer; transition: border-color 0.15s; position: relative; overflow: hidden; }
-  .meal-card:hover { border-color: var(--orange); }
-  .meal-card.active { border-color: var(--orange); border-left-width: 3px; }
-  .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-  .price-tag { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; line-height: 1; }
-  .price-red { color: var(--red-pin); }
-  .price-blue { color: var(--blue-pin); }
-  .price-purple { color: var(--purple-pin); }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .card-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.3; }
-  .card-restaurant { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
-  .card-why { font-size: 12px; color: var(--ink-muted); line-height: 1.5; font-style: italic; border-top: 1px solid var(--border); padding-top: 7px; margin-top: 7px; }
-  .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-  .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
-  .tag.veg { background: #EAF3DE; color: #2A7A4B; border-color: #C0DD97; }
-  .tag.cash { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
-  .card-meta { font-size: 11px; color: var(--ink-faint); margin-top: 5px; }
+/* STATS BAR floating on map */
+.map-stats {
+  position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+  z-index:500; background:var(--bg2); border:1px solid var(--border2);
+  border-radius:2px; padding:6px 18px; display:flex; align-items:center;
+  gap:14px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text3);
+  white-space:nowrap;
+}
+.map-stats strong { color:var(--orange); font-weight:500; }
+.map-stats-sep { color:var(--border2); }
 
-  .stats-bar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 500; background: rgba(255,255,255,0.96); border-radius: 999px; border: 1px solid var(--border); padding: 5px 16px; font-size: 12px; color: var(--ink-muted); box-shadow: 0 2px 10px rgba(0,0,0,0.08); white-space: nowrap; display: flex; align-items: center; gap: 10px; }
-  .stats-bar strong { color: var(--ink); font-weight: 600; }
+/* LEGEND */
+.map-legend {
+  position:absolute; bottom:16px; left:16px; z-index:500;
+  background:var(--bg2); border:1px solid var(--border2); border-radius:2px;
+  padding:10px 14px; display:flex; flex-direction:column; gap:7px;
+}
+.legend-row { display:flex; align-items:center; gap:8px; font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:0.3px; }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
-  .legend { position: absolute; bottom: 28px; left: 12px; z-index: 500; background: rgba(255,255,255,0.96); border-radius: 8px; padding: 8px 12px; border: 1px solid var(--border); font-size: 11.5px; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .legend-item { display: flex; align-items: center; gap: 7px; color: var(--ink-muted); }
-  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+/* NEWSLETTER */
+.nl-box {
+  position:absolute; top:16px; right:16px; z-index:500;
+  background:var(--bg2); border:1px solid var(--border2); border-radius:2px;
+  padding:14px 16px; width:230px;
+}
+.nl-box h3 { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; color:var(--text); margin-bottom:3px; }
+.nl-box p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); line-height:1.6; margin-bottom:10px; letter-spacing:0.2px; }
+.nl-row { display:flex; gap:6px; }
+.nl-input { flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:2px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text); padding:0 9px; height:30px; outline:none; transition:border-color 0.12s; }
+.nl-input:focus { border-color:var(--orange); }
+.nl-input::placeholder { color:var(--text3); }
+.nl-btn { background:var(--orange); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:1px; padding:0 12px; height:30px; cursor:pointer; }
+.nl-btn:hover { background:var(--orange-dim); }
+.nl-close { position:absolute; top:8px; right:10px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px; line-height:1; }
 
-  .nl-banner { position: absolute; bottom: 28px; right: 12px; z-index: 500; background: var(--ink); border-radius: 10px; padding: 12px 16px; width: 230px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-  .nl-banner h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12.5px; color: #fff; margin-bottom: 3px; }
-  .nl-banner p { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 8px; line-height: 1.5; }
-  .nl-row { display: flex; gap: 5px; }
-  .nl-row input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: #fff; padding: 0 8px; height: 30px; outline: none; }
-  .nl-row input::placeholder { color: rgba(255,255,255,0.3); }
-  .nl-row button { background: var(--orange); border: none; border-radius: 5px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 11.5px; padding: 0 10px; height: 30px; cursor: pointer; }
-  .nl-close { position: absolute; top: 7px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; font-size: 15px; line-height: 1; }
+/* SIDEBAR */
+.sidebar {
+  width:320px; flex-shrink:0; background:var(--bg2);
+  border-left:1px solid var(--border); display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-head {
+  padding:14px 18px 10px; border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar-head h2 { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; color:var(--text); }
+.sidebar-head p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); margin-top:2px; letter-spacing:0.3px; }
+.meal-list { overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:6px; flex:1; scrollbar-width:thin; scrollbar-color:var(--border2) transparent; }
 
-  /* POPUP */
-  .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 10px !important; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,0.15) !important; border: 1px solid var(--border); }
-  .leaflet-popup-content { margin: 0 !important; width: 240px !important; }
-  .leaflet-popup-tip-container { display: none; }
-  .popup-body { padding: 12px 14px; }
-  .popup-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; line-height: 1; }
-  .popup-dish { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); margin: 5px 0 2px; }
-  .popup-rest { font-size: 11.5px; color: var(--ink-muted); margin-bottom: 7px; }
-  .popup-order { background: #FFF3EE; border: 1px solid #F5C4B3; border-radius: 6px; padding: 6px 9px; font-size: 11.5px; color: var(--orange-dark); margin-bottom: 6px; line-height: 1.4; }
-  .popup-footer { background: var(--cream); border-top: 1px solid var(--border); padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ink-faint); }
-  .popup-dir { font-size: 11.5px; color: var(--orange); font-weight: 500; text-decoration: none; }
+/* MEAL CARD */
+.meal-card {
+  background:var(--bg3); border:1px solid var(--border); border-radius:2px;
+  padding:12px 14px 10px; cursor:pointer; transition:border-color 0.12s;
+  position:relative; overflow:hidden;
+}
+.meal-card:hover { border-color:var(--border2); }
+.meal-card.active { border-color:var(--orange); }
+.card-stripe { position:absolute; left:0; top:0; bottom:0; width:2px; }
+.card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:4px; }
+.card-name { font-size:13px; font-weight:500; color:var(--text); line-height:1.3; }
+.card-rest { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); margin-top:2px; letter-spacing:0.2px; }
+.card-price { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; flex-shrink:0; }
+.card-why { font-size:11.5px; color:var(--text3); font-style:italic; line-height:1.5; border-top:1px solid var(--border); padding-top:7px; margin-top:8px; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+.card-hood { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:0.3px; }
+.card-tags { display:flex; gap:4px; flex-wrap:wrap; }
+.ctag { font-family:'DM Mono',monospace; font-size:9.5px; padding:2px 7px; border-radius:1px; border:1px solid; }
+.ctag-veg { background:#0D1F12; color:#3A9A5C; border-color:#1A3020; }
+.ctag-cash { background:#1F180A; color:#C8820A; border-color:#302210; }
+.ctag-gem { background:#150D20; color:#7B52D4; border-color:#201030; }
+.ctag-night { background:#0A0A1F; color:#2B7FE0; border-color:#101830; }
 
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,18,14,0.7); align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #fff; border-radius: 14px; width: 460px; max-width: calc(100vw - 32px); max-height: 88vh; overflow-y: auto; }
-  .modal-head { background: var(--ink); padding: 18px 22px 14px; border-radius: 14px 14px 0 0; }
-  .modal-head h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; }
-  .modal-head p { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 3px; }
-  .modal-body { padding: 20px 22px; }
-  .f-label { display: block; font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
-  .f-label span { color: var(--orange); }
-  .f-input, .f-select, .f-textarea { width: 100%; border: 1px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 8px 11px; color: var(--ink); background: #fff; outline: none; transition: border-color 0.15s; margin-bottom: 14px; }
-  .f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--orange); }
-  .f-textarea { resize: vertical; min-height: 65px; }
-  .f-row { display: flex; gap: 12px; }
-  .f-row > div { flex: 1; }
-  .f-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
-  .f-tag { cursor: pointer; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; padding: 4px 11px; color: var(--ink-muted); transition: all 0.12s; }
-  .f-tag.sel { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .modal-foot { border-top: 1px solid var(--border); padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; }
-  .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink-muted); padding: 0 16px; height: 38px; cursor: pointer; }
-  .btn-go { background: var(--orange); border: none; border-radius: 7px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 0 20px; height: 38px; cursor: pointer; }
-  .btn-go:hover { background: var(--orange-dark); }
+/* PIN */
+.map-pin {
+  background:var(--bg2); border:1px solid; border-radius:2px;
+  padding:4px 9px 4px 7px; display:flex; align-items:center; gap:4px;
+  font-family:'DM Mono',monospace; font-size:11px; cursor:pointer;
+  white-space:nowrap; transition:transform 0.1s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.5);
+}
+.map-pin:hover { transform:scale(1.05); }
+.map-pin-price { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.5px; line-height:1; }
+.map-pin-name { font-size:10px; color:#aaa; }
 
-  #listView { display: none; position: fixed; top: 104px; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 20px 2rem; background: var(--cream); z-index: 10; }
-  .list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; max-width: 1100px; margin: 0 auto; }
+/* POPUP */
+.leaflet-popup-content-wrapper {
+  background:var(--bg2) !important; border-radius:3px !important;
+  border:1px solid var(--border2) !important;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6) !important; padding:0 !important;
+}
+.leaflet-popup-content { margin:0 !important; width:260px !important; }
+.leaflet-popup-tip { background:var(--bg2) !important; }
+.popup-top { padding:14px 16px 10px; }
+.popup-price { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; line-height:1; }
+.popup-dish { font-size:13px; font-weight:500; color:var(--text); margin:5px 0 2px; line-height:1.3; }
+.popup-rest { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); margin-bottom:10px; letter-spacing:0.2px; }
+.popup-order {
+  background:rgba(216,90,48,0.08); border:1px solid rgba(216,90,48,0.2);
+  border-radius:2px; padding:7px 10px; font-size:11.5px; color:var(--text2); line-height:1.5; margin-bottom:8px;
+}
+.popup-order span { color:var(--orange); font-weight:500; }
+.popup-foot { border-top:1px solid var(--border); padding:8px 14px; display:flex; justify-content:space-between; align-items:center; }
+.popup-verified { font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text3); letter-spacing:0.3px; }
+.popup-dir { font-family:'DM Mono',monospace; font-size:10px; color:var(--orange); text-decoration:none; letter-spacing:0.3px; }
+.popup-tags { display:flex; gap:4px; margin-bottom:6px; flex-wrap:wrap; }
 
-  @media (max-width: 700px) {
-    .sidebar { display: none; }
-    .legend { display: none; }
-    .nl-banner { display: none; }
-    header { padding: 0 1rem; }
-    .search-wrap { max-width: 140px; }
-  }
+/* LIST VIEW */
+#listView {
+  display:none; position:fixed; top:102px; left:0; right:0; bottom:0;
+  overflow-y:auto; background:var(--bg); z-index:10;
+  scrollbar-width:thin; scrollbar-color:var(--border2) transparent;
+}
+.list-inner { max-width:1100px; margin:0 auto; padding:24px; }
+.list-header { margin-bottom:20px; }
+.list-header h2 { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:1.5px; color:var(--text); }
+.list-header p { font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); margin-top:3px; letter-spacing:0.3px; }
+.list-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:10px; }
+.list-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:2px;
+  padding:16px 18px 14px; cursor:pointer; transition:border-color 0.12s;
+  position:relative; overflow:hidden;
+}
+.list-card:hover { border-color:var(--orange); }
+.list-card-stripe { position:absolute; left:0; top:0; bottom:0; width:2px; }
+.list-card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:5px; }
+.list-card-name { font-size:14px; font-weight:500; color:var(--text); line-height:1.3; }
+.list-card-rest { font-family:'DM Mono',monospace; font-size:10.5px; color:var(--text3); margin-top:2px; letter-spacing:0.2px; }
+.list-card-price { font-family:'Bebas Neue',sans-serif; font-size:26px; line-height:1; flex-shrink:0; }
+.list-card-why { font-size:12px; color:var(--text3); font-style:italic; line-height:1.5; border-top:1px solid var(--border); padding-top:8px; margin-top:8px; }
+.list-card-foot { display:flex; align-items:center; justify-content:space-between; margin-top:7px; }
+.list-card-hood { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:0.3px; }
+
+/* MODAL */
+.overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; }
+.overlay.open { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border2); border-radius:3px; width:480px; max-width:calc(100vw - 32px); max-height:90vh; overflow-y:auto; }
+.modal-head { background:var(--bg3); border-bottom:1px solid var(--border); padding:18px 22px 14px; }
+.modal-head h2 { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1.5px; color:var(--text); }
+.modal-head p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); margin-top:3px; letter-spacing:0.3px; }
+.modal-body { padding:20px 22px; }
+.f-label { display:block; font-family:'DM Mono',monospace; font-size:10.5px; color:var(--text3); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px; }
+.f-label em { color:var(--orange); font-style:normal; }
+.f-input, .f-select, .f-textarea {
+  width:100%; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:2px; font-family:'DM Mono',monospace; font-size:12px;
+  color:var(--text); padding:9px 11px; outline:none;
+  transition:border-color 0.12s; margin-bottom:14px; letter-spacing:0.2px;
+}
+.f-input:focus, .f-select:focus, .f-textarea:focus { border-color:var(--orange); }
+.f-textarea { resize:vertical; min-height:65px; }
+.f-select option { background:var(--bg3); }
+.f-row { display:flex; gap:12px; }
+.f-row > div { flex:1; }
+.f-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.f-tag { cursor:pointer; border:1px solid var(--border2); border-radius:2px; font-family:'DM Mono',monospace; font-size:11px; padding:4px 11px; color:var(--text3); transition:all 0.12s; letter-spacing:0.3px; }
+.f-tag.sel { background:var(--orange); border-color:var(--orange); color:#fff; }
+.modal-foot { border-top:1px solid var(--border); padding:14px 22px; display:flex; gap:8px; justify-content:flex-end; }
+.btn-cancel { background:none; border:1px solid var(--border2); border-radius:2px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); padding:0 16px; height:36px; cursor:pointer; letter-spacing:0.3px; }
+.btn-cancel:hover { border-color:var(--border2); color:var(--text2); }
+.btn-go { background:var(--orange); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; padding:0 24px; height:36px; cursor:pointer; }
+.btn-go:hover { background:var(--orange-dim); }
+
+/* SUCCESS TOAST */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); z-index:3000; background:var(--bg2); border:1px solid var(--orange); border-radius:2px; padding:10px 20px; font-family:'DM Mono',monospace; font-size:12px; color:var(--orange); letter-spacing:0.3px; transition:transform 0.3s; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@media (max-width:750px) {
+  .sidebar { display:none; }
+  .map-legend { display:none; }
+  .nl-box { display:none; }
+  header { padding:0 14px; gap:10px; }
+  .logo-sub { display:none; }
+  .search-wrap { max-width:140px; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Cheap<span>Sheet</span> NYC</div>
-  <div class="search-wrap">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="Search dish, neighborhood, cuisine…" autocomplete="off">
+  <div>
+    <div class="logo">Cheap<em>Sheet</em> NYC</div>
+    <span class="logo-sub">The exact dish. The exact price.</span>
   </div>
-  <div class="header-actions">
-    <div class="view-toggle">
-      <button class="active" id="btnMap" onclick="setView('map')">Map</button>
-      <button id="btnList" onclick="setView('list')">List</button>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="SEARCH DISH / HOOD / CUISINE" autocomplete="off">
+  </div>
+  <div class="header-right">
+    <div class="view-btns">
+      <button class="view-btn on" id="btnMap" onclick="setView('map')">MAP</button>
+      <button class="view-btn" id="btnList" onclick="setView('list')">LIST</button>
     </div>
-    <button class="btn-submit" onclick="openModal()">+ Submit a spot</button>
+    <button class="btn-submit" onclick="openModal()">+ SUBMIT A SPOT</button>
   </div>
 </header>
 
 <div class="filter-bar">
-  <button class="chip active" onclick="setFilter(this,'all')">All spots</button>
-  <div class="sep"></div>
-  <button class="chip" onclick="setFilter(this,'under6')"><span class="chip-dot" style="background:var(--red-pin)"></span>Under $6</button>
-  <button class="chip" onclick="setFilter(this,'under10')"><span class="chip-dot" style="background:var(--blue-pin)"></span>Under $10</button>
-  <button class="chip" onclick="setFilter(this,'under15')"><span class="chip-dot" style="background:var(--purple-pin)"></span>Under $15</button>
-  <div class="sep"></div>
-  <button class="chip" onclick="setFilter(this,'vegetarian')">🌿 Vegetarian</button>
-  <button class="chip" onclick="setFilter(this,'cash')">💵 Cash only</button>
-  <button class="chip" onclick="setFilter(this,'lunch')">🕛 Lunch special</button>
-  <button class="chip" onclick="setFilter(this,'hidden')">💎 Hidden gem</button>
+  <button class="chip on" onclick="setFilter(this,'all')">ALL SPOTS</button>
+  <div class="fsep"></div>
+  <button class="chip" onclick="setFilter(this,'under6')"><span class="chip-dot" style="background:var(--red)"></span>UNDER $6</button>
+  <button class="chip" onclick="setFilter(this,'under10')"><span class="chip-dot" style="background:var(--blue)"></span>UNDER $10</button>
+  <button class="chip" onclick="setFilter(this,'under15')"><span class="chip-dot" style="background:var(--purple)"></span>UNDER $15</button>
+  <div class="fsep"></div>
+  <button class="chip" onclick="setFilter(this,'vegetarian')">VEGETARIAN</button>
+  <button class="chip" onclick="setFilter(this,'cash')">CASH ONLY</button>
+  <button class="chip" onclick="setFilter(this,'hidden')">HIDDEN GEM</button>
+  <button class="chip" onclick="setFilter(this,'latenight')">LATE NIGHT</button>
 </div>
 
-<div class="layout" id="mapLayout">
+<div class="app" id="appLayout">
   <div id="map" style="position:relative;">
-    <div class="stats-bar">
-      <span><strong id="statCount">10</strong> spots</span>
-      <span style="color:var(--border)">·</span>
-      <span>avg <strong id="statAvg">$5.65</strong></span>
-      <span style="color:var(--border)">·</span>
-      <span>cheapest <strong id="statCheap">$2.50</strong></span>
+    <div class="map-legend">
+      <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div>Under $6</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--blue)"></div>$6 — $10</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--purple)"></div>$10 — $15</div>
     </div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red-pin)"></div>Under $6</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--blue-pin)"></div>$6–$10</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--purple-pin)"></div>$10–$15</div>
+    <div class="map-stats">
+      <strong id="statCount">10</strong> spots
+      <span class="map-stats-sep">·</span>
+      avg <strong id="statAvg">$5.65</strong>
+      <span class="map-stats-sep">·</span>
+      cheapest <strong id="statCheap">$2.50</strong>
     </div>
-    <div class="nl-banner" id="nlBanner">
-      <button class="nl-close" onclick="document.getElementById('nlBanner').style.display='none'">×</button>
-      <h3>5 cheap meals every Monday</h3>
-      <p>Real New Yorkers. Real prices. Exact dish, exact price.</p>
+    <div class="nl-box" id="nlBox">
+      <button class="nl-close" onclick="document.getElementById('nlBox').style.display='none'">×</button>
+      <h3>5 Cheap Meals<br>Every Monday</h3>
+      <p>Real NYers. Real prices.<br>Exact dish. Exact price. Free.</p>
       <div class="nl-row">
-        <input type="email" placeholder="your@email.com" id="nlEmail">
-        <button onclick="subscribeNL()">Join</button>
+        <input class="nl-input" type="email" placeholder="your@email.com" id="nlEmail">
+        <button class="nl-btn" onclick="subscribeNL()">JOIN</button>
       </div>
     </div>
   </div>
   <div class="sidebar">
-    <div class="sidebar-header">
+    <div class="sidebar-head">
       <h2>All Spots</h2>
-      <p id="sidebarSub">10 meals · sorted by price</p>
+      <p id="sidebarSub">10 MEALS — SORTED BY PRICE</p>
     </div>
     <div class="meal-list" id="mealList"></div>
   </div>
 </div>
 
 <div id="listView">
-  <div class="list-grid" id="listGrid"></div>
+  <div class="list-inner">
+    <div class="list-header">
+      <h2>All Spots</h2>
+      <p id="listSub">10 MEALS — SORTED BY PRICE</p>
+    </div>
+    <div class="list-grid" id="listGrid"></div>
+  </div>
 </div>
 
-<div class="modal-overlay" id="modal">
+<div class="overlay" id="modal">
   <div class="modal">
     <div class="modal-head">
-      <h2>Submit a spot</h2>
-      <p>Exact dish. Exact price. No vague recs.</p>
+      <h2>Submit A Spot</h2>
+      <p>EXACT DISH. EXACT PRICE. NO VAGUE RECS.</p>
     </div>
     <div class="modal-body">
-      <label class="f-label">Restaurant name <span>*</span></label>
+      <label class="f-label">Restaurant name <em>*</em></label>
       <input class="f-input" type="text" placeholder="e.g. Joe's Pizza" id="f_r">
-      <label class="f-label">Exact dish or combo <span>*</span></label>
-      <input class="f-input" type="text" placeholder="e.g. Plain slice (not 'the pizza is cheap')" id="f_d">
+      <label class="f-label">Exact dish or combo to order <em>*</em></label>
+      <input class="f-input" type="text" placeholder="e.g. Plain slice — not 'the pizza is cheap'" id="f_d">
       <div class="f-row">
         <div>
-          <label class="f-label">Price <span>*</span></label>
+          <label class="f-label">Exact price <em>*</em></label>
           <input class="f-input" type="text" placeholder="$4.50" id="f_p">
         </div>
         <div>
-          <label class="f-label">Neighborhood <span>*</span></label>
+          <label class="f-label">Neighborhood <em>*</em></label>
           <select class="f-select" id="f_n">
             <option value="">Select…</option>
-            <option>Lower East Side</option><option>East Village</option><option>Greenwich Village</option>
-            <option>Midtown</option><option>Upper West Side</option><option>Upper East Side</option>
+            <option>Lower East Side</option><option>East Village</option>
+            <option>Greenwich Village</option><option>Midtown</option>
+            <option>Upper West Side</option><option>Upper East Side</option>
             <option>Harlem</option><option>Astoria</option><option>Flushing</option>
             <option>Bushwick</option><option>Williamsburg</option><option>Bed-Stuy</option>
-            <option>Crown Heights</option><option>Park Slope</option><option>Sunset Park</option>
-            <option>Jackson Heights</option><option>The Bronx</option><option>Staten Island</option>
+            <option>Crown Heights</option><option>Park Slope</option>
+            <option>Sunset Park</option><option>Jackson Heights</option>
+            <option>The Bronx</option><option>Staten Island</option>
           </select>
         </div>
       </div>
-      <label class="f-label">Why it's worth it <span>*</span></label>
-      <textarea class="f-textarea" placeholder="One honest sentence." id="f_w"></textarea>
+      <label class="f-label">Why it's worth it <em>*</em></label>
+      <textarea class="f-textarea" placeholder="One honest sentence. What makes this worth ordering?" id="f_w"></textarea>
       <label class="f-label">Tags</label>
       <div class="f-tags">
         <span class="f-tag" onclick="this.classList.toggle('sel')">Cash only</span>
@@ -259,205 +394,207 @@
         <span class="f-tag" onclick="this.classList.toggle('sel')">Late night</span>
         <span class="f-tag" onclick="this.classList.toggle('sel')">Big portion</span>
       </div>
-      <label class="f-label">Your username</label>
+      <label class="f-label">Your username (for contributor credit)</label>
       <input class="f-input" type="text" placeholder="@handle" id="f_u">
     </div>
     <div class="modal-foot">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-go" onclick="submitSpot()">Submit spot →</button>
+      <button class="btn-cancel" onclick="closeModal()">CANCEL</button>
+      <button class="btn-go" onclick="submitSpot()">SUBMIT SPOT →</button>
     </div>
   </div>
 </div>
 
+<div class="toast" id="toast">✓ SPOT SUBMITTED — UNDER REVIEW</div>
+
 <script>
 const MEALS = [
-  { id:1,  name:"Pork & chive dumplings (12pc)", restaurant:"Shu Jiao Fu Zhou",    price:6.00,  neighborhood:"East Village",    lat:40.7264, lng:-73.9860, why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth every second of the line.", tags:["Cash only","Hidden gem"] },
-  { id:2,  name:"Falafel pita with hot sauce",   restaurant:"Mamoun's Falafel",     price:4.50,  neighborhood:"Greenwich Village",lat:40.7306, lng:-74.0007, why:"Legit NYC institution. Crispy falafel, fresh pita, the hot sauce is addictive.", tags:["Vegetarian"] },
-  { id:3,  name:"Plain slice",                   restaurant:"Joe's Pizza",           price:4.00,  neighborhood:"Greenwich Village",lat:40.7304, lng:-74.0027, why:"The platonic ideal of a NYC slice. No notes. Perfect.", tags:[] },
-  { id:4,  name:"Spicy cumin lamb noodles",      restaurant:"Xi'an Famous Foods",   price:11.00, neighborhood:"East Village",    lat:40.7268, lng:-73.9855, why:"Hand-ripped noodles, numbing spice, massive portion. Tastes like a $25 dish.", tags:[] },
-  { id:5,  name:"2 hot dogs + tropical drink",   restaurant:"Gray's Papaya",        price:6.45,  neighborhood:"Upper West Side", lat:40.7793, lng:-73.9815, why:"NYC survival kit since 1973. Never closed. Never bad.", tags:[] },
-  { id:6,  name:"10 pork & chive dumplings",     restaurant:"North Dumpling",       price:4.50,  neighborhood:"Lower East Side", lat:40.7140, lng:-73.9960, why:"Tiny, no frills, insane value. Made fresh every morning.", tags:["Cash only","Hidden gem"] },
-  { id:7,  name:"Adobada taco",                  restaurant:"Taqueria Milear",      price:4.00,  neighborhood:"Midtown West",    lat:40.7549, lng:-73.9978, why:"The marinade on this pork is genuinely special. Order three.", tags:[] },
-  { id:8,  name:"Doubles",                       restaurant:"A&A Bake and Doubles", price:2.50,  neighborhood:"Bed-Stuy",        lat:40.6865, lng:-73.9440, why:"Cheapest legit meal in Brooklyn. Bara fried fresh, tamarind + pepper sauce.", tags:["Vegetarian","Hidden gem"] },
-  { id:9,  name:"Rice + 3 vegetarian mains",     restaurant:"Punjabi Grocery & Deli",price:8.50, neighborhood:"Midtown",         lat:40.7533, lng:-73.9906, why:"Open 24/7, serves cabbies and everyone else. Massive portions, rotating menu.", tags:["Vegetarian","Late night"] },
-  { id:10, name:"Jianbing (Chinese street crepe)",restaurant:"Eight Jane Food",     price:5.00,  neighborhood:"Flushing",        lat:40.7596, lng:-73.8300, why:"Crispy, eggy, scallion-packed. This is what they eat in Beijing for breakfast.", tags:["Hidden gem"] },
+  { id:1,  name:"Pork & chive dumplings (12pc)", restaurant:"Shu Jiao Fu Zhou",     price:6.00,  neighborhood:"East Village",     lat:40.7264, lng:-73.9860, why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth every second of the line.", tags:["Cash only","Hidden gem"] },
+  { id:2,  name:"Falafel pita with hot sauce",   restaurant:"Mamoun's Falafel",      price:4.50,  neighborhood:"Greenwich Village", lat:40.7306, lng:-74.0007, why:"Legit NYC institution. Crispy falafel, fresh pita, the hot sauce is addictive.", tags:["Vegetarian"] },
+  { id:3,  name:"Plain slice",                   restaurant:"Joe's Pizza",            price:4.00,  neighborhood:"Greenwich Village", lat:40.7304, lng:-74.0027, why:"The platonic ideal of a NYC slice. No notes. Perfect.", tags:[] },
+  { id:4,  name:"Spicy cumin lamb noodles",      restaurant:"Xi'an Famous Foods",    price:11.00, neighborhood:"East Village",     lat:40.7268, lng:-73.9855, why:"Hand-ripped noodles, numbing spice, massive portion. Tastes like a $25 dish.", tags:[] },
+  { id:5,  name:"2 hot dogs + tropical drink",   restaurant:"Gray's Papaya",         price:6.45,  neighborhood:"Upper West Side",  lat:40.7793, lng:-73.9815, why:"NYC survival kit since 1973. Never closed. Never bad.", tags:[] },
+  { id:6,  name:"10 pork & chive dumplings",     restaurant:"North Dumpling",        price:4.50,  neighborhood:"Lower East Side",  lat:40.7140, lng:-73.9960, why:"Tiny, no frills, insane value. Made fresh every morning.", tags:["Cash only","Hidden gem"] },
+  { id:7,  name:"Adobada taco",                  restaurant:"Taqueria Milear",       price:4.00,  neighborhood:"Midtown West",     lat:40.7549, lng:-73.9978, why:"The marinade on this pork is genuinely special. Order three.", tags:[] },
+  { id:8,  name:"Doubles",                       restaurant:"A&A Bake and Doubles",  price:2.50,  neighborhood:"Bed-Stuy",         lat:40.6865, lng:-73.9440, why:"Cheapest legit meal in Brooklyn. Bara fried fresh, tamarind + pepper sauce.", tags:["Vegetarian","Hidden gem"] },
+  { id:9,  name:"Rice + 3 vegetarian mains",     restaurant:"Punjabi Grocery & Deli",price:8.50,  neighborhood:"Midtown",          lat:40.7533, lng:-73.9906, why:"Open 24/7. Massive portions, rotating menu, never bad.", tags:["Vegetarian","Late night"] },
+  { id:10, name:"Jianbing (Chinese street crepe)",restaurant:"Eight Jane Food",      price:5.00,  neighborhood:"Flushing",         lat:40.7596, lng:-73.8300, why:"Crispy, eggy, scallion-packed. This is what they eat in Beijing for breakfast.", tags:["Hidden gem"] },
 ];
 
-const PIN_COLORS = { red:"#E02020", blue:"#1D6FD4", purple:"#6B44C9" };
-let currentFilter = 'all';
-let activeId = null;
-let leafletMarkers = [];
-let map;
+const COLORS = { red:'#E02020', blue:'#2B7FE0', purple:'#7B52D4' };
+let filter = 'all', activeId = null, leafMarkers = [], map;
 
-function getPriceColor(price) {
-  if (price < 6) return 'red';
-  if (price <= 10) return 'blue';
-  return 'purple';
-}
+function priceColor(p) { return p<6?'red':p<=10?'blue':'purple'; }
 
 function getFiltered() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   return MEALS.filter(m => {
-    const f = currentFilter;
-    const matchF = f==='all'
-      || (f==='under6' && m.price<6)
-      || (f==='under10' && m.price<=10)
-      || (f==='under15' && m.price<=15)
-      || (f==='vegetarian' && m.tags.includes('Vegetarian'))
-      || (f==='cash' && m.tags.includes('Cash only'))
-      || (f==='lunch' && m.tags.includes('Lunch special'))
-      || (f==='hidden' && m.tags.includes('Hidden gem'));
-    const matchQ = !q || m.name.toLowerCase().includes(q) || m.restaurant.toLowerCase().includes(q) || m.neighborhood.toLowerCase().includes(q);
-    return matchF && matchQ;
+    const f = filter;
+    const mf = f==='all'||(f==='under6'&&m.price<6)||(f==='under10'&&m.price<=10)||(f==='under15'&&m.price<=15)||(f==='vegetarian'&&m.tags.includes('Vegetarian'))||(f==='cash'&&m.tags.includes('Cash only'))||(f==='hidden'&&m.tags.includes('Hidden gem'))||(f==='latenight'&&m.tags.includes('Late night'));
+    const mq = !q||m.name.toLowerCase().includes(q)||m.restaurant.toLowerCase().includes(q)||m.neighborhood.toLowerCase().includes(q);
+    return mf&&mq;
   });
 }
 
-function createPinIcon(meal) {
-  const color = PIN_COLORS[getPriceColor(meal.price)];
-  const short = meal.name.length > 20 ? meal.name.slice(0,18)+'…' : meal.name;
-  const html = `<div style="
-    background:${color}; color:#fff; border-radius:999px;
-    padding:4px 9px; font-family:'DM Sans',sans-serif; font-size:11.5px; font-weight:600;
-    white-space:nowrap; border:2px solid #fff;
-    box-shadow:0 2px 8px rgba(0,0,0,0.25); display:flex; align-items:center; gap:4px;
-    cursor:pointer; user-select:none;
-  "><span style="font-weight:800">$${meal.price.toFixed(2)}</span><span style="opacity:.85;font-size:10.5px">${short}</span></div>`;
-  return L.divIcon({ html, className:'', iconAnchor:[0,16] });
+function pinIcon(meal) {
+  const c = COLORS[priceColor(meal.price)];
+  const label = meal.name.length>18 ? meal.name.slice(0,16)+'…' : meal.name;
+  const html = `<div class="map-pin" style="border-color:${c}20;color:#aaa;">
+    <span class="map-pin-price" style="color:${c}">$${meal.price.toFixed(2)}</span>
+    <span class="map-pin-name">${label}</span>
+  </div>`;
+  return L.divIcon({ html, className:'', iconAnchor:[0,14] });
 }
 
-function popupHTML(meal) {
-  const color = PIN_COLORS[getPriceColor(meal.price)];
-  const tagsHtml = meal.tags.map(t=>`<span style="font-size:10.5px;padding:2px 7px;border-radius:999px;background:${t==='Vegetarian'?'#EAF3DE':t==='Cash only'?'#FAEEDA':'#F1EFE8'};color:${t==='Vegetarian'?'#2A7A4B':t==='Cash only'?'#854F0B':'#5A5750'};border:1px solid ${t==='Vegetarian'?'#C0DD97':t==='Cash only'?'#FAC775':'#D3D1C7'}">${t}</span>`).join(' ');
-  return `<div class="popup-body">
-    <div class="popup-price" style="color:${color}">$${meal.price.toFixed(2)}</div>
-    <div class="popup-dish">${meal.name}</div>
-    <div class="popup-rest">${meal.restaurant} · ${meal.neighborhood}</div>
-    <div class="popup-order"><strong style="color:var(--orange)">Order this:</strong> ${meal.name}</div>
-    ${tagsHtml ? `<div style="margin-top:5px">${tagsHtml}</div>` : ''}
+function popupHTML(m) {
+  const c = COLORS[priceColor(m.price)];
+  const tags = m.tags.map(t => {
+    const cls = t==='Vegetarian'?'ctag-veg':t==='Cash only'?'ctag-cash':t==='Hidden gem'?'ctag-gem':'ctag-night';
+    return `<span class="ctag ${cls}">${t.toUpperCase()}</span>`;
+  }).join('');
+  return `<div class="popup-top">
+    <div class="popup-price" style="color:${c}">$${meal_fmt(m.price)}</div>
+    <div class="popup-dish">${m.name}</div>
+    <div class="popup-rest">${m.restaurant.toUpperCase()} · ${m.neighborhood.toUpperCase()}</div>
+    <div class="popup-order"><span>ORDER THIS →</span> ${m.name}</div>
+    ${tags?`<div class="popup-tags">${tags}</div>`:''}
   </div>
-  <div class="popup-footer">
-    <span>Last verified today</span>
-    <a class="popup-dir" href="https://maps.google.com/?q=${encodeURIComponent(meal.restaurant+' '+meal.neighborhood+' NYC')}" target="_blank">Directions →</a>
+  <div class="popup-foot">
+    <span class="popup-verified">VERIFIED TODAY</span>
+    <a class="popup-dir" href="https://maps.google.com/?q=${encodeURIComponent(m.restaurant+' '+m.neighborhood+' NYC')}" target="_blank">DIRECTIONS →</a>
   </div>`;
 }
 
+function meal_fmt(p) { return p.toFixed(2); }
+
 function renderMarkers() {
-  leafletMarkers.forEach(m => map.removeLayer(m));
-  leafletMarkers = [];
-  const filtered = getFiltered();
-  filtered.forEach(meal => {
-    const marker = L.marker([meal.lat, meal.lng], { icon: createPinIcon(meal) })
-      .addTo(map)
-      .bindPopup(popupHTML(meal), { maxWidth:250, minWidth:240, autoPan:true });
-    marker.on('click', () => { activeId = meal.id; renderSidebar(); });
-    leafletMarkers.push(marker);
+  leafMarkers.forEach(m=>map.removeLayer(m));
+  leafMarkers=[];
+  const filtered=getFiltered();
+  filtered.forEach(meal=>{
+    const mk = L.marker([meal.lat,meal.lng],{icon:pinIcon(meal)}).addTo(map);
+    mk.bindPopup(popupHTML(meal),{maxWidth:280,minWidth:260,autoPan:true});
+    mk.on('click',()=>{activeId=meal.id;renderSidebar();});
+    leafMarkers.push(mk);
   });
   updateStats(filtered);
 }
 
+function tagHTML(tags) {
+  return tags.map(t=>{
+    const cls=t==='Vegetarian'?'ctag-veg':t==='Cash only'?'ctag-cash':t==='Hidden gem'?'ctag-gem':'ctag-night';
+    return `<span class="ctag ${cls}">${t.toUpperCase()}</span>`;
+  }).join('');
+}
+
 function renderSidebar() {
-  const filtered = getFiltered().sort((a,b) => a.price - b.price);
-  document.getElementById('sidebarSub').textContent = `${filtered.length} meal${filtered.length!==1?'s':''} · sorted by price`;
-  document.getElementById('mealList').innerHTML = filtered.map(m => {
-    const color = PIN_COLORS[getPriceColor(m.price)];
-    const pc = 'price-'+getPriceColor(m.price);
-    const tagsHtml = m.tags.map(t=>`<span class="tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
-    return `<div class="meal-card ${activeId===m.id?'active':''}" onclick="cardClick(${m.id})">
-      <div class="card-accent" style="background:${color}"></div>
+  const filtered=getFiltered().sort((a,b)=>a.price-b.price);
+  document.getElementById('sidebarSub').textContent=`${filtered.length} MEAL${filtered.length!==1?'S':''} — SORTED BY PRICE`;
+  document.getElementById('mealList').innerHTML=filtered.map(m=>{
+    const c=COLORS[priceColor(m.price)];
+    const t=tagHTML(m.tags);
+    return `<div class="meal-card${activeId===m.id?' active':''}" onclick="cardClick(${m.id})">
+      <div class="card-stripe" style="background:${c}"></div>
       <div class="card-top">
-        <div><div class="card-name">${m.name}</div><div class="card-restaurant">${m.restaurant}</div></div>
-        <div class="${pc} price-tag">$${m.price.toFixed(2)}</div>
+        <div><div class="card-name">${m.name}</div><div class="card-rest">${m.restaurant.toUpperCase()}</div></div>
+        <div class="card-price" style="color:${c}">$${meal_fmt(m.price)}</div>
       </div>
-      ${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}
+      ${t?`<div class="card-tags" style="margin-top:5px">${t}</div>`:''}
       <div class="card-why">"${m.why}"</div>
-      <div class="card-meta">📍 ${m.neighborhood}</div>
+      <div class="card-footer"><span class="card-hood">📍 ${m.neighborhood.toUpperCase()}</span></div>
     </div>`;
   }).join('');
 }
 
 function renderListGrid() {
-  const filtered = getFiltered().sort((a,b) => a.price - b.price);
-  document.getElementById('listGrid').innerHTML = filtered.map(m => {
-    const color = PIN_COLORS[getPriceColor(m.price)];
-    const pc = 'price-'+getPriceColor(m.price);
-    const tagsHtml = m.tags.map(t=>`<span class="tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
-    return `<div class="meal-card" style="background:#fff">
-      <div class="card-accent" style="background:${color}"></div>
-      <div class="card-top">
-        <div><div class="card-name">${m.name}</div><div class="card-restaurant">${m.restaurant}</div></div>
-        <div class="${pc} price-tag">$${m.price.toFixed(2)}</div>
+  const filtered=getFiltered().sort((a,b)=>a.price-b.price);
+  document.getElementById('listSub').textContent=`${filtered.length} MEALS — SORTED BY PRICE`;
+  document.getElementById('listGrid').innerHTML=filtered.map(m=>{
+    const c=COLORS[priceColor(m.price)];
+    const t=tagHTML(m.tags);
+    return `<div class="list-card">
+      <div class="list-card-stripe" style="background:${c}"></div>
+      <div class="list-card-top">
+        <div><div class="list-card-name">${m.name}</div><div class="list-card-rest">${m.restaurant.toUpperCase()}</div></div>
+        <div class="list-card-price" style="color:${c}">$${meal_fmt(m.price)}</div>
       </div>
-      ${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}
-      <div class="card-why">"${m.why}"</div>
-      <div class="card-meta">📍 ${m.neighborhood}</div>
+      ${t?`<div class="card-tags" style="margin-top:6px">${t}</div>`:''}
+      <div class="list-card-why">"${m.why}"</div>
+      <div class="list-card-foot"><span class="list-card-hood">📍 ${m.neighborhood.toUpperCase()}</span></div>
     </div>`;
   }).join('');
 }
 
 function cardClick(id) {
-  activeId = id;
-  const meal = MEALS.find(m=>m.id===id);
-  if (meal && map) {
-    map.setView([meal.lat, meal.lng], 14);
-    const marker = leafletMarkers.find((mk,i) => getFiltered()[i]?.id === id);
-    if (marker) marker.openPopup();
+  activeId=id;
+  const meal=MEALS.find(m=>m.id===id);
+  if(meal&&map){
+    map.setView([meal.lat,meal.lng],14,{animate:true});
+    const idx=getFiltered().findIndex(m=>m.id===id);
+    if(idx>-1&&leafMarkers[idx]) leafMarkers[idx].openPopup();
   }
   renderSidebar();
 }
 
 function updateStats(filtered) {
-  document.getElementById('statCount').textContent = filtered.length;
-  if (filtered.length) {
-    const avg = filtered.reduce((s,m)=>s+m.price,0)/filtered.length;
-    document.getElementById('statAvg').textContent = '$'+avg.toFixed(2);
-    document.getElementById('statCheap').textContent = '$'+Math.min(...filtered.map(m=>m.price)).toFixed(2);
+  document.getElementById('statCount').textContent=filtered.length;
+  if(filtered.length){
+    const avg=filtered.reduce((s,m)=>s+m.price,0)/filtered.length;
+    document.getElementById('statAvg').textContent='$'+avg.toFixed(2);
+    document.getElementById('statCheap').textContent='$'+Math.min(...filtered.map(m=>m.price)).toFixed(2);
   }
 }
 
-function setFilter(el, f) {
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  currentFilter = f;
-  renderMarkers();
-  renderSidebar();
-  renderListGrid();
+function setFilter(el,f) {
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); filter=f;
+  renderMarkers(); renderSidebar(); renderListGrid();
 }
 
-document.getElementById('searchInput').addEventListener('input', () => {
+document.getElementById('searchInput').addEventListener('input',()=>{
   renderMarkers(); renderSidebar(); renderListGrid();
 });
 
 function setView(v) {
-  document.getElementById('btnMap').classList.toggle('active', v==='map');
-  document.getElementById('btnList').classList.toggle('active', v==='list');
-  document.getElementById('mapLayout').style.display = v==='map' ? 'flex' : 'none';
-  document.getElementById('listView').style.display = v==='list' ? 'block' : 'none';
-  if (v==='map' && map) setTimeout(()=>map.invalidateSize(),50);
-  if (v==='list') renderListGrid();
+  document.getElementById('btnMap').classList.toggle('on',v==='map');
+  document.getElementById('btnList').classList.toggle('on',v==='list');
+  document.getElementById('appLayout').style.display=v==='map'?'flex':'none';
+  document.getElementById('listView').style.display=v==='list'?'block':'none';
+  if(v==='map'&&map) setTimeout(()=>map.invalidateSize(),50);
+  if(v==='list') renderListGrid();
 }
 
 function openModal() { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+
+function showToast() {
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
 
 function submitSpot() {
-  if (!document.getElementById('f_r').value || !document.getElementById('f_d').value) { alert('Fill in the required fields.'); return; }
+  if(!document.getElementById('f_r').value||!document.getElementById('f_d').value||!document.getElementById('f_p').value) {
+    alert('Fill in the required fields.'); return;
+  }
   closeModal();
-  setTimeout(()=>alert('Thanks! Your spot is under review. If verified, it\'ll be on the map within 48 hours. 🙏'),150);
+  setTimeout(showToast,200);
+  ['f_r','f_d','f_p','f_w','f_u'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f_n').selectedIndex=0;
+  document.querySelectorAll('.f-tag.sel').forEach(t=>t.classList.remove('sel'));
 }
 
 function subscribeNL() {
-  const e = document.getElementById('nlEmail').value;
-  if (!e||!e.includes('@')) { alert('Enter a valid email.'); return; }
-  document.getElementById('nlBanner').innerHTML = `<div style="padding:8px;text-align:center;color:#fff"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;margin-bottom:4px">You're in ✓</div><div style="font-size:11.5px;color:rgba(255,255,255,.45)">First cheap meal drops Monday.</div></div>`;
+  const e=document.getElementById('nlEmail').value;
+  if(!e||!e.includes('@')){alert('Enter a valid email.');return;}
+  document.getElementById('nlBox').innerHTML=`<div style="padding:8px 0;text-align:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--orange);margin-bottom:4px">YOU'RE IN ✓</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.3px">FIRST DROP HITS MONDAY</div></div>`;
 }
 
-// Init Leaflet map
-map = L.map('map', { zoomControl: false }).setView([40.728, -73.979], 13);
-L.control.zoom({ position: 'topright' }).addTo(map);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-  maxZoom: 19
+map = L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+  maxZoom:19
 }).addTo(map);
 
 renderMarkers();
