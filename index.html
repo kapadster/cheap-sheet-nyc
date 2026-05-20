@@ -87,8 +87,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .hero-scroll{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:6px;}
 .scroll-line{width:1px;height:28px;background:linear-gradient(to bottom,var(--border2),transparent);animation:sp 2s infinite;}
 @keyframes sp{0%,100%{opacity:0.3;}50%{opacity:1;}}
-#hero.exit{animation:hExit 0.45s ease-in forwards;}
-@keyframes hExit{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(0.97);}}
+#hero.exit{opacity:0;}
 
 /* ══════════════════════════════════
    HUNGRY NOW OVERLAY
@@ -944,41 +943,65 @@ function updateCountdown(){
 setInterval(updateCountdown,1000);updateCountdown();
 
 /* ── NAVIGATION ── */
-let pendingAction=null;
+let mapReady=false;
 
 function launchApp(callback){
-  const hero=document.getElementById('hero');
-  hero.classList.add('exit');
+  document.getElementById('hero').style.transition='opacity 0.3s';
+  document.getElementById('hero').style.opacity='0';
   setTimeout(()=>{
-    hero.style.display='none';
+    document.getElementById('hero').style.display='none';
     document.getElementById('appShell').style.display='block';
     if(!map){
-      initMap(callback);
+      initMap();
+      waitForMap(callback);
     } else {
-      setTimeout(()=>{map.invalidateSize();if(callback)callback();},80);
+      map.invalidateSize();
+      if(callback) callback();
     }
-  },420);
+  },300);
 }
 
-function initMap(readyCallback){
-  map=L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
+function initMap(){
+  map=L.map('map',{zoomControl:false,preferCanvas:true}).setView([40.728,-73.965],13);
   L.control.zoom({position:'bottomright'}).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19}).addTo(map);
-  map.whenReady(()=>{
-    renderMarkers();renderSidebar();
-    if(readyCallback)setTimeout(readyCallback,100);
-  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    maxZoom:19
+  }).addTo(map);
+  setTimeout(()=>{
+    map.invalidateSize();
+    mapReady=true;
+    renderMarkers();
+    renderSidebar();
+  },300);
+}
+
+function waitForMap(callback){
+  if(!callback) return;
+  let tries=0;
+  const check=setInterval(()=>{
+    tries++;
+    if(mapReady||tries>20){
+      clearInterval(check);
+      map.invalidateSize();
+      if(callback) callback();
+    }
+  },150);
 }
 
 function goHood(hood){
   hoodFilter=hood;
   launchApp(()=>{
     const coords=HOOD_COORDS[hood];
-    if(coords&&map)map.setView([coords[0],coords[1]],coords[2],{animate:true,duration:1.0});
+    if(coords&&map){
+      map.invalidateSize();
+      map.setView([coords[0],coords[1]],coords[2]);
+    }
     renderMarkers();renderSidebar();renderListGrid();
     document.getElementById('hoodBannerText').textContent=`Showing spots in ${hood}`;
     document.getElementById('hoodBanner').classList.add('show');
-    document.getElementById('appLayout').classList.remove('nb');document.getElementById('appLayout').classList.add('wb');
+    document.getElementById('appLayout').classList.remove('nb');
+    document.getElementById('appLayout').classList.add('wb');
     document.getElementById('listView').style.top='128px';
   });
 }
@@ -986,7 +1009,7 @@ function goHood(hood){
 function goAll(){
   hoodFilter=null;
   launchApp(()=>{
-    if(map)map.setView([40.728,-73.965],13,{animate:true});
+    if(map){map.invalidateSize();map.setView([40.728,-73.965],13);}
     renderMarkers();renderSidebar();renderListGrid();
   });
 }
@@ -994,22 +1017,28 @@ function goAll(){
 function clearHoodFilter(){
   hoodFilter=null;
   document.getElementById('hoodBanner').classList.remove('show');
-  document.getElementById('appLayout').classList.remove('wb');document.getElementById('appLayout').classList.add('nb');
+  document.getElementById('appLayout').classList.remove('wb');
+  document.getElementById('appLayout').classList.add('nb');
   document.getElementById('listView').style.top='94px';
-  if(map)map.setView([40.728,-73.965],13,{animate:true});
+  if(map){map.invalidateSize();map.setView([40.728,-73.965],13);}
   renderMarkers();renderSidebar();renderListGrid();
 }
 
 function heroSearchGo(){
-  const q=document.getElementById('heroSearch').value.trim();if(!q)return;
+  const q=document.getElementById('heroSearch').value.trim();
+  if(!q) return;
   const matchHood=Object.keys(HOOD_COORDS).find(h=>h.toLowerCase().includes(q.toLowerCase()));
   if(matchHood){goHood(matchHood);}else{hoodFilter=q;goAll();}
 }
-document.getElementById('heroSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();heroSearchGo();}});
+document.getElementById('heroSearch').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();heroSearchGo();}
+});
 
 function backToHero(){
   document.getElementById('appShell').style.display='none';
-  const hero=document.getElementById('hero');hero.style.display='flex';hero.classList.remove('exit');
+  const hero=document.getElementById('hero');
+  hero.style.display='flex';
+  hero.style.opacity='1';
 }
 
 /* ── MODAL ── */
