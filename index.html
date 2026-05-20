@@ -112,12 +112,12 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .app-typeahead{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;z-index:999;overflow:hidden;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.7);max-height:260px;overflow-y:auto;}
 .app-typeahead.open{display:block;}
 
-.app-hungry{background:var(--orange-glow);border:1px solid rgba(216,90,48,0.3);border-radius:3px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--orange);padding:0 8px;height:32px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.app-submit{background:var(--orange);border:none;border-radius:3px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;padding:0 12px;height:32px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+.app-hungry{background:var(--orange-glow);border:1px solid rgba(216,90,48,0.3);border-radius:3px;font-size:16px;color:var(--orange);padding:0 9px;height:34px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.app-submit{background:var(--orange);border:none;border-radius:3px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;padding:0 13px;height:34px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
 
-#app-filters{height:40px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:5px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+#app-filters{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
 #app-filters::-webkit-scrollbar{display:none;}
-.chip{flex-shrink:0;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);padding:0 9px;height:25px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;letter-spacing:0.3px;}
+.chip{flex-shrink:0;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:0 11px;height:28px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;letter-spacing:0.3px;}
 .chip.on{background:var(--orange);border-color:var(--orange);color:#fff;}
 .chip-dot{width:5px;height:5px;border-radius:50%;}
 .fsep{width:1px;height:13px;background:var(--border2);flex-shrink:0;margin:0 2px;}
@@ -137,8 +137,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .marker-cluster div{border-radius:2px!important;width:34px!important;height:34px!important;margin:3px!important;line-height:34px!important;}
 
 /* MAP OVERLAYS */
-.map-stats-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(13,13,13,0.92);border:1px solid var(--border2);border-radius:2px;padding:5px 14px;display:flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;backdrop-filter:blur(8px);}
-.map-stats-bar strong{color:var(--orange);}
+.map-stats-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(10,10,10,0.94);border:1px solid var(--border2);border-radius:3px;padding:7px 18px;display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+.map-stats-bar strong{color:var(--orange);font-weight:500;}
 
 .map-legend{position:absolute;bottom:14px;left:14px;z-index:500;background:rgba(13,13,13,0.92);border:1px solid var(--border2);border-radius:2px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;backdrop-filter:blur(8px);}
 .legend-row{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
@@ -173,9 +173,14 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .vbtn{flex:1;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);padding:3px 2px;cursor:pointer;text-align:center;transition:all 0.1s;}
 
 /* MAP PIN */
-.map-pin{background:rgba(13,13,13,0.95);border:1.5px solid;border-radius:3px;padding:3px 8px 3px 6px;display:flex;align-items:center;gap:4px;white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.04);cursor:pointer;backdrop-filter:blur(4px);}
-.pin-price{font-family:'Bebas Neue',sans-serif;font-size:14px;line-height:1;}
-.pin-name{font-family:'DM Mono',monospace;font-size:9px;color:#bbb;}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(0.88) saturate(0.35) contrast(1.1);}
+.leaflet-control-zoom a{background:var(--bg3)!important;color:var(--text2)!important;border-color:var(--border2)!important;font-size:16px!important;line-height:26px!important;}
+.leaflet-control-zoom a:hover{color:var(--orange)!important;}
+.leaflet-control-attribution{background:rgba(13,13,13,0.85)!important;color:var(--text3)!important;font-size:9px!important;padding:2px 6px!important;}
+.leaflet-control-attribution a{color:var(--text3)!important;}
+.map-pin{background:rgba(10,10,10,0.96);border:1.5px solid;border-radius:3px;padding:5px 10px 5px 8px;display:flex;align-items:center;gap:5px;white-space:nowrap;box-shadow:0 3px 14px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.06);cursor:pointer;backdrop-filter:blur(8px);}
+.pin-price{font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;letter-spacing:0.3px;}
+.pin-name{font-family:'DM Mono',monospace;font-size:10px;color:#ccc;letter-spacing:0.2px;}
 
 /* POPUP */
 .leaflet-popup-content-wrapper{background:rgba(18,18,18,0.98)!important;border-radius:4px!important;border:1px solid var(--border2)!important;box-shadow:0 12px 40px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.04)!important;padding:0!important;backdrop-filter:blur(12px);}
@@ -556,14 +561,10 @@ function initMap(){
   map=L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
   L.control.zoom({position:'bottomright'}).addTo(map);
 
-  // CartoDB Dark Matter — free, no API key required, clean dark style
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter_nolabels/{z}/{x}/{y}{r}.png',{
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains:'abcd',maxZoom:19
-  }).addTo(map);
-  // Labels layer on top
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{
-    subdomains:'abcd',maxZoom:19
+  // OpenStreetMap with dark CSS filter — guaranteed to work everywhere
+  const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    maxZoom:19
   }).addTo(map);
 
   // Cluster group
