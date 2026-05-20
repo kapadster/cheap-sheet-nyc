@@ -844,30 +844,37 @@ function openHungryNow(){
   document.getElementById('hungryOverlay').classList.add('open');
   document.getElementById('hungryContent').innerHTML='<div class="hungry-loading">GETTING YOUR LOCATION…</div>';
   if(!navigator.geolocation){showHungryFallback();return;}
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const{latitude:lat,longitude:lng}=pos.coords;
-    const sorted=[...MEALS].map(m=>({...m,miles:dist(lat,lng,m.lat,m.lng)})).sort((a,b)=>a.miles-b.miles).slice(0,5);
-    let html='<div class="hungry-spots">';
-    sorted.forEach((m,i)=>{
-      const c=COLORS[priceColor(m.price)];
-      const wt=walkTime(m.miles);
-      html+=`<div class="nearby-card" onclick="closeHungry();goHood('${m.neighborhood}');cardClick(${m.id})">
-        <div class="nearby-card-stripe" style="background:${c}"></div>
-        <div class="nearby-top">
-          <div><div class="nearby-name">${m.name}</div><div class="nearby-rest">${m.restaurant} · ${m.neighborhood}</div></div>
-          <div class="nearby-price" style="color:${c}">$${m.price.toFixed(2)}</div>
-        </div>
-        <div class="nearby-meta">
-          <span class="nearby-dist">🚶 <em>${wt} min</em> walk · ${m.miles.toFixed(1)} mi</span>
-          <span class="nearby-open">OPEN</span>
-          ${m.receipt?'<span class="ctag ctag-receipt">🧾 VERIFIED</span>':''}
-        </div>
-      </div>`;
-    });
-    html+='</div>';
-    html+=`<div class="hungry-cta"><button onclick="closeHungry();goAll()">SEE ALL SPOTS ON MAP →</button></div>`;
-    document.getElementById('hungryContent').innerHTML=html;
-  },()=>showHungryFallback());
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const{latitude:lat,longitude:lng}=pos.coords;
+      const sorted=[...MEALS].map(m=>({...m,miles:dist(lat,lng,m.lat,m.lng)})).sort((a,b)=>a.miles-b.miles).slice(0,5);
+      let html='<div class="hungry-spots">';
+      sorted.forEach(m=>{
+        const c=COLORS[priceColor(m.price)];
+        const wt=walkTime(m.miles);
+        html+=`<div class="nearby-card" onclick="closeHungry();goHood('${m.neighborhood}')">
+          <div class="nearby-card-stripe" style="background:${c}"></div>
+          <div class="nearby-top">
+            <div><div class="nearby-name">${m.name}</div><div class="nearby-rest">${m.restaurant} · ${m.neighborhood}</div></div>
+            <div class="nearby-price" style="color:${c}">$${m.price.toFixed(2)}</div>
+          </div>
+          <div class="nearby-meta">
+            <span class="nearby-dist">🚶 <em>${wt} min walk</em> · ${m.miles.toFixed(1)} mi</span>
+            <span class="nearby-open">OPEN</span>
+            ${m.receipt?'<span class="ctag ctag-receipt">🧾</span>':''}
+          </div>
+        </div>`;
+      });
+      html+='</div>';
+      html+=`<div class="hungry-cta"><button onclick="closeHungry();goAll()">SEE ALL SPOTS ON MAP →</button></div>`;
+      document.getElementById('hungryContent').innerHTML=html;
+    },
+    err=>{
+      // Any error (denied, timeout, unavailable) → fall back gracefully
+      showHungryFallback();
+    },
+    {enableHighAccuracy:false, timeout:8000, maximumAge:60000}
+  );
 }
 function showHungryFallback(){
   const sorted=[...MEALS].sort((a,b)=>a.price-b.price).slice(0,5);
@@ -937,28 +944,51 @@ function updateCountdown(){
 setInterval(updateCountdown,1000);updateCountdown();
 
 /* ── NAVIGATION ── */
-function launchApp(){
+let pendingAction=null;
+
+function launchApp(callback){
   const hero=document.getElementById('hero');
   hero.classList.add('exit');
-  setTimeout(()=>{hero.style.display='none';document.getElementById('appShell').style.display='block';if(!map)initMap();else setTimeout(()=>map.invalidateSize(),100);},450);
+  setTimeout(()=>{
+    hero.style.display='none';
+    document.getElementById('appShell').style.display='block';
+    if(!map){
+      initMap(callback);
+    } else {
+      setTimeout(()=>{map.invalidateSize();if(callback)callback();},80);
+    }
+  },420);
+}
+
+function initMap(readyCallback){
+  map=L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19}).addTo(map);
+  map.whenReady(()=>{
+    renderMarkers();renderSidebar();
+    if(readyCallback)setTimeout(readyCallback,100);
+  });
 }
 
 function goHood(hood){
-  hoodFilter=hood;launchApp();
-  setTimeout(()=>{
+  hoodFilter=hood;
+  launchApp(()=>{
     const coords=HOOD_COORDS[hood];
-    if(coords&&map)map.setView([coords[0],coords[1]],coords[2],{animate:true,duration:1.2});
+    if(coords&&map)map.setView([coords[0],coords[1]],coords[2],{animate:true,duration:1.0});
     renderMarkers();renderSidebar();renderListGrid();
     document.getElementById('hoodBannerText').textContent=`Showing spots in ${hood}`;
     document.getElementById('hoodBanner').classList.add('show');
     document.getElementById('appLayout').classList.remove('nb');document.getElementById('appLayout').classList.add('wb');
     document.getElementById('listView').style.top='128px';
-  },520);
+  });
 }
 
 function goAll(){
-  hoodFilter=null;launchApp();
-  setTimeout(()=>{if(map)map.setView([40.728,-73.965],13,{animate:true});renderMarkers();renderSidebar();renderListGrid();},520);
+  hoodFilter=null;
+  launchApp(()=>{
+    if(map)map.setView([40.728,-73.965],13,{animate:true});
+    renderMarkers();renderSidebar();renderListGrid();
+  });
 }
 
 function clearHoodFilter(){
@@ -973,9 +1003,9 @@ function clearHoodFilter(){
 function heroSearchGo(){
   const q=document.getElementById('heroSearch').value.trim();if(!q)return;
   const matchHood=Object.keys(HOOD_COORDS).find(h=>h.toLowerCase().includes(q.toLowerCase()));
-  if(matchHood)goHood(matchHood);else{hoodFilter=q;goAll();}
+  if(matchHood){goHood(matchHood);}else{hoodFilter=q;goAll();}
 }
-document.getElementById('heroSearch').addEventListener('keydown',e=>{if(e.key==='Enter')heroSearchGo();});
+document.getElementById('heroSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();heroSearchGo();}});
 
 function backToHero(){
   document.getElementById('appShell').style.display='none';
@@ -1006,14 +1036,6 @@ function subscribeNL(){
 
 /* ── TOAST ── */
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-
-/* ── MAP INIT ── */
-function initMap(){
-  map=L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
-  L.control.zoom({position:'bottomright'}).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19}).addTo(map);
-  renderMarkers();renderSidebar();
-}
 
 // INIT
 renderDensityBars();
