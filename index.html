@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cheap Sheet NYC — The Exact Dish. The Exact Price.</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --orange: #D85A30;
-    --orange-light: #F5C4B3;
     --orange-dark: #993C1D;
     --cream: #F7F4EE;
     --ink: #1A1814;
@@ -23,299 +22,133 @@
     --green-tag: #2A7A4B;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); height: 100%; }
+  html, body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); height: 100%; overflow: hidden; }
 
-  /* HEADER */
   header {
-    position: sticky; top: 0; z-index: 100;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
     background: var(--ink);
     display: flex; align-items: center; gap: 1.5rem;
     padding: 0 2rem; height: 56px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
-  .logo {
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
-    color: #fff; letter-spacing: -0.5px; white-space: nowrap;
-  }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; letter-spacing: -0.5px; white-space: nowrap; }
   .logo span { color: var(--orange); }
-  .search-wrap {
-    flex: 1; max-width: 400px;
-    position: relative;
-  }
+  .search-wrap { flex: 1; max-width: 400px; position: relative; }
   .search-wrap input {
-    width: 100%; background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
-    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 0 12px 0 36px; height: 36px; outline: none;
-    transition: border-color 0.15s;
+    width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 0 12px 0 36px; height: 36px; outline: none; transition: border-color 0.15s;
   }
   .search-wrap input::placeholder { color: rgba(255,255,255,0.35); }
   .search-wrap input:focus { border-color: var(--orange); }
-  .search-icon {
-    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
-    color: rgba(255,255,255,0.35); font-size: 14px; pointer-events: none;
-  }
-  .header-actions {
-    margin-left: auto; display: flex; align-items: center; gap: 10px;
-  }
-  .btn-submit {
-    background: var(--orange); color: #fff; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    padding: 0 16px; height: 34px; border-radius: 7px; cursor: pointer;
-    white-space: nowrap; transition: background 0.15s;
-  }
+  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4); font-size: 15px; pointer-events: none; }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .btn-submit { background: var(--orange); color: #fff; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 0 16px; height: 34px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
   .btn-submit:hover { background: var(--orange-dark); }
-  .view-toggle {
-    display: flex; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-  }
-  .view-toggle button {
-    background: none; border: none; color: rgba(255,255,255,0.5);
-    cursor: pointer; padding: 0 10px; height: 34px; font-size: 13px;
-    transition: color 0.15s, background 0.15s;
-  }
+  .view-toggle { display: flex; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+  .view-toggle button { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 0 12px; height: 34px; font-size: 13px; font-family: 'DM Sans', sans-serif; }
   .view-toggle button.active { background: rgba(255,255,255,0.14); color: #fff; }
 
-  /* FILTER BAR */
   .filter-bar {
+    position: fixed; top: 56px; left: 0; right: 0; z-index: 999;
     background: #fff; border-bottom: 1px solid var(--border);
     padding: 0 2rem; display: flex; align-items: center; gap: 8px;
     overflow-x: auto; height: 48px; scrollbar-width: none;
   }
   .filter-bar::-webkit-scrollbar { display: none; }
-  .chip {
-    flex-shrink: 0; background: none; border: 1px solid var(--border);
-    border-radius: 999px; font-family: 'DM Sans', sans-serif;
-    font-size: 12.5px; color: var(--ink-muted);
-    padding: 0 13px; height: 30px; cursor: pointer;
-    transition: all 0.15s; white-space: nowrap;
-    display: flex; align-items: center; gap: 6px;
-  }
+  .chip { flex-shrink: 0; background: none; border: 1px solid var(--border); border-radius: 999px; font-family: 'DM Sans', sans-serif; font-size: 12.5px; color: var(--ink-muted); padding: 0 13px; height: 30px; cursor: pointer; transition: all 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
   .chip:hover { border-color: var(--orange); color: var(--orange); }
   .chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .separator { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
 
-  /* MAIN LAYOUT */
-  .main { display: flex; height: calc(100vh - 104px); }
+  .layout { position: fixed; top: 104px; left: 0; right: 0; bottom: 0; display: flex; }
 
-  /* MAP */
-  #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
+  #map { flex: 1; height: 100%; z-index: 1; }
 
-  /* SIDEBAR */
-  .sidebar {
-    width: 380px; flex-shrink: 0; background: var(--cream);
-    overflow-y: auto; border-left: 1px solid var(--border);
-    display: flex; flex-direction: column;
-  }
-  .sidebar-header {
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    background: #fff;
-    position: sticky; top: 0; z-index: 10;
-  }
-  .sidebar-header h2 {
-    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
-    color: var(--ink); margin-bottom: 2px;
-  }
-  .sidebar-header p { font-size: 12px; color: var(--ink-faint); }
-  .meal-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .sidebar { width: 360px; flex-shrink: 0; background: var(--cream); overflow-y: auto; border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 2; }
+  .sidebar-header { padding: 14px 18px 10px; border-bottom: 1px solid var(--border); background: #fff; position: sticky; top: 0; z-index: 5; }
+  .sidebar-header h2 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .sidebar-header p { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+  .meal-list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 
-  /* MEAL CARD */
-  .meal-card {
-    background: #fff; border-radius: 12px; border: 1px solid var(--border);
-    padding: 14px 16px; cursor: pointer; transition: all 0.15s;
-    position: relative; overflow: hidden;
-  }
-  .meal-card:hover { border-color: var(--orange); box-shadow: 0 2px 12px rgba(216,90,48,0.12); }
-  .meal-card.active { border-color: var(--orange); border-width: 1.5px; }
-  .meal-card-accent {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  }
-  .price-tag {
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
-    line-height: 1;
-  }
+  .meal-card { background: #fff; border-radius: 10px; border: 1px solid var(--border); padding: 12px 14px 10px; cursor: pointer; transition: border-color 0.15s; position: relative; overflow: hidden; }
+  .meal-card:hover { border-color: var(--orange); }
+  .meal-card.active { border-color: var(--orange); border-left-width: 3px; }
+  .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .price-tag { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; line-height: 1; }
   .price-red { color: var(--red-pin); }
   .price-blue { color: var(--blue-pin); }
   .price-purple { color: var(--purple-pin); }
-  .meal-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .meal-card-name {
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13.5px;
-    color: var(--ink); line-height: 1.3; flex: 1;
-  }
-  .meal-card-restaurant {
-    font-size: 12px; color: var(--ink-muted); margin-top: 3px; margin-bottom: 8px;
-  }
-  .meal-card-why {
-    font-size: 12.5px; color: var(--ink-muted); line-height: 1.5;
-    font-style: italic; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px;
-  }
-  .meal-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-  .meal-tag {
-    font-size: 11px; padding: 2px 8px; border-radius: 999px;
-    background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border);
-  }
-  .meal-tag.veg { background: #EAF3DE; color: var(--green-tag); border-color: #C0DD97; }
-  .meal-tag.cash { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
-  .meal-meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 11.5px; color: var(--ink-faint); }
-  .meal-neighborhood { display: flex; align-items: center; gap: 3px; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); line-height: 1.3; }
+  .card-restaurant { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
+  .card-why { font-size: 12px; color: var(--ink-muted); line-height: 1.5; font-style: italic; border-top: 1px solid var(--border); padding-top: 7px; margin-top: 7px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--cream); color: var(--ink-muted); border: 1px solid var(--border); }
+  .tag.veg { background: #EAF3DE; color: #2A7A4B; border-color: #C0DD97; }
+  .tag.cash { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+  .card-meta { font-size: 11px; color: var(--ink-faint); margin-top: 5px; }
 
-  /* MAP POPUP */
-  .mapboxgl-popup-content {
-    padding: 0 !important; border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
-    overflow: hidden; width: 260px; border: 1px solid var(--border);
-  }
-  .mapboxgl-popup-close-button { display: none; }
-  .mapboxgl-popup-tip { display: none; }
-  .popup-inner { padding: 14px 16px; }
-  .popup-price {
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1;
-  }
-  .popup-dish {
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
-    color: var(--ink); margin: 6px 0 2px;
-  }
-  .popup-restaurant { font-size: 12px; color: var(--ink-muted); margin-bottom: 8px; }
-  .popup-order {
-    background: #FFF3EE; border: 1px solid #F5C4B3; border-radius: 8px;
-    padding: 8px 10px; font-size: 12px; color: var(--orange-dark);
-    margin-bottom: 8px; line-height: 1.4;
-  }
-  .popup-order strong { color: var(--orange); font-weight: 600; }
-  .popup-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-  .popup-footer {
-    background: var(--cream); border-top: 1px solid var(--border);
-    padding: 8px 14px; display: flex; align-items: center; justify-content: space-between;
-    font-size: 11.5px; color: var(--ink-faint);
-  }
-  .popup-directions {
-    font-size: 12px; color: var(--orange); font-weight: 500; cursor: pointer;
-    text-decoration: none;
-  }
+  .stats-bar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 500; background: rgba(255,255,255,0.96); border-radius: 999px; border: 1px solid var(--border); padding: 5px 16px; font-size: 12px; color: var(--ink-muted); box-shadow: 0 2px 10px rgba(0,0,0,0.08); white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+  .stats-bar strong { color: var(--ink); font-weight: 600; }
+
+  .legend { position: absolute; bottom: 28px; left: 12px; z-index: 500; background: rgba(255,255,255,0.96); border-radius: 8px; padding: 8px 12px; border: 1px solid var(--border); font-size: 11.5px; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .legend-item { display: flex; align-items: center; gap: 7px; color: var(--ink-muted); }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .nl-banner { position: absolute; bottom: 28px; right: 12px; z-index: 500; background: var(--ink); border-radius: 10px; padding: 12px 16px; width: 230px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  .nl-banner h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12.5px; color: #fff; margin-bottom: 3px; }
+  .nl-banner p { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 8px; line-height: 1.5; }
+  .nl-row { display: flex; gap: 5px; }
+  .nl-row input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: #fff; padding: 0 8px; height: 30px; outline: none; }
+  .nl-row input::placeholder { color: rgba(255,255,255,0.3); }
+  .nl-row button { background: var(--orange); border: none; border-radius: 5px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 11.5px; padding: 0 10px; height: 30px; cursor: pointer; }
+  .nl-close { position: absolute; top: 7px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; font-size: 15px; line-height: 1; }
+
+  /* POPUP */
+  .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 10px !important; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,0.15) !important; border: 1px solid var(--border); }
+  .leaflet-popup-content { margin: 0 !important; width: 240px !important; }
+  .leaflet-popup-tip-container { display: none; }
+  .popup-body { padding: 12px 14px; }
+  .popup-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; line-height: 1; }
+  .popup-dish { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); margin: 5px 0 2px; }
+  .popup-rest { font-size: 11.5px; color: var(--ink-muted); margin-bottom: 7px; }
+  .popup-order { background: #FFF3EE; border: 1px solid #F5C4B3; border-radius: 6px; padding: 6px 9px; font-size: 11.5px; color: var(--orange-dark); margin-bottom: 6px; line-height: 1.4; }
+  .popup-footer { background: var(--cream); border-top: 1px solid var(--border); padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ink-faint); }
+  .popup-dir { font-size: 11.5px; color: var(--orange); font-weight: 500; text-decoration: none; }
 
   /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 1000;
-    background: rgba(20,18,14,0.7); backdrop-filter: blur(4px);
-    align-items: center; justify-content: center;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(20,18,14,0.7); align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: #fff; border-radius: 16px; width: 480px; max-width: calc(100vw - 32px);
-    max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.25);
-  }
-  .modal-header {
-    background: var(--ink); padding: 20px 24px 16px;
-    border-radius: 16px 16px 0 0;
-  }
-  .modal-header h2 {
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
-    color: #fff; margin-bottom: 4px;
-  }
-  .modal-header p { font-size: 13px; color: rgba(255,255,255,0.5); }
-  .modal-body { padding: 24px; }
-  .form-field { margin-bottom: 18px; }
-  .form-label {
-    display: block; font-size: 12.5px; font-weight: 500; color: var(--ink);
-    margin-bottom: 6px;
-  }
-  .form-label span { color: var(--orange); }
-  .form-input, .form-select, .form-textarea {
-    width: 100%; border: 1px solid var(--border); border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px;
-    padding: 10px 12px; color: var(--ink); background: #fff;
-    outline: none; transition: border-color 0.15s;
-  }
-  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
-  .form-textarea { resize: vertical; min-height: 70px; }
-  .form-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-  .form-tag-option {
-    cursor: pointer; user-select: none;
-    border: 1px solid var(--border); border-radius: 999px;
-    font-size: 12.5px; padding: 5px 12px; color: var(--ink-muted); transition: all 0.12s;
-  }
-  .form-tag-option.selected { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .modal-footer {
-    border-top: 1px solid var(--border); padding: 16px 24px;
-    display: flex; gap: 10px; justify-content: flex-end;
-  }
-  .btn-cancel {
-    background: none; border: 1px solid var(--border); border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--ink-muted);
-    padding: 0 18px; height: 40px; cursor: pointer;
-  }
-  .btn-primary {
-    background: var(--orange); border: none; border-radius: 8px; color: #fff;
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
-    padding: 0 22px; height: 40px; cursor: pointer; transition: background 0.15s;
-  }
-  .btn-primary:hover { background: var(--orange-dark); }
+  .modal { background: #fff; border-radius: 14px; width: 460px; max-width: calc(100vw - 32px); max-height: 88vh; overflow-y: auto; }
+  .modal-head { background: var(--ink); padding: 18px 22px 14px; border-radius: 14px 14px 0 0; }
+  .modal-head h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; }
+  .modal-head p { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+  .modal-body { padding: 20px 22px; }
+  .f-label { display: block; font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+  .f-label span { color: var(--orange); }
+  .f-input, .f-select, .f-textarea { width: 100%; border: 1px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 8px 11px; color: var(--ink); background: #fff; outline: none; transition: border-color 0.15s; margin-bottom: 14px; }
+  .f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--orange); }
+  .f-textarea { resize: vertical; min-height: 65px; }
+  .f-row { display: flex; gap: 12px; }
+  .f-row > div { flex: 1; }
+  .f-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .f-tag { cursor: pointer; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; padding: 4px 11px; color: var(--ink-muted); transition: all 0.12s; }
+  .f-tag.sel { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .modal-foot { border-top: 1px solid var(--border); padding: 14px 22px; display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-cancel { background: none; border: 1px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink-muted); padding: 0 16px; height: 38px; cursor: pointer; }
+  .btn-go { background: var(--orange); border: none; border-radius: 7px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 0 20px; height: 38px; cursor: pointer; }
+  .btn-go:hover { background: var(--orange-dark); }
 
-  /* LEGEND */
-  .legend {
-    position: absolute; bottom: 32px; left: 16px; z-index: 10;
-    background: rgba(255,255,255,0.96); border-radius: 10px;
-    padding: 10px 14px; border: 1px solid var(--border);
-    font-size: 12px; display: flex; flex-direction: column; gap: 6px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-  .legend-item { display: flex; align-items: center; gap: 8px; color: var(--ink-muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  #listView { display: none; position: fixed; top: 104px; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 20px 2rem; background: var(--cream); z-index: 10; }
+  .list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; max-width: 1100px; margin: 0 auto; }
 
-  /* STATS BAR */
-  .stats-bar {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-    z-index: 10; background: rgba(255,255,255,0.96);
-    border-radius: 999px; border: 1px solid var(--border);
-    padding: 6px 16px; font-size: 12px; color: var(--ink-muted);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    display: flex; align-items: center; gap: 12px;
-  }
-  .stats-bar strong { color: var(--ink); font-weight: 600; }
-  .stats-sep { color: var(--border); }
-
-  /* NEWSLETTER */
-  .newsletter-banner {
-    position: absolute; bottom: 32px; right: 16px; z-index: 10;
-    background: var(--ink); border-radius: 12px; padding: 14px 18px;
-    width: 240px; box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-  }
-  .newsletter-banner h3 {
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
-    color: #fff; margin-bottom: 4px;
-  }
-  .newsletter-banner p { font-size: 11.5px; color: rgba(255,255,255,0.5); margin-bottom: 10px; line-height: 1.5; }
-  .newsletter-input-row { display: flex; gap: 6px; }
-  .newsletter-input-row input {
-    flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 12px;
-    color: #fff; padding: 0 10px; height: 32px; outline: none;
-  }
-  .newsletter-input-row input::placeholder { color: rgba(255,255,255,0.3); }
-  .newsletter-input-row button {
-    background: var(--orange); border: none; border-radius: 6px; color: #fff;
-    font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 0 12px;
-    height: 32px; cursor: pointer; font-weight: 500;
-  }
-  .newsletter-close {
-    position: absolute; top: 8px; right: 10px; background: none; border: none;
-    color: rgba(255,255,255,0.3); cursor: pointer; font-size: 16px; line-height: 1;
-  }
-
-  /* EMPTY STATE */
-  .empty-state { padding: 32px 20px; text-align: center; color: var(--ink-faint); }
-  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 15px; color: var(--ink-muted); margin-bottom: 6px; }
-  .empty-state p { font-size: 13px; line-height: 1.5; }
-
-  /* RESPONSIVE */
   @media (max-width: 700px) {
-    header { padding: 0 1rem; gap: 10px; }
-    .search-wrap { max-width: 160px; }
     .sidebar { display: none; }
     .legend { display: none; }
-    .newsletter-banner { display: none; }
+    .nl-banner { display: none; }
+    header { padding: 0 1rem; }
+    .search-wrap { max-width: 140px; }
   }
 </style>
 </head>
@@ -324,7 +157,7 @@
 <header>
   <div class="logo">Cheap<span>Sheet</span> NYC</div>
   <div class="search-wrap">
-    <span class="search-icon">⌕</span>
+    <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Search dish, neighborhood, cuisine…" autocomplete="off">
   </div>
   <div class="header-actions">
@@ -336,33 +169,26 @@
   </div>
 </header>
 
-<div class="filter-bar" id="filterBar">
-  <button class="chip active" data-filter="all" onclick="setFilter(this,'all')">All spots</button>
-  <div class="separator"></div>
-  <button class="chip" data-filter="under6" onclick="setFilter(this,'under6')">
-    <span class="chip-dot" style="background:var(--red-pin)"></span>Under $6
-  </button>
-  <button class="chip" data-filter="under10" onclick="setFilter(this,'under10')">
-    <span class="chip-dot" style="background:var(--blue-pin)"></span>Under $10
-  </button>
-  <button class="chip" data-filter="under15" onclick="setFilter(this,'under15')">
-    <span class="chip-dot" style="background:var(--purple-pin)"></span>Under $15
-  </button>
-  <div class="separator"></div>
-  <button class="chip" data-filter="vegetarian" onclick="setFilter(this,'vegetarian')">🌿 Vegetarian</button>
-  <button class="chip" data-filter="cash" onclick="setFilter(this,'cash')">💵 Cash only</button>
-  <button class="chip" data-filter="lunch" onclick="setFilter(this,'lunch')">🕛 Lunch special</button>
-  <button class="chip" data-filter="hidden" onclick="setFilter(this,'hidden')">💎 Hidden gem</button>
+<div class="filter-bar">
+  <button class="chip active" onclick="setFilter(this,'all')">All spots</button>
+  <div class="sep"></div>
+  <button class="chip" onclick="setFilter(this,'under6')"><span class="chip-dot" style="background:var(--red-pin)"></span>Under $6</button>
+  <button class="chip" onclick="setFilter(this,'under10')"><span class="chip-dot" style="background:var(--blue-pin)"></span>Under $10</button>
+  <button class="chip" onclick="setFilter(this,'under15')"><span class="chip-dot" style="background:var(--purple-pin)"></span>Under $15</button>
+  <div class="sep"></div>
+  <button class="chip" onclick="setFilter(this,'vegetarian')">🌿 Vegetarian</button>
+  <button class="chip" onclick="setFilter(this,'cash')">💵 Cash only</button>
+  <button class="chip" onclick="setFilter(this,'lunch')">🕛 Lunch special</button>
+  <button class="chip" onclick="setFilter(this,'hidden')">💎 Hidden gem</button>
 </div>
 
-<div class="main" id="mainContent">
-  <div id="mapContainer" style="position:relative; flex:1; min-height:0;">
-    <div id="map" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
-    <div class="stats-bar" id="statsBar">
+<div class="layout" id="mapLayout">
+  <div id="map" style="position:relative;">
+    <div class="stats-bar">
       <span><strong id="statCount">10</strong> spots</span>
-      <span class="stats-sep">·</span>
-      <span>avg <strong id="statAvg">$6.35</strong></span>
-      <span class="stats-sep">·</span>
+      <span style="color:var(--border)">·</span>
+      <span>avg <strong id="statAvg">$5.65</strong></span>
+      <span style="color:var(--border)">·</span>
       <span>cheapest <strong id="statCheap">$2.50</strong></span>
     </div>
     <div class="legend">
@@ -370,54 +196,48 @@
       <div class="legend-item"><div class="legend-dot" style="background:var(--blue-pin)"></div>$6–$10</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--purple-pin)"></div>$10–$15</div>
     </div>
-    <div class="newsletter-banner" id="newsletterBanner">
-      <button class="newsletter-close" onclick="document.getElementById('newsletterBanner').style.display='none'">×</button>
-      <h3>Get 5 cheap meals every Monday</h3>
-      <p>Real New Yorkers. Real prices. The exact dish, the exact price.</p>
-      <div class="newsletter-input-row">
+    <div class="nl-banner" id="nlBanner">
+      <button class="nl-close" onclick="document.getElementById('nlBanner').style.display='none'">×</button>
+      <h3>5 cheap meals every Monday</h3>
+      <p>Real New Yorkers. Real prices. Exact dish, exact price.</p>
+      <div class="nl-row">
         <input type="email" placeholder="your@email.com" id="nlEmail">
         <button onclick="subscribeNL()">Join</button>
       </div>
     </div>
   </div>
-  <div class="sidebar" id="sidebar">
+  <div class="sidebar">
     <div class="sidebar-header">
       <h2>All Spots</h2>
-      <p id="sidebarSubtitle">10 meals · sorted by price</p>
+      <p id="sidebarSub">10 meals · sorted by price</p>
     </div>
     <div class="meal-list" id="mealList"></div>
   </div>
 </div>
 
-<!-- List View (hidden by default) -->
-<div id="listView" style="display:none; padding: 24px 2rem; max-width: 1100px; margin: 0 auto;">
-  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:14px;" id="listGrid"></div>
+<div id="listView">
+  <div class="list-grid" id="listGrid"></div>
 </div>
 
-<!-- Submission Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-head">
       <h2>Submit a spot</h2>
       <p>Exact dish. Exact price. No vague recs.</p>
     </div>
     <div class="modal-body">
-      <div class="form-field">
-        <label class="form-label">Restaurant name <span>*</span></label>
-        <input class="form-input" type="text" placeholder="e.g. Joe's Pizza" id="f_restaurant">
-      </div>
-      <div class="form-field">
-        <label class="form-label">Exact dish or combo to order <span>*</span></label>
-        <input class="form-input" type="text" placeholder="e.g. Plain slice (not 'the pizza is cheap')" id="f_dish">
-      </div>
-      <div style="display:flex; gap:12px;">
-        <div class="form-field" style="flex:1;">
-          <label class="form-label">Exact price <span>*</span></label>
-          <input class="form-input" type="text" placeholder="$4.50" id="f_price">
+      <label class="f-label">Restaurant name <span>*</span></label>
+      <input class="f-input" type="text" placeholder="e.g. Joe's Pizza" id="f_r">
+      <label class="f-label">Exact dish or combo <span>*</span></label>
+      <input class="f-input" type="text" placeholder="e.g. Plain slice (not 'the pizza is cheap')" id="f_d">
+      <div class="f-row">
+        <div>
+          <label class="f-label">Price <span>*</span></label>
+          <input class="f-input" type="text" placeholder="$4.50" id="f_p">
         </div>
-        <div class="form-field" style="flex:1;">
-          <label class="form-label">Neighborhood <span>*</span></label>
-          <select class="form-select" id="f_neighborhood">
+        <div>
+          <label class="f-label">Neighborhood <span>*</span></label>
+          <select class="f-select" id="f_n">
             <option value="">Select…</option>
             <option>Lower East Side</option><option>East Village</option><option>Greenwich Village</option>
             <option>Midtown</option><option>Upper West Side</option><option>Upper East Side</option>
@@ -428,83 +248,46 @@
           </select>
         </div>
       </div>
-      <div class="form-field">
-        <label class="form-label">Why it's worth it <span>*</span></label>
-        <textarea class="form-textarea" placeholder="One honest sentence. What makes this meal worth ordering?" id="f_why"></textarea>
+      <label class="f-label">Why it's worth it <span>*</span></label>
+      <textarea class="f-textarea" placeholder="One honest sentence." id="f_w"></textarea>
+      <label class="f-label">Tags</label>
+      <div class="f-tags">
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Cash only</span>
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Vegetarian</span>
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Hidden gem</span>
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Lunch special</span>
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Late night</span>
+        <span class="f-tag" onclick="this.classList.toggle('sel')">Big portion</span>
       </div>
-      <div class="form-field">
-        <label class="form-label">Tags</label>
-        <div class="form-tags" id="formTags">
-          <span class="form-tag-option" onclick="toggleTag(this)">Cash only</span>
-          <span class="form-tag-option" onclick="toggleTag(this)">Vegetarian</span>
-          <span class="form-tag-option" onclick="toggleTag(this)">Hidden gem</span>
-          <span class="form-tag-option" onclick="toggleTag(this)">Lunch special</span>
-          <span class="form-tag-option" onclick="toggleTag(this)">Late night</span>
-          <span class="form-tag-option" onclick="toggleTag(this)">Big portion</span>
-        </div>
-      </div>
-      <div class="form-field">
-        <label class="form-label">Your username (for contributor credit)</label>
-        <input class="form-input" type="text" placeholder="@handle" id="f_username">
-      </div>
+      <label class="f-label">Your username</label>
+      <input class="f-input" type="text" placeholder="@handle" id="f_u">
     </div>
-    <div class="modal-footer">
+    <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" onclick="submitSpot()">Submit spot →</button>
+      <button class="btn-go" onclick="submitSpot()">Submit spot →</button>
     </div>
   </div>
 </div>
 
 <script>
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2FwYWRzdGVyIiwiYSI6ImNtcGRjeGYxaTA3OWUycm9tMHl2cGt2dnIifQ.6Z6nrOtHPJmai8jt-D3VbA';
-
 const MEALS = [
-  { id:1, name:"Pork & chive dumplings (12pc)", restaurant:"Shu Jiao Fu Zhou", price:6.00, neighborhood:"East Village", lat:40.7264, lng:-73.9860, why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth every second of the line.", tags:["Cash only","Hidden gem"], color:"blue" },
-  { id:2, name:"Falafel pita with hot sauce", restaurant:"Mamoun's Falafel", price:4.50, neighborhood:"Greenwich Village", lat:40.7306, lng:-74.0007, why:"Legit NYC institution. Crispy falafel, fresh pita, the hot sauce is addictive.", tags:["Vegetarian"], color:"red" },
-  { id:3, name:"Plain slice", restaurant:"Joe's Pizza", price:4.00, neighborhood:"Greenwich Village", lat:40.7304, lng:-74.0027, why:"The platonic ideal of a NYC slice. No notes. Perfect.", tags:[], color:"red" },
-  { id:4, name:"Spicy cumin lamb noodles", restaurant:"Xi'an Famous Foods", price:11.00, neighborhood:"East Village", lat:40.7268, lng:-73.9855, why:"Hand-ripped noodles, numbing spice, massive portion. Tastes like a $25 dish.", tags:[], color:"purple" },
-  { id:5, name:"2 hot dogs + tropical drink", restaurant:"Gray's Papaya", price:6.45, neighborhood:"Upper West Side", lat:40.7793, lng:-73.9815, why:"NYC survival kit since 1973. Never closed. Never bad.", tags:[], color:"blue" },
-  { id:6, name:"10 pork & chive dumplings", restaurant:"North Dumpling", price:4.50, neighborhood:"Lower East Side", lat:40.7140, lng:-73.9960, why:"Tiny, no frills, insane value. The dumplings are made fresh every morning.", tags:["Cash only","Hidden gem"], color:"red" },
-  { id:7, name:"Adobada taco", restaurant:"Taqueria Milear", price:4.00, neighborhood:"Midtown West", lat:40.7549, lng:-73.9978, why:"The marinade on this pork is genuinely special. Order three.", tags:[], color:"red" },
-  { id:8, name:"Doubles", restaurant:"A&A Bake and Doubles", price:2.50, neighborhood:"Bed-Stuy", lat:40.6865, lng:-73.9440, why:"Cheapest legit meal in Brooklyn. Bara fried fresh, tamarind + pepper sauce.", tags:["Vegetarian","Hidden gem"], color:"red" },
-  { id:9, name:"Rice + 3 vegetarian mains", restaurant:"Punjabi Grocery & Deli", price:8.50, neighborhood:"Midtown", lat:40.7533, lng:-73.9906, why:"Open 24/7, serves cabbies and everyone else. Massive portions, rotating menu.", tags:["Vegetarian","Late night"], color:"blue" },
-  { id:10, name:"Jianbing (Chinese street crepe)", restaurant:"Eight Jane Food", price:5.00, neighborhood:"Flushing", lat:40.7596, lng:-73.8300, why:"Crispy, eggy, scallion-packed. This is what they eat in Beijing for breakfast.", tags:["Hidden gem"], color:"red" },
+  { id:1,  name:"Pork & chive dumplings (12pc)", restaurant:"Shu Jiao Fu Zhou",    price:6.00,  neighborhood:"East Village",    lat:40.7264, lng:-73.9860, why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth every second of the line.", tags:["Cash only","Hidden gem"] },
+  { id:2,  name:"Falafel pita with hot sauce",   restaurant:"Mamoun's Falafel",     price:4.50,  neighborhood:"Greenwich Village",lat:40.7306, lng:-74.0007, why:"Legit NYC institution. Crispy falafel, fresh pita, the hot sauce is addictive.", tags:["Vegetarian"] },
+  { id:3,  name:"Plain slice",                   restaurant:"Joe's Pizza",           price:4.00,  neighborhood:"Greenwich Village",lat:40.7304, lng:-74.0027, why:"The platonic ideal of a NYC slice. No notes. Perfect.", tags:[] },
+  { id:4,  name:"Spicy cumin lamb noodles",      restaurant:"Xi'an Famous Foods",   price:11.00, neighborhood:"East Village",    lat:40.7268, lng:-73.9855, why:"Hand-ripped noodles, numbing spice, massive portion. Tastes like a $25 dish.", tags:[] },
+  { id:5,  name:"2 hot dogs + tropical drink",   restaurant:"Gray's Papaya",        price:6.45,  neighborhood:"Upper West Side", lat:40.7793, lng:-73.9815, why:"NYC survival kit since 1973. Never closed. Never bad.", tags:[] },
+  { id:6,  name:"10 pork & chive dumplings",     restaurant:"North Dumpling",       price:4.50,  neighborhood:"Lower East Side", lat:40.7140, lng:-73.9960, why:"Tiny, no frills, insane value. Made fresh every morning.", tags:["Cash only","Hidden gem"] },
+  { id:7,  name:"Adobada taco",                  restaurant:"Taqueria Milear",      price:4.00,  neighborhood:"Midtown West",    lat:40.7549, lng:-73.9978, why:"The marinade on this pork is genuinely special. Order three.", tags:[] },
+  { id:8,  name:"Doubles",                       restaurant:"A&A Bake and Doubles", price:2.50,  neighborhood:"Bed-Stuy",        lat:40.6865, lng:-73.9440, why:"Cheapest legit meal in Brooklyn. Bara fried fresh, tamarind + pepper sauce.", tags:["Vegetarian","Hidden gem"] },
+  { id:9,  name:"Rice + 3 vegetarian mains",     restaurant:"Punjabi Grocery & Deli",price:8.50, neighborhood:"Midtown",         lat:40.7533, lng:-73.9906, why:"Open 24/7, serves cabbies and everyone else. Massive portions, rotating menu.", tags:["Vegetarian","Late night"] },
+  { id:10, name:"Jianbing (Chinese street crepe)",restaurant:"Eight Jane Food",     price:5.00,  neighborhood:"Flushing",        lat:40.7596, lng:-73.8300, why:"Crispy, eggy, scallion-packed. This is what they eat in Beijing for breakfast.", tags:["Hidden gem"] },
 ];
 
 const PIN_COLORS = { red:"#E02020", blue:"#1D6FD4", purple:"#6B44C9" };
 let currentFilter = 'all';
-let currentPopup = null;
-let activeCardId = null;
+let activeId = null;
+let leafletMarkers = [];
 let map;
-
-function initMap() {
-  map = new mapboxgl.Map({
-    container: 'map',
-    style: {
-      version: 8,
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors'
-        }
-      },
-      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
-    },
-    center: [-73.98, 40.745],
-    zoom: 11.5,
-  });
-  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-  map.on('load', () => {
-    map.resize();
-    renderMarkers();
-    renderList();
-    renderListGrid();
-  });
-  map.on('error', (e) => console.error('Mapbox error:', e));
-}
-window.addEventListener('resize', () => { if (map) map.resize(); });
 
 function getPriceColor(price) {
   if (price < 6) return 'red';
@@ -512,211 +295,173 @@ function getPriceColor(price) {
   return 'purple';
 }
 
-function getFilteredMeals() {
+function getFiltered() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   return MEALS.filter(m => {
-    const matchFilter = currentFilter === 'all'
-      || (currentFilter === 'under6' && m.price < 6)
-      || (currentFilter === 'under10' && m.price <= 10)
-      || (currentFilter === 'under15' && m.price <= 15)
-      || (currentFilter === 'vegetarian' && m.tags.includes('Vegetarian'))
-      || (currentFilter === 'cash' && m.tags.includes('Cash only'))
-      || (currentFilter === 'lunch' && m.tags.includes('Lunch special'))
-      || (currentFilter === 'hidden' && m.tags.includes('Hidden gem'));
-    const matchSearch = !q || m.name.toLowerCase().includes(q) || m.restaurant.toLowerCase().includes(q) || m.neighborhood.toLowerCase().includes(q);
-    return matchFilter && matchSearch;
+    const f = currentFilter;
+    const matchF = f==='all'
+      || (f==='under6' && m.price<6)
+      || (f==='under10' && m.price<=10)
+      || (f==='under15' && m.price<=15)
+      || (f==='vegetarian' && m.tags.includes('Vegetarian'))
+      || (f==='cash' && m.tags.includes('Cash only'))
+      || (f==='lunch' && m.tags.includes('Lunch special'))
+      || (f==='hidden' && m.tags.includes('Hidden gem'));
+    const matchQ = !q || m.name.toLowerCase().includes(q) || m.restaurant.toLowerCase().includes(q) || m.neighborhood.toLowerCase().includes(q);
+    return matchF && matchQ;
   });
 }
 
-let markers = [];
+function createPinIcon(meal) {
+  const color = PIN_COLORS[getPriceColor(meal.price)];
+  const short = meal.name.length > 16 ? meal.name.slice(0,14)+'…' : meal.name;
+  const html = `<div style="
+    background:${color}; color:#fff; border-radius:999px;
+    padding:4px 9px; font-family:'DM Sans',sans-serif; font-size:11.5px; font-weight:600;
+    white-space:nowrap; border:2px solid #fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.25); display:flex; align-items:center; gap:4px;
+    cursor:pointer; user-select:none;
+  "><span style="font-weight:800">$${meal.price.toFixed(2)}</span><span style="opacity:.85;font-size:10.5px">${short}</span></div>`;
+  return L.divIcon({ html, className:'', iconAnchor:[0,16] });
+}
+
+function popupHTML(meal) {
+  const color = PIN_COLORS[getPriceColor(meal.price)];
+  const tagsHtml = meal.tags.map(t=>`<span style="font-size:10.5px;padding:2px 7px;border-radius:999px;background:${t==='Vegetarian'?'#EAF3DE':t==='Cash only'?'#FAEEDA':'#F1EFE8'};color:${t==='Vegetarian'?'#2A7A4B':t==='Cash only'?'#854F0B':'#5A5750'};border:1px solid ${t==='Vegetarian'?'#C0DD97':t==='Cash only'?'#FAC775':'#D3D1C7'}">${t}</span>`).join(' ');
+  return `<div class="popup-body">
+    <div class="popup-price" style="color:${color}">$${meal.price.toFixed(2)}</div>
+    <div class="popup-dish">${meal.name}</div>
+    <div class="popup-rest">${meal.restaurant} · ${meal.neighborhood}</div>
+    <div class="popup-order"><strong style="color:var(--orange)">Order this:</strong> ${meal.name}</div>
+    ${tagsHtml ? `<div style="margin-top:5px">${tagsHtml}</div>` : ''}
+  </div>
+  <div class="popup-footer">
+    <span>Last verified today</span>
+    <a class="popup-dir" href="https://maps.google.com/?q=${encodeURIComponent(meal.restaurant+' '+meal.neighborhood+' NYC')}" target="_blank">Directions →</a>
+  </div>`;
+}
+
 function renderMarkers() {
-  markers.forEach(m => m.remove());
-  markers = [];
-  const filtered = getFilteredMeals();
+  leafletMarkers.forEach(m => map.removeLayer(m));
+  leafletMarkers = [];
+  const filtered = getFiltered();
   filtered.forEach(meal => {
-    const color = PIN_COLORS[getPriceColor(meal.price)];
-    const el = document.createElement('div');
-    el.style.cssText = `
-      background: ${color}; color: white; border-radius: 999px; padding: 4px 8px 4px 7px;
-      font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 600;
-      white-space: nowrap; cursor: pointer; border: 2px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.22); display:flex; align-items:center; gap:4px;
-      max-width:140px; overflow:hidden; text-overflow:ellipsis;
-      transition: transform 0.1s;
-    `;
-    const shortName = meal.name.length > 18 ? meal.name.slice(0,16)+'…' : meal.name;
-    el.innerHTML = `<span style="font-weight:800">$${meal.price.toFixed(2)}</span><span style="opacity:.85;font-size:10.5px">${shortName}</span>`;
-    el.addEventListener('mouseenter', () => el.style.transform = 'scale(1.06)');
-    el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
-    el.addEventListener('click', () => showPopup(meal));
-    const marker = new mapboxgl.Marker({ element: el, anchor: 'left' }).setLngLat([meal.lng, meal.lat]).addTo(map);
-    markers.push(marker);
+    const marker = L.marker([meal.lat, meal.lng], { icon: createPinIcon(meal) })
+      .addTo(map)
+      .bindPopup(popupHTML(meal), { maxWidth:250, minWidth:240, autoPan:true });
+    marker.on('click', () => { activeId = meal.id; renderSidebar(); });
+    leafletMarkers.push(marker);
   });
   updateStats(filtered);
 }
 
-function showPopup(meal) {
-  if (currentPopup) currentPopup.remove();
-  activeCardId = meal.id;
-  renderList();
-  const color = PIN_COLORS[getPriceColor(meal.price)];
-  const tagsHtml = meal.tags.map(t => `<span style="font-size:11px;padding:2px 8px;border-radius:999px;background:${t==='Vegetarian'?'#EAF3DE':t==='Cash only'?'#FAEEDA':'#F1EFE8'};color:${t==='Vegetarian'?'#2A7A4B':t==='Cash only'?'#854F0B':'#5A5750'};border:1px solid ${t==='Vegetarian'?'#C0DD97':t==='Cash only'?'#FAC775':'#D3D1C7'}">${t}</span>`).join('');
-  const html = `
-    <div class="popup-inner">
-      <div class="popup-price" style="color:${color}">$${meal.price.toFixed(2)}</div>
-      <div class="popup-dish">${meal.name}</div>
-      <div class="popup-restaurant">${meal.restaurant} · ${meal.neighborhood}</div>
-      <div class="popup-order"><strong>Order this:</strong> ${meal.name}</div>
-      ${tagsHtml ? `<div class="popup-tags">${tagsHtml}</div>` : ''}
-    </div>
-    <div class="popup-footer">
-      <span>Last verified today</span>
-      <a class="popup-directions" href="https://maps.google.com/?q=${encodeURIComponent(meal.restaurant+' '+meal.neighborhood+' NYC')}" target="_blank">Get directions →</a>
-    </div>
-  `;
-  currentPopup = new mapboxgl.Popup({ closeOnClick: true, offset: 12 })
-    .setLngLat([meal.lng, meal.lat]).setHTML(html).addTo(map);
-  map.easeTo({ center: [meal.lng, meal.lat], offset: [0, -30], duration: 400 });
-}
-
-function renderList() {
-  const filtered = getFilteredMeals().sort((a,b) => a.price - b.price);
-  const container = document.getElementById('mealList');
-  document.getElementById('sidebarSubtitle').textContent = `${filtered.length} meal${filtered.length!==1?'s':''} · sorted by price`;
-  if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><h3>No spots found</h3><p>Try a different filter or search term, or submit a spot!</p></div>`;
-    return;
-  }
-  container.innerHTML = filtered.map(m => {
+function renderSidebar() {
+  const filtered = getFiltered().sort((a,b) => a.price - b.price);
+  document.getElementById('sidebarSub').textContent = `${filtered.length} meal${filtered.length!==1?'s':''} · sorted by price`;
+  document.getElementById('mealList').innerHTML = filtered.map(m => {
     const color = PIN_COLORS[getPriceColor(m.price)];
-    const priceClass = `price-${getPriceColor(m.price)}`;
-    const tagsHtml = m.tags.map(t => `<span class="meal-tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
-    return `
-      <div class="meal-card ${activeCardId===m.id?'active':''}" onclick="cardClick(${m.id})">
-        <div class="meal-card-accent" style="background:${color}"></div>
-        <div class="meal-card-top">
-          <div>
-            <div class="meal-card-name">${m.name}</div>
-            <div class="meal-card-restaurant">${m.restaurant}</div>
-          </div>
-          <div class="${priceClass} price-tag">$${m.price.toFixed(2)}</div>
-        </div>
-        ${tagsHtml ? `<div class="meal-tags">${tagsHtml}</div>` : ''}
-        <div class="meal-card-why">"${m.why}"</div>
-        <div class="meal-meta">
-          <span class="meal-neighborhood">📍 ${m.neighborhood}</span>
-        </div>
+    const pc = 'price-'+getPriceColor(m.price);
+    const tagsHtml = m.tags.map(t=>`<span class="tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
+    return `<div class="meal-card ${activeId===m.id?'active':''}" onclick="cardClick(${m.id})">
+      <div class="card-accent" style="background:${color}"></div>
+      <div class="card-top">
+        <div><div class="card-name">${m.name}</div><div class="card-restaurant">${m.restaurant}</div></div>
+        <div class="${pc} price-tag">$${m.price.toFixed(2)}</div>
       </div>
-    `;
+      ${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}
+      <div class="card-why">"${m.why}"</div>
+      <div class="card-meta">📍 ${m.neighborhood}</div>
+    </div>`;
   }).join('');
 }
 
 function renderListGrid() {
-  const filtered = getFilteredMeals().sort((a,b) => a.price - b.price);
-  const grid = document.getElementById('listGrid');
-  grid.innerHTML = filtered.map(m => {
+  const filtered = getFiltered().sort((a,b) => a.price - b.price);
+  document.getElementById('listGrid').innerHTML = filtered.map(m => {
     const color = PIN_COLORS[getPriceColor(m.price)];
-    const priceClass = `price-${getPriceColor(m.price)}`;
-    const tagsHtml = m.tags.map(t => `<span class="meal-tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
-    return `
-      <div class="meal-card" onclick="cardClick(${m.id})">
-        <div class="meal-card-accent" style="background:${color}"></div>
-        <div class="meal-card-top">
-          <div>
-            <div class="meal-card-name">${m.name}</div>
-            <div class="meal-card-restaurant">${m.restaurant}</div>
-          </div>
-          <div class="${priceClass} price-tag">$${m.price.toFixed(2)}</div>
-        </div>
-        ${tagsHtml ? `<div class="meal-tags">${tagsHtml}</div>` : ''}
-        <div class="meal-card-why">"${m.why}"</div>
-        <div class="meal-meta"><span class="meal-neighborhood">📍 ${m.neighborhood}</span></div>
+    const pc = 'price-'+getPriceColor(m.price);
+    const tagsHtml = m.tags.map(t=>`<span class="tag ${t==='Vegetarian'?'veg':t==='Cash only'?'cash':''}">${t}</span>`).join('');
+    return `<div class="meal-card" style="background:#fff">
+      <div class="card-accent" style="background:${color}"></div>
+      <div class="card-top">
+        <div><div class="card-name">${m.name}</div><div class="card-restaurant">${m.restaurant}</div></div>
+        <div class="${pc} price-tag">$${m.price.toFixed(2)}</div>
       </div>
-    `;
+      ${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}
+      <div class="card-why">"${m.why}"</div>
+      <div class="card-meta">📍 ${m.neighborhood}</div>
+    </div>`;
   }).join('');
 }
 
 function cardClick(id) {
-  const meal = MEALS.find(m => m.id === id);
-  if (!meal) return;
-  if (document.getElementById('mapContainer').style.display !== 'none') {
-    showPopup(meal);
-  } else {
-    activeCardId = id;
-    renderList();
-    renderListGrid();
+  activeId = id;
+  const meal = MEALS.find(m=>m.id===id);
+  if (meal && map) {
+    map.setView([meal.lat, meal.lng], 14);
+    const marker = leafletMarkers.find((mk,i) => getFiltered()[i]?.id === id);
+    if (marker) marker.openPopup();
   }
+  renderSidebar();
 }
 
 function updateStats(filtered) {
   document.getElementById('statCount').textContent = filtered.length;
   if (filtered.length) {
-    const avg = filtered.reduce((s,m) => s+m.price, 0) / filtered.length;
-    const cheap = Math.min(...filtered.map(m => m.price));
-    document.getElementById('statAvg').textContent = '$' + avg.toFixed(2);
-    document.getElementById('statCheap').textContent = '$' + cheap.toFixed(2);
+    const avg = filtered.reduce((s,m)=>s+m.price,0)/filtered.length;
+    document.getElementById('statAvg').textContent = '$'+avg.toFixed(2);
+    document.getElementById('statCheap').textContent = '$'+Math.min(...filtered.map(m=>m.price)).toFixed(2);
   }
 }
 
-function setFilter(el, filter) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+function setFilter(el, f) {
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  currentFilter = filter;
+  currentFilter = f;
   renderMarkers();
-  renderList();
+  renderSidebar();
   renderListGrid();
 }
 
 document.getElementById('searchInput').addEventListener('input', () => {
-  renderMarkers();
-  renderList();
-  renderListGrid();
+  renderMarkers(); renderSidebar(); renderListGrid();
 });
 
-function setView(view) {
-  const mapEl = document.getElementById('mapContainer');
-  const listEl = document.getElementById('listView');
-  const sidebarEl = document.getElementById('sidebar');
-  document.getElementById('btnMap').classList.toggle('active', view==='map');
-  document.getElementById('btnList').classList.toggle('active', view==='list');
-  if (view === 'map') {
-    mapEl.style.display = 'block';
-    sidebarEl.style.display = 'flex';
-    listEl.style.display = 'none';
-    document.getElementById('mainContent').style.display = 'flex';
-    setTimeout(() => map.resize(), 10);
-  } else {
-    mapEl.style.display = 'none';
-    sidebarEl.style.display = 'none';
-    listEl.style.display = 'block';
-    document.getElementById('mainContent').style.display = 'none';
-    renderListGrid();
-  }
+function setView(v) {
+  document.getElementById('btnMap').classList.toggle('active', v==='map');
+  document.getElementById('btnList').classList.toggle('active', v==='list');
+  document.getElementById('mapLayout').style.display = v==='map' ? 'flex' : 'none';
+  document.getElementById('listView').style.display = v==='list' ? 'block' : 'none';
+  if (v==='map' && map) setTimeout(()=>map.invalidateSize(),50);
+  if (v==='list') renderListGrid();
 }
 
 function openModal() { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-document.getElementById('modal').addEventListener('click', e => { if (e.target===document.getElementById('modal')) closeModal(); });
-
-function toggleTag(el) { el.classList.toggle('selected'); }
+document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
 
 function submitSpot() {
-  const r = document.getElementById('f_restaurant').value;
-  const d = document.getElementById('f_dish').value;
-  const p = document.getElementById('f_price').value;
-  const n = document.getElementById('f_neighborhood').value;
-  if (!r || !d || !p || !n) { alert('Please fill in the required fields.'); return; }
+  if (!document.getElementById('f_r').value || !document.getElementById('f_d').value) { alert('Fill in the required fields.'); return; }
   closeModal();
-  setTimeout(() => alert('Thanks! Your spot has been submitted for review. If verified, it\'ll be on the map within 48 hours. 🙏'), 200);
+  setTimeout(()=>alert('Thanks! Your spot is under review. If verified, it\'ll be on the map within 48 hours. 🙏'),150);
 }
 
 function subscribeNL() {
-  const email = document.getElementById('nlEmail').value;
-  if (!email || !email.includes('@')) { alert('Enter a valid email.'); return; }
-  document.getElementById('newsletterBanner').innerHTML = `<div style="padding:4px 0; text-align:center; color:#fff;"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;margin-bottom:4px">You're in ✓</div><div style="font-size:12px;color:rgba(255,255,255,.5)">First cheap meal drops Monday.</div></div>`;
+  const e = document.getElementById('nlEmail').value;
+  if (!e||!e.includes('@')) { alert('Enter a valid email.'); return; }
+  document.getElementById('nlBanner').innerHTML = `<div style="padding:8px;text-align:center;color:#fff"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;margin-bottom:4px">You're in ✓</div><div style="font-size:11.5px;color:rgba(255,255,255,.45)">First cheap meal drops Monday.</div></div>`;
 }
 
-initMap();
+// Init Leaflet map
+map = L.map('map', { zoomControl: false }).setView([40.73, -73.98], 12);
+L.control.zoom({ position: 'topright' }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+  maxZoom: 19
+}).addTo(map);
+
+renderMarkers();
+renderSidebar();
 </script>
 </body>
 </html>
