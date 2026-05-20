@@ -314,7 +314,7 @@ function getFiltered() {
 
 function createPinIcon(meal) {
   const color = PIN_COLORS[getPriceColor(meal.price)];
-  const short = meal.name.length > 16 ? meal.name.slice(0,14)+'…' : meal.name;
+  const short = meal.name.length > 20 ? meal.name.slice(0,18)+'…' : meal.name;
   const html = `<div style="
     background:${color}; color:#fff; border-radius:999px;
     padding:4px 9px; font-family:'DM Sans',sans-serif; font-size:11.5px; font-weight:600;
@@ -453,7 +453,7 @@ function subscribeNL() {
 }
 
 // Init Leaflet map
-map = L.map('map', { zoomControl: false }).setView([40.73, -73.98], 12);
+map = L.map('map', { zoomControl: false }).setView([40.728, -73.979], 13);
 L.control.zoom({ position: 'topright' }).addTo(map);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
