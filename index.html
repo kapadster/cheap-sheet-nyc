@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cheap Sheet NYC — The Exact Dish. The Exact Price.</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 <style>
   :root {
     --orange: #D85A30;
@@ -100,7 +100,7 @@
   .main { display: flex; height: calc(100vh - 104px); }
 
   /* MAP */
-  #map { flex: 1; }
+  #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
 
   /* SIDEBAR */
   .sidebar {
@@ -356,8 +356,8 @@
 </div>
 
 <div class="main" id="mainContent">
-  <div id="mapContainer" style="position:relative; flex:1;">
-    <div id="map"></div>
+  <div id="mapContainer" style="position:relative; flex:1; min-height:0;">
+    <div id="map" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
     <div class="stats-bar" id="statsBar">
       <span><strong id="statCount">10</strong> spots</span>
       <span class="stats-sep">·</span>
@@ -456,7 +456,7 @@
 </div>
 
 <script>
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2FwYWRzdGVyIiwiYSI6ImNtcGRkdXY1aTBheDgycG9vNnNhbmE0MG0ifQ.NX0gPdsVb2QBKPCeJROvwg';
+mapboxgl.accessToken = 'pk.eyJ1Ijoia2FwYWRzdGVyIiwiYSI6ImNtcGRjeGYxaTA3OWUycm9tMHl2cGt2dnIifQ.6Z6nrOtHPJmai8jt-D3VbA';
 
 const MEALS = [
   { id:1, name:"Pork & chive dumplings (12pc)", restaurant:"Shu Jiao Fu Zhou", price:6.00, neighborhood:"East Village", lat:40.7264, lng:-73.9860, why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth every second of the line.", tags:["Cash only","Hidden gem"], color:"blue" },
@@ -482,15 +482,18 @@ function initMap() {
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v11',
     center: [-73.98, 40.745],
-    zoom: 12.5,
+    zoom: 11.5,
   });
   map.addControl(new mapboxgl.NavigationControl(), 'top-right');
   map.on('load', () => {
+    map.resize();
     renderMarkers();
     renderList();
     renderListGrid();
   });
+  map.on('error', (e) => console.error('Mapbox error:', e));
 }
+window.addEventListener('resize', () => { if (map) map.resize(); });
 
 function getPriceColor(price) {
   if (price < 6) return 'red';
