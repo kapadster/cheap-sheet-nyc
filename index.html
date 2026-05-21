@@ -3,1035 +3,1057 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CheapSheet NYC — The Exact Dish. The Exact Price.</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<title>CheapSheet NYC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --orange:#D85A30;--orange-dim:#A8431F;--orange-glow:rgba(216,90,48,0.12);
-  --bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;--bg4:#202020;
-  --border:#242424;--border2:#2E2E2E;
-  --text:#E8E8E8;--text2:#888;--text3:#444;
+  --orange:#D85A30;--orange-dim:#A8431F;--og:rgba(216,90,48,0.12);
+  --bg:#0A0A0A;--bg2:#111;--bg3:#181818;--bg4:#202020;
+  --border:#1E1E1E;--border2:#2A2A2A;
+  --text:#F0F0EE;--text2:#999;--text3:#555;
   --red:#E02020;--blue:#2B7FE0;--purple:#7B52D4;
-  --green:#3A9A5C;--amber:#C8820A;
+  --green:#3A9A5C;--amber:#C8820A;--gold:#D4A017;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;}
+html,body{background:#000;font-family:'DM Sans',sans-serif;height:100%;overflow:hidden;}
 
-/* ════════════════════════
-   SCREENS
-════════════════════════ */
-#screen-hero{position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:44px 24px 80px;}
-#screen-app{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;}
+.app{width:100%;height:100vh;display:flex;flex-direction:column;background:var(--bg);}
 
-/* ════════════════════════
-   HERO
-════════════════════════ */
-.hero-grid{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:0.45;mask-image:radial-gradient(ellipse 90% 90% at 50% 40%,black 30%,transparent 100%);}
-.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:22px;text-align:center;}
-.hero-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,16vw,96px);letter-spacing:4px;color:var(--text);line-height:0.88;text-align:center;margin-bottom:14px;}
-.hero-logo em{color:var(--orange);font-style:normal;}
-.hero-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:40px;}
-.hero-sub em{color:var(--text2);font-style:normal;}
+/* NAV */
+.tab-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{flex:1;padding:10px 4px 8px;text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;}
+.tab.active{border-bottom-color:var(--orange);}
+.tab-icon{font-size:16px;display:block;margin-bottom:2px;opacity:0.35;transition:opacity 0.15s;}
+.tab.active .tab-icon{opacity:1;}
+.tab-label{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;}
+.tab.active .tab-label{color:var(--orange);}
 
-/* SEARCH WITH TYPEAHEAD */
-.hero-search-outer{width:100%;max-width:500px;position:relative;margin-bottom:14px;}
-.hero-search-row{display:flex;border:1px solid var(--border2);border-radius:3px;overflow:hidden;background:var(--bg3);}
-.hero-search-row:focus-within{border-color:var(--orange);}
-.hero-search-input{flex:1;background:transparent;border:none;font-family:'DM Mono',monospace;font-size:14px;color:var(--text);padding:0 16px;height:54px;outline:none;letter-spacing:0.3px;}
-.hero-search-input::placeholder{color:var(--text3);}
-.hero-search-btn{background:var(--orange);border:none;width:54px;height:54px;cursor:pointer;font-size:22px;color:#fff;flex-shrink:0;transition:background 0.12s;}
-.hero-search-btn:active{background:var(--orange-dim);}
-.typeahead{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;z-index:999;overflow:hidden;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
-.typeahead.open{display:block;}
-.ta-section{padding:8px 0;}
-.ta-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;padding:4px 14px 6px;}
-.ta-item{padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.08s;}
-.ta-item:active,.ta-item:hover{background:var(--bg3);}
-.ta-item-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0;}
-.ta-item-main{font-size:13px;color:var(--text);}
-.ta-item-sub{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px;}
-.ta-divider{height:1px;background:var(--border);margin:4px 0;}
+/* SCREENS */
+.screens{flex:1;overflow:hidden;position:relative;}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;scrollbar-width:none;}
+.screen::-webkit-scrollbar{display:none;}
+.screen.active{display:block;}
 
-/* DENSITY */
-.density-wrap{width:100%;max-width:500px;margin-bottom:30px;}
-.density-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
-.density-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;cursor:pointer;padding:5px 6px;border:1px solid transparent;border-radius:2px;transition:border-color 0.12s;}
-.density-row:active{border-color:var(--border2);background:var(--bg3);}
-.density-hood{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text2);width:130px;flex-shrink:0;}
-.density-bar-wrap{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
-.density-bar{height:100%;border-radius:2px;background:var(--orange);transition:width 0.8s ease;}
-.density-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);white-space:nowrap;}
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--orange);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;padding:10px 20px;border-radius:3px;opacity:0;pointer-events:none;transition:all 0.3s;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* PILLS */
-.hero-hoods{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:500px;margin-bottom:20px;}
-.hood-pill{background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:6px 13px;cursor:pointer;letter-spacing:0.5px;transition:all 0.12s;}
-.hood-pill:active{border-color:var(--orange);color:var(--orange);}
+/* ══════ SCREEN 1 — HOME ══════ */
+.s1-hero{background:var(--bg);padding:28px 20px 20px;text-align:center;position:relative;overflow:hidden;}
+.s1-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:44px 44px;opacity:0.5;}
+.s1-glow{position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:360px;background:radial-gradient(ellipse,rgba(216,90,48,0.08) 0%,transparent 70%);}
+.s1-eyebrow{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;position:relative;}
+.s1-logo{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:3px;color:var(--text);line-height:0.88;margin-bottom:10px;position:relative;}
+.s1-logo em{color:var(--orange);font-style:normal;}
+.s1-sub{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:22px;position:relative;}
+.s1-sub em{color:var(--text2);font-style:normal;}
 
-/* HUNGRY BTN */
-.hungry-hero-btn{width:100%;max-width:500px;background:var(--orange-glow);border:1px solid rgba(216,90,48,0.28);border-radius:3px;padding:16px 18px;cursor:pointer;margin-bottom:32px;display:flex;align-items:center;gap:14px;text-align:left;transition:all 0.15s;}
-.hungry-hero-btn:active{background:rgba(216,90,48,0.2);border-color:var(--orange);}
-.hungry-icon{font-size:24px;flex-shrink:0;}
-.hungry-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--orange);}
-.hungry-desc{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);margin-top:2px;letter-spacing:0.3px;}
-.hungry-arr{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange);opacity:0.5;flex-shrink:0;}
+.s1-search{display:flex;border:1px solid var(--border2);border-radius:3px;overflow:hidden;margin-bottom:10px;position:relative;}
+.s1-search input{flex:1;background:var(--bg3);border:none;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);padding:0 12px;height:44px;outline:none;}
+.s1-search input::placeholder{color:var(--text3);}
+.s1-search-btn{background:var(--orange);border:none;width:44px;font-size:18px;color:#fff;cursor:pointer;flex-shrink:0;}
+.s1-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px;justify-content:center;}
+.s1-chip{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);border:1px solid var(--border2);border-radius:2px;padding:4px 10px;cursor:pointer;transition:all 0.15s;}
+.s1-chip:hover,.s1-chip.active{border-color:var(--orange);color:var(--orange);}
 
-/* STATS */
-.hero-stats{display:flex;gap:28px;align-items:center;margin-bottom:24px;}
-.hstat{text-align:center;}
-.hstat-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--orange);line-height:1;}
-.hstat-label{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
-.hstat-sep{width:1px;height:32px;background:var(--border2);}
+.hungry-btn{width:100%;background:var(--og);border:1px solid rgba(216,90,48,0.25);border-radius:3px;padding:13px 16px;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;margin-bottom:20px;}
+.hungry-btn h3{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--orange);}
+.hungry-btn p{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
+.hungry-arr{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--orange);opacity:0.5;flex-shrink:0;}
 
-/* DROP TEASER */
-.drop-teaser{width:100%;max-width:500px;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
-.drop-teaser:active{border-color:rgba(216,90,48,0.4);}
-.drop-icon{font-size:18px;}
-.drop-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;color:var(--text);}
-.drop-desc{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.drop-cd{margin-left:auto;text-align:right;flex-shrink:0;}
-.drop-cd-num{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--orange);}
-.drop-cd-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.stats-row{display:flex;border:1px solid var(--border2);border-radius:3px;overflow:hidden;margin-bottom:18px;}
+.stat-box{flex:1;padding:9px 6px;text-align:center;border-right:1px solid var(--border2);}
+.stat-box:last-child{border-right:none;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);line-height:1;}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin-top:2px;}
 
-/* ════════════════════════
-   APP SHELL
-════════════════════════ */
-#app-header{height:52px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;}
-.app-logo{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1.5px;color:var(--text);cursor:pointer;flex-shrink:0;line-height:1;}
-.app-logo em{color:var(--orange);font-style:normal;}
+/* spot cards on home */
+.spot-cards{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.spot-card{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color 0.15s;}
+.spot-card:hover{border-color:var(--border);}
+.sc-price{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1;flex-shrink:0;width:52px;text-align:center;}
+.sc-info{flex:1;}
+.sc-dish{font-size:13px;font-weight:600;color:var(--text);line-height:1.2;}
+.sc-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
+.sc-hood{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.sc-badges{display:flex;gap:4px;margin-top:4px;}
+.sc-badge{font-family:'DM Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:1px;}
+.sc-badge.v{background:#0A1A0A;color:#5AC85A;border:1px solid #103010;}
+.sc-badge.c{background:#1F180A;color:#C8820A;border:1px solid #302210;}
+.sc-badge.g{background:#150D20;color:#7B52D4;border:1px solid #201030;}
+.sc-arr{color:var(--text3);font-size:16px;flex-shrink:0;}
 
-/* APP SEARCH WITH TYPEAHEAD */
-.app-search-outer{flex:1;position:relative;min-width:0;}
-.app-search-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);padding:0 10px;height:32px;outline:none;transition:border-color 0.15s;}
-.app-search-input::placeholder{color:var(--text3);}
-.app-search-input:focus{border-color:var(--orange);}
-.app-typeahead{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:3px;z-index:999;overflow:hidden;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.7);max-height:260px;overflow-y:auto;}
-.app-typeahead.open{display:block;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--text);}
+.sec-link{font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);cursor:pointer;}
 
-.app-hungry{background:var(--orange-glow);border:1px solid rgba(216,90,48,0.3);border-radius:3px;font-size:16px;color:var(--orange);padding:0 9px;height:34px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.app-submit{background:var(--orange);border:none;border-radius:3px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;padding:0 13px;height:34px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+/* leaderboard mini */
+.lb-mini{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;overflow:hidden;margin-bottom:16px;}
+.lb-mini-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.lb-mini-row:last-child{border-bottom:none;}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:18px;width:18px;text-align:center;}
+.lb-rank.g{color:var(--gold);}
+.lb-rank.s{color:#777;}
+.lb-rank.b{color:#8B4513;}
+.lb-avi{width:28px;height:28px;border-radius:2px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.lb-inf{flex:1;}
+.lb-handle{font-size:12px;font-weight:500;color:var(--text);}
+.lb-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
+.lb-pts-col{text-align:right;}
+.lb-pts-n{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);}
+.lb-pts-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);}
 
-#app-filters{height:44px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
-#app-filters::-webkit-scrollbar{display:none;}
-.chip{flex-shrink:0;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:0 11px;height:28px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;letter-spacing:0.3px;}
-.chip.on{background:var(--orange);border-color:var(--orange);color:#fff;}
-.chip-dot{width:5px;height:5px;border-radius:50%;}
-.fsep{width:1px;height:13px;background:var(--border2);flex-shrink:0;margin:0 2px;}
+/* monday drop */
+.drop-box{background:var(--bg2);border:1px solid rgba(216,90,48,0.2);border-radius:3px;overflow:hidden;margin-bottom:20px;}
+.drop-box-head{background:rgba(216,90,48,0.06);border-bottom:1px solid rgba(216,90,48,0.15);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+.drop-box-head h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--orange);}
+.drop-box-head span{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.drop-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.drop-row:last-child{border-bottom:none;}
+.drop-n{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--text3);width:16px;}
+.drop-inf{flex:1;}
+.drop-nm{font-size:12px;font-weight:500;color:var(--text);}
+.drop-rs{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
+.drop-pr{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--orange);}
+.drop-row.locked .drop-nm,.drop-row.locked .drop-rs{filter:blur(3.5px);user-select:none;}
+.drop-row.locked .drop-pr{color:var(--text3);}
 
-#hood-banner{height:34px;background:rgba(216,90,48,0.08);border-bottom:1px solid rgba(216,90,48,0.2);display:none;align-items:center;padding:0 14px;gap:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);flex-shrink:0;}
-#hood-banner.show{display:flex;}
-.hbx{background:none;border:none;color:var(--orange);cursor:pointer;font-size:16px;margin-left:auto;padding:0;opacity:0.6;}
+/* filter chips */
+.filter-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:14px;}
+.filter-row::-webkit-scrollbar{display:none;}
+.fpill{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);border:1px solid var(--border2);border-radius:2px;padding:4px 10px;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all 0.15s;}
+.fpill.active,.fpill:hover{background:var(--orange);border-color:var(--orange);color:#fff;}
 
-/* MAP + SIDEBAR */
-#app-body{flex:1;display:flex;overflow:hidden;min-height:0;}
-#map{flex:1;height:100%;position:relative;}
+/* ══════ SCREEN 2 — PROFILE ══════ */
+.profile-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 18px 14px;}
+.profile-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;}
+.p-avi{width:52px;height:52px;border-radius:3px;background:linear-gradient(135deg,var(--orange),var(--orange-dim));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.p-name{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:1px;color:var(--text);}
+.p-title{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--orange);letter-spacing:0.5px;margin-top:2px;}
+.p-hood{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);margin-top:3px;}
+.p-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:14px;}
+.pstat{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:8px 6px;text-align:center;}
+.pstat-n{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text);line-height:1;}
+.pstat-n.o{color:var(--orange);}
+.pstat-n.g{color:var(--green);}
+.pstat-l{font-family:'DM Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:0.3px;text-transform:uppercase;margin-top:3px;}
+.xp-wrap{margin-bottom:0;}
+.xp-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+.xp-top span{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.xp-top em{color:var(--orange);font-style:normal;}
+.xp-track{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--orange),#FF8C5A);border-radius:2px;}
 
-/* ── CLUSTER STYLES ── */
-.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:rgba(216,90,48,0.15)!important;}
-.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:rgba(216,90,48,0.85)!important;color:#fff!important;font-family:'Bebas Neue',sans-serif!important;font-size:16px!important;letter-spacing:0.5px;border:2px solid rgba(255,255,255,0.2)!important;}
-.marker-cluster{border-radius:3px!important;}
-.marker-cluster div{border-radius:2px!important;width:34px!important;height:34px!important;margin:3px!important;line-height:34px!important;}
+.savings-card{margin:14px 18px;background:var(--bg);border:1px solid var(--border2);border-radius:3px;padding:14px;position:relative;overflow:hidden;}
+.savings-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.savings-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--green);line-height:1;letter-spacing:1px;}
+.savings-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:4px;line-height:1.6;}
+.savings-sub em{color:var(--green);font-style:normal;}
+.savings-share{width:100%;margin-top:10px;background:none;border:1px solid var(--border2);border-radius:2px;padding:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);cursor:pointer;text-align:center;transition:border-color 0.15s;}
+.savings-share:hover{border-color:var(--orange);color:var(--orange);}
 
-/* MAP OVERLAYS */
-.map-stats-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(10,10,10,0.94);border:1px solid var(--border2);border-radius:3px;padding:7px 18px;display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,0.4);}
-.map-stats-bar strong{color:var(--orange);font-weight:500;}
+.streak-wrap{padding:0 18px 14px;}
+.streak-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.streak-days{display:flex;gap:4px;}
+.sday{flex:1;height:30px;border-radius:2px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);}
+.sday.done{background:rgba(216,90,48,0.12);border-color:rgba(216,90,48,0.3);color:var(--orange);}
+.sday.today{background:var(--orange);border-color:var(--orange);color:#fff;}
 
-.map-legend{position:absolute;bottom:14px;left:14px;z-index:500;background:rgba(13,13,13,0.92);border:1px solid var(--border2);border-radius:2px;padding:8px 12px;display:flex;flex-direction:column;gap:5px;backdrop-filter:blur(8px);}
-.legend-row{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
-.legend-dot{width:7px;height:7px;border-radius:50%;}
+.badges-wrap{padding:0 18px 14px;}
+.badges-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.badges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.badge{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:10px 6px;text-align:center;cursor:pointer;}
+.badge.earned{border-color:rgba(216,90,48,0.35);background:rgba(216,90,48,0.06);}
+.badge.locked{opacity:0.3;}
+.badge-icon{font-size:18px;display:block;margin-bottom:4px;}
+.badge-name{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:0.3px;}
+.badge.earned .badge-name{color:var(--orange);}
 
-/* SIDEBAR */
-#sidebar{width:300px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-.sb-head{padding:10px 14px 8px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.sb-head h2{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--text);}
-.sb-head p{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.meal-list{overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:5px;flex:1;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.recent-wrap{padding:0 18px 20px;}
+.spot-row{background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:10px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px;}
+.sr-stripe{width:2px;height:32px;border-radius:1px;flex-shrink:0;}
+.sr-info{flex:1;}
+.sr-name{font-size:12px;font-weight:500;color:var(--text);}
+.sr-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
+.sr-right{text-align:right;}
+.sr-price{font-family:'Bebas Neue',sans-serif;font-size:17px;line-height:1;}
+.sr-pts{font-family:'DM Mono',monospace;font-size:8px;color:var(--orange);}
 
-/* MEAL CARDS */
-.meal-card{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:9px 11px 8px;cursor:pointer;position:relative;overflow:hidden;transition:border-color 0.12s;}
-.meal-card:active,.meal-card.active{border-color:var(--orange);}
-.card-stripe{position:absolute;left:0;top:0;bottom:0;width:2px;}
-.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
-.card-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.3;}
-.card-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.card-price{font-family:'Bebas Neue',sans-serif;font-size:19px;line-height:1;flex-shrink:0;}
-.card-why{font-size:10.5px;color:var(--text3);font-style:italic;line-height:1.4;border-top:1px solid var(--border);padding-top:5px;margin-top:6px;}
-.card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:5px;}
-.card-hood{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);}
-.card-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;}
-.ctag{font-family:'DM Mono',monospace;font-size:8px;padding:1px 5px;border-radius:1px;border:1px solid;}
-.ctag-veg{background:#0D1F12;color:#3A9A5C;border-color:#1A3020;}
-.ctag-cash{background:#1F180A;color:#C8820A;border-color:#302210;}
-.ctag-gem{background:#150D20;color:#7B52D4;border-color:#201030;}
-.ctag-night{background:#0A0A1F;color:#2B7FE0;border-color:#101830;}
-.ctag-rec{background:#0A1A0A;color:#5AC85A;border-color:#103010;}
-.verify-row{display:flex;gap:3px;margin-top:5px;padding-top:5px;border-top:1px solid var(--border);}
-.vbtn{flex:1;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);padding:3px 2px;cursor:pointer;text-align:center;transition:all 0.1s;}
+/* ══════ SCREEN 3 — LEADERBOARD ══════ */
+.lb-screen-head{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;}
+.lb-screen-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--text);}
+.lb-screen-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
+.lb-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);}
+.lb-tab{flex:1;padding:10px 0;text-align:center;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);letter-spacing:0.5px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;}
+.lb-tab.active{color:var(--orange);border-bottom-color:var(--orange);}
+.borough-row{display:flex;gap:5px;padding:10px 18px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.borough-row::-webkit-scrollbar{display:none;}
+.bpill{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);border:1px solid var(--border2);border-radius:2px;padding:4px 10px;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all 0.15s;}
+.bpill.active{background:var(--orange);border-color:var(--orange);color:#fff;}
 
-/* MAP PIN */
-.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(0.88) saturate(0.35) contrast(1.1);}
-.leaflet-control-zoom a{background:var(--bg3)!important;color:var(--text2)!important;border-color:var(--border2)!important;font-size:16px!important;line-height:26px!important;}
-.leaflet-control-zoom a:hover{color:var(--orange)!important;}
-.leaflet-control-attribution{background:rgba(13,13,13,0.85)!important;color:var(--text3)!important;font-size:9px!important;padding:2px 6px!important;}
-.leaflet-control-attribution a{color:var(--text3)!important;}
-.map-pin{background:rgba(10,10,10,0.96);border:1.5px solid;border-radius:3px;padding:5px 10px 5px 8px;display:flex;align-items:center;gap:5px;white-space:nowrap;box-shadow:0 3px 14px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.06);cursor:pointer;backdrop-filter:blur(8px);}
-.pin-price{font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;letter-spacing:0.3px;}
-.pin-name{font-family:'DM Mono',monospace;font-size:10px;color:#ccc;letter-spacing:0.2px;}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:18px 18px 12px;background:var(--bg);}
+.podium-item{flex:1;text-align:center;max-width:100px;}
+.pod-avi{width:52px;height:52px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 5px;border:2px solid;}
+.pod-1 .pod-avi{background:rgba(212,160,23,0.1);border-color:var(--gold);}
+.pod-2 .pod-avi{background:rgba(136,136,136,0.1);border-color:#555;}
+.pod-3 .pod-avi{background:rgba(139,69,19,0.1);border-color:#5A2D0C;}
+.pod-rank{font-family:'Bebas Neue',sans-serif;font-size:24px;margin-bottom:2px;}
+.pod-rank.r1{color:var(--gold);}
+.pod-rank.r2{color:#777;}
+.pod-rank.r3{color:#8B4513;}
+.pod-handle{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text);}
+.pod-pts{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--orange);}
+.pod-bar{margin-top:7px;border-radius:2px;background:var(--orange);}
+.pod-1 .pod-bar{height:52px;opacity:1;}
+.pod-2 .pod-bar{height:34px;opacity:0.6;}
+.pod-3 .pod-bar{height:18px;opacity:0.35;}
 
-/* POPUP */
-.leaflet-popup-content-wrapper{background:rgba(18,18,18,0.98)!important;border-radius:4px!important;border:1px solid var(--border2)!important;box-shadow:0 12px 40px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.04)!important;padding:0!important;backdrop-filter:blur(12px);}
-.leaflet-popup-content{margin:0!important;width:260px!important;}
-.leaflet-popup-tip{background:rgba(18,18,18,0.98)!important;}
-.leaflet-popup-close-button{color:var(--text3)!important;font-size:16px!important;top:8px!important;right:10px!important;}
-.pu-body{padding:13px 15px 9px;}
-.pu-price{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;letter-spacing:0.5px;}
-.pu-dish{font-size:13px;font-weight:500;color:var(--text);margin:4px 0 2px;line-height:1.3;}
-.pu-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:9px;letter-spacing:0.2px;}
-.pu-order{background:rgba(216,90,48,0.07);border:1px solid rgba(216,90,48,0.18);border-radius:2px;padding:6px 9px;font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:8px;}
-.pu-order span{color:var(--orange);font-weight:500;}
-.pu-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px;}
-.pu-verif{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);margin-bottom:8px;}
-.pu-verify{display:flex;gap:4px;margin-bottom:6px;}
-.pu-vbtn{flex:1;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);padding:4px 2px;cursor:pointer;text-align:center;transition:all 0.1s;}
-.pu-share{width:100%;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding:5px;cursor:pointer;transition:all 0.1s;}
-.pu-share:active{border-color:var(--orange);color:var(--orange);}
-.pu-foot{border-top:1px solid var(--border);padding:6px 13px;display:flex;justify-content:space-between;align-items:center;}
-.pu-verified{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);}
-.pu-dir{font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);text-decoration:none;}
+.lb-list{padding:0 18px 18px;}
+.lb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:2px;margin-bottom:5px;position:relative;overflow:hidden;cursor:pointer;transition:border-color 0.15s;}
+.lb-item.you{border-color:var(--orange);}
+.you-bar{position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--orange);}
+.li-rank{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--text3);width:18px;text-align:center;}
+.li-avi{width:30px;height:30px;border-radius:2px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.li-info{flex:1;}
+.li-handle{font-size:12px;font-weight:500;color:var(--text);}
+.li-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
+.li-right{text-align:right;}
+.li-pts{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--orange);}
+.li-pts-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);}
+.li-up{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);margin-top:1px;}
 
-/* ════════════════════════
-   OVERLAYS
-════════════════════════ */
-.overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;padding:16px;}
-.overlay.open{display:flex;}
-.panel{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
-.panel-head{background:var(--bg3);border-bottom:1px solid var(--border);padding:14px 18px;}
-.panel-head h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--text);}
-.panel-head p{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
-.panel-head-orange{background:var(--orange)!important;border-bottom-color:rgba(0,0,0,0.1)!important;}
-.panel-head-orange h2,.panel-head-orange p{color:#fff!important;}
-.panel-head-orange button{background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;float:right;margin-top:-2px;}
+.lb-nudge{margin:0 18px 18px;background:rgba(216,90,48,0.06);border:1px solid rgba(216,90,48,0.2);border-radius:3px;padding:11px 14px;text-align:center;}
+.lb-nudge-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--orange);margin-bottom:3px;}
+.lb-nudge-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
 
-/* HUNGRY */
-.hungry-spots{padding:10px;}
-.nearby-card{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:11px 13px;margin-bottom:7px;cursor:pointer;position:relative;overflow:hidden;}
-.nearby-card:active{border-color:var(--orange);}
-.nearby-stripe{position:absolute;left:0;top:0;bottom:0;width:2px;}
-.nearby-top{display:flex;justify-content:space-between;align-items:flex-start;}
-.nearby-name{font-size:13px;font-weight:500;color:var(--text);}
-.nearby-rest{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);margin-top:2px;}
-.nearby-price{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
-.nearby-meta{display:flex;gap:10px;margin-top:6px;align-items:center;flex-wrap:wrap;}
-.nearby-walk{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
-.nearby-walk em{color:var(--orange);font-style:normal;}
-.nearby-open{font-family:'DM Mono',monospace;font-size:8.5px;padding:2px 6px;border-radius:1px;background:#0D1F12;color:#3A9A5C;border:1px solid #1A3020;}
-.hungry-cta{padding:0 10px 10px;}
-.hungry-cta button{width:100%;background:var(--orange);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;padding:11px;cursor:pointer;}
-.hungry-loading{padding:36px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.5px;}
-.hungry-loc-req{padding:16px 18px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text2);line-height:1.7;border-bottom:1px solid var(--border);}
-.hungry-loc-req em{color:var(--orange);font-style:normal;}
+/* ══════ SCREEN 4 — SPOT DETAIL ══════ */
+.spot-map{height:170px;background:linear-gradient(135deg,#0a0f18,#0d1520,#091018);position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.map-lines{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,0.025) 0px,transparent 1px,transparent 38px),repeating-linear-gradient(90deg,rgba(255,255,255,0.025) 0px,transparent 1px,transparent 38px);}
+.map-rd{position:absolute;background:rgba(255,255,255,0.035);}
+.rd-h{height:7px;left:0;right:0;}
+.rd-v{width:5px;top:0;bottom:0;}
+.spot-pin-hero{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);}
+.sph-pill{background:var(--orange);border-radius:3px;padding:6px 12px;font-family:'Bebas Neue',sans-serif;font-size:15px;color:#fff;white-space:nowrap;box-shadow:0 4px 20px rgba(216,90,48,0.4);text-align:center;}
+.sph-dot{width:7px;height:7px;background:var(--orange);border-radius:50%;margin:3px auto 0;}
+.nearby-pin{position:absolute;background:rgba(10,10,10,0.92);border:1.5px solid;border-radius:2px;padding:3px 7px;font-family:'DM Mono',monospace;font-size:9px;white-space:nowrap;}
 
-/* SHARE */
-.share-card{background:var(--bg);padding:22px;}
-.share-brand{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1.5px;color:var(--text3);margin-bottom:12px;}
-.share-brand em{color:var(--orange);font-style:normal;}
-.share-price{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;letter-spacing:1px;}
-.share-dish{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--text);margin-bottom:3px;line-height:1.1;}
-.share-rest{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);margin-bottom:14px;}
-.share-order{background:var(--orange-glow);border:1px solid rgba(216,90,48,0.2);border-radius:2px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);line-height:1.5;}
-.share-order strong{color:var(--orange);}
-.share-foot{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);margin-top:12px;}
-.share-actions{padding:12px;display:flex;gap:7px;}
-.share-copy{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);padding:9px;cursor:pointer;text-align:center;}
-.share-done{flex:1;background:var(--orange);border:none;border-radius:2px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#fff;padding:9px;cursor:pointer;}
-.share-close-btn{display:block;width:calc(100% - 24px);margin:0 12px 12px;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:7px;cursor:pointer;text-align:center;}
+.spot-body{padding:14px 18px;}
+.spot-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.spot-hood{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+.spot-conf{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);}
+.spot-price-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:3px;}
+.spot-price{font-family:'Bebas Neue',sans-serif;font-size:50px;line-height:1;letter-spacing:1px;}
+.spot-verif{text-align:right;}
+.sv-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);line-height:1;}
+.sv-lbl{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);}
+.spot-dish{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--text);line-height:1.1;margin-bottom:2px;}
+.spot-rest{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);margin-bottom:11px;letter-spacing:0.3px;}
+.order-box{background:rgba(216,90,48,0.07);border:1px solid rgba(216,90,48,0.2);border-radius:2px;padding:10px 12px;margin-bottom:10px;}
+.order-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.order-text{font-size:12.5px;color:var(--text);font-weight:500;line-height:1.5;}
+.spot-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.stag{font-family:'DM Mono',monospace;font-size:8px;padding:3px 7px;border-radius:1px;border:1px solid;}
+.st-rec{background:#0A1A0A;color:#5AC85A;border-color:#103010;}
+.st-cash{background:#1F180A;color:#C8820A;border-color:#302210;}
+.st-gem{background:#150D20;color:#7B52D4;border-color:#201030;}
+.spot-quote{font-size:12px;color:var(--text2);font-style:italic;line-height:1.6;margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid var(--border);}
 
-/* DROP */
-.drop-item{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:10px 13px;margin-bottom:7px;position:relative;overflow:hidden;}
-.drop-item.locked{opacity:0.38;filter:blur(1.5px);pointer-events:none;}
-.drop-stripe{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--orange);}
-.drop-name{font-size:12.5px;font-weight:500;color:var(--text);}
-.drop-rest{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);margin-top:2px;}
-.drop-price-tag{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);position:absolute;top:10px;right:13px;}
-.drop-unlock-section{padding:12px;background:rgba(216,90,48,0.06);border-top:1px solid rgba(216,90,48,0.15);}
-.drop-unlock-section p{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6;}
-.drop-nl-row{display:flex;gap:7px;}
-.drop-nl-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);padding:0 9px;height:32px;outline:none;}
-.drop-nl-input:focus{border-color:var(--orange);}
-.drop-nl-btn{background:var(--orange);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;padding:0 13px;height:32px;cursor:pointer;}
-.drop-close-btn{display:block;width:calc(100% - 24px);margin:0 12px 12px;background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:7px;cursor:pointer;text-align:center;}
+.verify-sec{margin-bottom:13px;}
+.verify-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.verify-btns{display:flex;gap:6px;}
+.vb{flex:1;background:none;border:1px solid var(--border2);border-radius:2px;padding:9px 4px;cursor:pointer;text-align:center;transition:all 0.15s;}
+.vb:hover{border-color:var(--border);}
+.vb-icon{font-size:15px;display:block;margin-bottom:3px;}
+.vb-text{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text3);letter-spacing:0.3px;line-height:1.3;}
+.vb.good{border-color:var(--green);background:rgba(58,154,92,0.07);}
+.vb.good .vb-text{color:var(--green);}
+.earn-note{font-family:'DM Mono',monospace;font-size:9px;color:var(--orange);text-align:center;margin-top:5px;}
+.spot-actions{display:flex;gap:7px;}
+.act-dir{flex:1;background:var(--orange);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;padding:11px;cursor:pointer;text-align:center;transition:background 0.15s;}
+.act-dir:hover{background:var(--orange-dim);}
+.act-share{background:none;border:1px solid var(--border2);border-radius:2px;color:var(--text3);font-family:'DM Mono',monospace;font-size:10px;padding:11px 13px;cursor:pointer;transition:all 0.15s;}
+.act-share:hover{border-color:var(--border);color:var(--text);}
 
-/* SUBMIT */
-.modal-body{padding:16px 18px;}
-.f-label{display:block;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px;}
-.f-label em{color:var(--orange);font-style:normal;}
-.f-input,.f-select,.f-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);padding:8px 10px;outline:none;margin-bottom:11px;transition:border-color 0.12s;}
-.f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--orange);}
-.f-textarea{resize:vertical;min-height:55px;}
-.f-select option{background:var(--bg3);}
-.f-row{display:flex;gap:10px;}
-.f-row>div{flex:1;}
-.f-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
-.f-tag{cursor:pointer;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;color:var(--text3);}
-.f-tag.sel{background:var(--orange);border-color:var(--orange);color:#fff;}
-.receipt-box{width:100%;background:var(--bg3);border:1px dashed var(--border2);border-radius:2px;padding:14px;text-align:center;cursor:pointer;margin-bottom:11px;}
-.receipt-txt{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);}
-.receipt-txt em{color:var(--green);font-style:normal;}
-.modal-foot{border-top:1px solid var(--border);padding:12px 18px;display:flex;gap:7px;justify-content:flex-end;}
-.btn-cancel{background:none;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);padding:0 13px;height:32px;cursor:pointer;}
-.btn-go{background:var(--orange);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;padding:0 20px;height:32px;cursor:pointer;}
+/* ══════ SCREEN 5 — SUBMIT ══════ */
+.submit-hero{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 18px;}
+.submit-hero h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1.5px;color:var(--text);margin-bottom:3px;}
+.submit-hero p{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);line-height:1.6;}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;background:var(--bg2);border:1px solid var(--orange);border-radius:2px;padding:8px 16px;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--orange);letter-spacing:0.3px;transition:transform 0.25s;white-space:nowrap;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
+.pts-row{display:flex;gap:5px;padding:11px 18px;border-bottom:1px solid var(--border);}
+.pts-box{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:2px;padding:8px 4px;text-align:center;}
+.pts-num{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--orange);line-height:1;}
+.pts-num.g{color:var(--green);}
+.pts-num.b{color:var(--blue);}
+.pts-num.p{color:var(--purple);}
+.pts-lbl{font-family:'DM Mono',monospace;font-size:7px;color:var(--text3);letter-spacing:0.2px;margin-top:3px;line-height:1.3;}
 
-@media(max-width:680px){#sidebar{display:none;}.map-legend{display:none;}}
+.submit-form{padding:13px 18px;}
+.sf-lbl{display:block;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px;}
+.sf-lbl em{color:var(--orange);font-style:normal;}
+.sf-input,.sf-select,.sf-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);padding:9px 11px;margin-bottom:10px;outline:none;transition:border-color 0.15s;}
+.sf-input:focus,.sf-select:focus,.sf-textarea:focus{border-color:var(--orange);}
+.sf-textarea{min-height:55px;resize:none;}
+.sf-select{appearance:none;cursor:pointer;}
+.sf-select option{background:var(--bg3);color:var(--text);}
+.sf-2col{display:flex;gap:10px;}
+.sf-2col>div{flex:1;}
+.receipt-box{width:100%;background:var(--bg3);border:2px dashed var(--border2);border-radius:2px;padding:14px;text-align:center;margin-bottom:10px;position:relative;cursor:pointer;transition:border-color 0.15s;}
+.receipt-box:hover{border-color:var(--orange);}
+.receipt-badge{position:absolute;top:-9px;right:12px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.5px;padding:1px 8px;border-radius:2px;}
+.receipt-icon{font-size:20px;margin-bottom:3px;}
+.receipt-text{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);}
+.receipt-bonus{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);margin-top:3px;}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.sf-tag{cursor:pointer;border:1px solid var(--border2);border-radius:2px;font-family:'DM Mono',monospace;font-size:9.5px;padding:4px 10px;color:var(--text3);transition:all 0.15s;user-select:none;}
+.sf-tag.sel{background:var(--orange);border-color:var(--orange);color:#fff;}
+
+.submit-btn-wrap{padding:0 18px 24px;}
+.submit-btn{width:100%;background:var(--orange);border:none;border-radius:2px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1.5px;padding:13px;cursor:pointer;transition:background 0.15s;}
+.submit-btn:hover{background:var(--orange-dim);}
+.submit-note{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.5;}
+.submit-note em{color:var(--orange);font-style:normal;}
+
+/* Dropdown suggestions */
+.search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg3);border:1px solid var(--border2);border-top:none;border-radius:0 0 3px 3px;z-index:50;display:none;}
+.search-dropdown.open{display:block;}
+.sd-item{padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:10px;}
+.sd-item:last-child{border-bottom:none;}
+.sd-item:hover{background:var(--bg4);}
+.sd-dish{font-size:12px;font-weight:500;color:var(--text);}
+.sd-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- ═══ HERO ═══ -->
-<div id="screen-hero">
-  <div class="hero-grid"></div>
-  <div class="hero-eyebrow">Community-verified cheap eats · NYC</div>
-  <div class="hero-logo">Cheap<em>Sheet</em><br>NYC</div>
-  <div class="hero-sub">The exact dish. <em>The exact price.</em></div>
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
 
-  <!-- TYPEAHEAD SEARCH -->
-  <div class="hero-search-outer">
-    <div class="hero-search-row">
-      <input class="hero-search-input" id="heroSearch" type="text"
-        placeholder="SEARCH NEIGHBORHOOD, DISH, CUISINE…"
-        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <button class="hero-search-btn" id="heroSearchBtn">→</button>
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="showScreen(0,this)">
+      <div class="tab-icon">🏠</div><div class="tab-label">Home</div>
     </div>
-    <div class="typeahead" id="heroTypeahead"></div>
-  </div>
-
-  <!-- PILLS -->
-  <div class="hero-hoods">
-    <button class="hood-pill" data-hood="Lower East Side">LOWER EAST SIDE</button>
-    <button class="hood-pill" data-hood="East Village">EAST VILLAGE</button>
-    <button class="hood-pill" data-hood="Greenwich Village">GREENWICH VILLAGE</button>
-    <button class="hood-pill" data-hood="Midtown">MIDTOWN</button>
-    <button class="hood-pill" data-hood="Williamsburg">WILLIAMSBURG</button>
-    <button class="hood-pill" data-hood="Bed-Stuy">BED-STUY</button>
-    <button class="hood-pill" data-hood="Flushing">FLUSHING</button>
-    <button class="hood-pill" data-hood="">VIEW ALL →</button>
-  </div>
-
-  <!-- DENSITY BARS -->
-  <div class="density-wrap">
-    <div class="density-label">Deal density by neighborhood</div>
-    <div id="densityBars"></div>
-  </div>
-
-  <!-- HUNGRY -->
-  <button class="hungry-hero-btn" id="heroHungryBtn">
-    <span class="hungry-icon">🍜</span>
-    <div>
-      <div class="hungry-title">I'm Hungry Right Now</div>
-      <div class="hungry-desc">Find the closest cheap spot — fastest route wins</div>
+    <div class="tab" onclick="showScreen(1,this)">
+      <div class="tab-icon">👤</div><div class="tab-label">Profile</div>
     </div>
-    <span class="hungry-arr">→</span>
-  </button>
-
-  <!-- STATS -->
-  <div class="hero-stats">
-    <div class="hstat"><div class="hstat-num">10</div><div class="hstat-label">Spots</div></div>
-    <div class="hstat-sep"></div>
-    <div class="hstat"><div class="hstat-num">$2.50</div><div class="hstat-label">Cheapest</div></div>
-    <div class="hstat-sep"></div>
-    <div class="hstat"><div class="hstat-num">$5.65</div><div class="hstat-label">Avg price</div></div>
-    <div class="hstat-sep"></div>
-    <div class="hstat"><div class="hstat-num">5</div><div class="hstat-label">Hoods</div></div>
-  </div>
-
-  <div style="height:20px"></div>
-  <div class="drop-teaser" id="heroDropBtn">
-    <span class="drop-icon">🔒</span>
-    <div><div class="drop-title">This Week's Monday Drop</div><div class="drop-desc">5 exclusive spots — unlock free</div></div>
-    <div class="drop-cd"><div class="drop-cd-num" id="heroCountdown">--:--:--</div><div class="drop-cd-label">Until unlock</div></div>
-  </div>
-</div>
-
-<!-- ═══ APP ═══ -->
-<div id="screen-app">
-  <div id="app-header">
-    <div class="app-logo" id="backBtn">Cheap<em>Sheet</em></div>
-    <div class="app-search-outer">
-      <input class="app-search-input" id="appSearch" type="text" placeholder="SEARCH DISH, NEIGHBORHOOD, CUISINE…" autocomplete="off" autocorrect="off" spellcheck="false">
-      <div class="app-typeahead" id="appTypeahead"></div>
+    <div class="tab" onclick="showScreen(2,this)">
+      <div class="tab-icon">🏆</div><div class="tab-label">Ranks</div>
     </div>
-    <button class="app-hungry" id="appHungryBtn">🍜</button>
-    <button class="app-submit" id="appSubmitBtn">+ SUBMIT</button>
+    <div class="tab" onclick="showScreen(3,this)">
+      <div class="tab-icon">📌</div><div class="tab-label">Spot</div>
+    </div>
+    <div class="tab" onclick="showScreen(4,this)">
+      <div class="tab-icon">➕</div><div class="tab-label">Submit</div>
+    </div>
   </div>
 
-  <div id="app-filters">
-    <button class="chip on" data-f="all">ALL</button>
-    <div class="fsep"></div>
-    <button class="chip" data-f="under6"><span class="chip-dot" style="background:var(--red)"></span>UNDER $6</button>
-    <button class="chip" data-f="under10"><span class="chip-dot" style="background:var(--blue)"></span>UNDER $10</button>
-    <button class="chip" data-f="under15"><span class="chip-dot" style="background:var(--purple)"></span>UNDER $15</button>
-    <div class="fsep"></div>
-    <button class="chip" data-f="veg">VEGETARIAN</button>
-    <button class="chip" data-f="cash">CASH ONLY</button>
-    <button class="chip" data-f="gem">HIDDEN GEM</button>
-    <button class="chip" data-f="rec">🧾 VERIFIED</button>
-    <button class="chip" data-f="drop">🔒 DROP</button>
-  </div>
+  <div class="screens">
 
-  <div id="hood-banner">
-    <span>📍</span><span id="hoodBannerTxt"></span>
-    <button class="hbx" id="clearHoodBtn">× CLEAR</button>
-  </div>
-
-  <div id="app-body">
-    <div id="map">
-      <div class="map-stats-bar">
-        <strong id="statCount">10</strong> spots
-        <span style="color:var(--border2)">·</span>
-        avg <strong id="statAvg">$5.65</strong>
-        <span style="color:var(--border2)">·</span>
-        cheapest <strong id="statCheap">$2.50</strong>
+    <!-- ═══ SCREEN 1: HOME ═══ -->
+    <div class="screen active" id="s0">
+      <div class="s1-hero">
+        <div class="s1-grid"></div>
+        <div class="s1-glow"></div>
+        <div class="s1-eyebrow">Community-verified cheap eats · NYC</div>
+        <div class="s1-logo">Cheap<em>Sheet</em><br>NYC</div>
+        <div class="s1-sub">The exact dish. <em>The exact price.</em></div>
+        <div class="s1-search" style="position:relative;">
+          <input type="text" id="searchInput" placeholder="SEARCH DISH, NEIGHBORHOOD, CUISINE…" oninput="handleSearch(this.value)" onfocus="handleSearch(this.value)" onblur="setTimeout(closeSearch,150)">
+          <button class="s1-search-btn" onclick="doSearch()">→</button>
+          <div class="search-dropdown" id="searchDrop"></div>
+        </div>
+        <div class="s1-chips">
+          <div class="s1-chip" onclick="filterByChip('East Village',this)">📍 East Village</div>
+          <div class="s1-chip" onclick="filterByChip('dumplings',this)">🥟 Dumplings</div>
+          <div class="s1-chip" onclick="filterByChip('tacos',this)">🌮 Tacos</div>
+          <div class="s1-chip" onclick="filterByChip('pizza',this)">🍕 Pizza</div>
+          <div class="s1-chip" onclick="filterByChip('vegetarian',this)">🌿 Veg</div>
+        </div>
+        <div class="hungry-btn" onclick="hungryNow()">
+          <span style="font-size:22px">🍜</span>
+          <div>
+            <h3>I'm Hungry Right Now</h3>
+            <p>Closest cheap spot to you — fastest route wins</p>
+          </div>
+          <span class="hungry-arr">→</span>
+        </div>
       </div>
-      <div class="map-legend">
-        <div class="legend-row"><div class="legend-dot" style="background:var(--red)"></div>Under $6</div>
-        <div class="legend-row"><div class="legend-dot" style="background:var(--blue)"></div>$6—$10</div>
-        <div class="legend-row"><div class="legend-dot" style="background:var(--purple)"></div>$10—$15</div>
-        <div class="legend-row" style="margin-top:3px;padding-top:3px;border-top:1px solid var(--border)">
-          <span style="font-size:9px">🧾</span><span>Receipt verified</span>
+      <div style="padding:14px 18px 10px;">
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-num" id="statSpots">847</div><div class="stat-lbl">Spots</div></div>
+          <div class="stat-box"><div class="stat-num">$2.50</div><div class="stat-lbl">Cheapest</div></div>
+          <div class="stat-box"><div class="stat-num">$6.40</div><div class="stat-lbl">Avg price</div></div>
+          <div class="stat-box"><div class="stat-num">5</div><div class="stat-lbl">Boroughs</div></div>
+        </div>
+
+        <div class="filter-row" id="filterRow">
+          <div class="fpill active" onclick="applyFilter('all',this)">All</div>
+          <div class="fpill" onclick="applyFilter('under6',this)">Under $6</div>
+          <div class="fpill" onclick="applyFilter('under10',this)">Under $10</div>
+          <div class="fpill" onclick="applyFilter('veg',this)">🌿 Veg</div>
+          <div class="fpill" onclick="applyFilter('cash',this)">💵 Cash OK</div>
+          <div class="fpill" onclick="applyFilter('verified',this)">🧾 Verified</div>
+          <div class="fpill" onclick="applyFilter('gem',this)">💎 Hidden Gem</div>
+        </div>
+
+        <div class="sec-head">
+          <div class="sec-title">🔥 Today's Best Spots</div>
+          <div class="sec-link" onclick="showAllSpots()">VIEW ALL →</div>
+        </div>
+        <div class="spot-cards" id="spotCards"></div>
+
+        <div class="sec-head"><div class="sec-title">🏆 This Week's Top</div><div class="sec-link" onclick="showScreen(2,document.querySelectorAll('.tab')[2])">VIEW ALL →</div></div>
+        <div class="lb-mini" id="lbMini"></div>
+
+        <div class="sec-head"><div class="sec-title">🔒 Monday Drop</div><div class="sec-link" onclick="unlockDrop()">UNLOCK FREE →</div></div>
+        <div class="drop-box">
+          <div class="drop-box-head"><h3>This Week's 5 Spots</h3><span id="dropTimer">LOADING…</span></div>
+          <div id="dropRows"></div>
         </div>
       </div>
     </div>
-    <div id="sidebar">
-      <div class="sb-head"><h2 id="sbTitle">All Spots</h2><p id="sbSub">10 MEALS</p></div>
-      <div class="meal-list" id="mealList"></div>
-    </div>
-  </div>
-</div>
 
-<!-- ═══ HUNGRY OVERLAY ═══ -->
-<div class="overlay" id="hungryOverlay">
-  <div class="panel" style="max-width:400px;">
-    <div class="panel-head panel-head-orange">
-      <h2>🍜 Closest Spots <button id="hungryCloseBtn">×</button></h2>
-      <p>RANKED BY WALKING DISTANCE</p>
-    </div>
-    <div id="hungryContent"><div class="hungry-loading">GETTING YOUR LOCATION…</div></div>
-  </div>
-</div>
-
-<!-- ═══ SHARE OVERLAY ═══ -->
-<div class="overlay" id="shareOverlay">
-  <div class="panel">
-    <div id="shareCardContent"></div>
-    <div class="share-actions">
-      <button class="share-copy" id="shareCopyBtn">COPY LINK</button>
-      <button class="share-done" id="shareDoneBtn">DONE</button>
-    </div>
-    <button class="share-close-btn" id="shareCloseBtn">CLOSE</button>
-  </div>
-</div>
-
-<!-- ═══ DROP OVERLAY ═══ -->
-<div class="overlay" id="dropOverlay">
-  <div class="panel">
-    <div class="panel-head"><h2>🔒 Monday Drop</h2><p>5 EXCLUSIVE SPOTS THIS WEEK</p></div>
-    <div style="padding:10px;" id="dropItems"></div>
-    <div class="drop-unlock-section" id="dropUnlockSection">
-      <p>Subscribe free to unlock this week's 5 spots 48hrs early. Every Monday, 5 new spots.</p>
-      <div class="drop-nl-row">
-        <input class="drop-nl-input" type="email" placeholder="your@email.com" id="dropEmail">
-        <button class="drop-nl-btn" id="dropUnlockBtn">UNLOCK</button>
-      </div>
-    </div>
-    <button class="drop-close-btn" id="dropCloseBtn">CLOSE</button>
-  </div>
-</div>
-
-<!-- ═══ SUBMIT MODAL ═══ -->
-<div class="overlay" id="submitOverlay">
-  <div class="panel">
-    <div class="panel-head"><h2>Submit A Spot</h2><p>EXACT DISH. EXACT PRICE. NO VAGUE RECS.</p></div>
-    <div class="modal-body">
-      <label class="f-label">Restaurant <em>*</em></label>
-      <input class="f-input" type="text" placeholder="e.g. Joe's Pizza" id="f_r">
-      <label class="f-label">Exact dish <em>*</em></label>
-      <input class="f-input" type="text" placeholder="e.g. Plain slice — not 'the pizza is cheap'" id="f_d">
-      <div class="f-row">
-        <div><label class="f-label">Price <em>*</em></label><input class="f-input" type="text" placeholder="$4.50" id="f_p"></div>
-        <div><label class="f-label">Neighborhood <em>*</em></label>
-          <select class="f-select" id="f_n">
-            <option value="">Select…</option>
-            <option>Lower East Side</option><option>East Village</option><option>Greenwich Village</option>
-            <option>Midtown</option><option>Upper West Side</option><option>Upper East Side</option>
-            <option>Harlem</option><option>Astoria</option><option>Flushing</option>
-            <option>Bushwick</option><option>Williamsburg</option><option>Bed-Stuy</option>
-            <option>Crown Heights</option><option>Park Slope</option><option>Sunset Park</option>
-            <option>Jackson Heights</option><option>The Bronx</option><option>Staten Island</option>
-          </select>
+    <!-- ═══ SCREEN 2: PROFILE ═══ -->
+    <div class="screen" id="s1">
+      <div class="profile-head">
+        <div class="profile-top">
+          <div class="p-avi">🐉</div>
+          <div>
+            <div class="p-name">@dumplingking</div>
+            <div class="p-title">⭐ NEIGHBORHOOD LEGEND · EAST VILLAGE</div>
+            <div class="p-hood">📍 East Village · Member since Jan 2025</div>
+          </div>
+        </div>
+        <div class="p-stats">
+          <div class="pstat"><div class="pstat-n o" id="profilePts">4,820</div><div class="pstat-l">Total pts</div></div>
+          <div class="pstat"><div class="pstat-n" id="profileSpots">47</div><div class="pstat-l">Spots added</div></div>
+          <div class="pstat"><div class="pstat-n" id="profileConf">312</div><div class="pstat-l">Confirmations</div></div>
+          <div class="pstat"><div class="pstat-n g" id="profileSaved">$1,840</div><div class="pstat-l">Est. saved</div></div>
+          <div class="pstat"><div class="pstat-n" id="profileStreak">23</div><div class="pstat-l">Day streak</div></div>
+          <div class="pstat"><div class="pstat-n">#1</div><div class="pstat-l">EV rank</div></div>
+        </div>
+        <div class="xp-wrap">
+          <div class="xp-top"><span>LEGEND → <em>BOROUGH BOSS</em></span><span><em id="xpCur">4,820</em> / 7,000 XP</span></div>
+          <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:67%"></div></div>
         </div>
       </div>
-      <label class="f-label">Why it's worth it <em>*</em></label>
-      <textarea class="f-textarea" placeholder="One honest sentence." id="f_w"></textarea>
-      <label class="f-label">Receipt photo <em style="color:var(--green);font-style:normal">= 🧾 verified badge</em></label>
-      <div class="receipt-box" onclick="document.getElementById('receiptFile').click()">
-        <input type="file" id="receiptFile" accept="image/*" onchange="receiptPicked(this)">
-        <div class="receipt-txt" id="receiptTxt">📷 TAP TO UPLOAD RECEIPT<br><em>Optional — adds verified badge to pin</em></div>
+
+      <div class="savings-card">
+        <div class="savings-label">Your estimated savings vs avg NYC dining</div>
+        <div class="savings-num" id="savingsNum">$1,840</div>
+        <div class="savings-sub">saved this year eating CheapSheet spots<br>vs avg NYC meal price of <em>$18.40</em></div>
+        <button class="savings-share" onclick="shareSavings()">↗ SHARE YOUR SAVINGS SCORE</button>
       </div>
-      <label class="f-label">Tags</label>
-      <div class="f-tags">
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Cash only</span>
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Vegetarian</span>
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Hidden gem</span>
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Lunch special</span>
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Late night</span>
-        <span class="f-tag" onclick="this.classList.toggle('sel')">Big portion</span>
+
+      <div class="streak-wrap">
+        <div class="streak-label">🔥 <span id="streakLabel">23-day streak — don't break it</span></div>
+        <div class="streak-days">
+          <div class="sday done">M</div><div class="sday done">T</div><div class="sday done">W</div>
+          <div class="sday done">T</div><div class="sday done">F</div><div class="sday done">S</div>
+          <div class="sday today">S</div>
+        </div>
       </div>
-      <label class="f-label">Your @username</label>
-      <input class="f-input" type="text" placeholder="@handle — shows on your pin" id="f_u">
+
+      <div class="badges-wrap">
+        <div class="badges-label">Badges earned</div>
+        <div class="badges-grid">
+          <div class="badge earned" onclick="showBadge('Dumpling Hunter','Submitted 10+ dumpling spots')"><span class="badge-icon">🥟</span><div class="badge-name">DUMPLING HUNTER</div></div>
+          <div class="badge earned" onclick="showBadge('On Fire','7-day streak achieved')"><span class="badge-icon">🔥</span><div class="badge-name">ON FIRE</div></div>
+          <div class="badge earned" onclick="showBadge('Receipt King','100+ receipt uploads')"><span class="badge-icon">🧾</span><div class="badge-name">RECEIPT KING</div></div>
+          <div class="badge earned" onclick="showBadge('EV Expert','#1 in East Village')"><span class="badge-icon">📍</span><div class="badge-name">EV EXPERT</div></div>
+          <div class="badge locked" onclick="showBadge('Borough Boss','Locked — reach 7,000 XP')"><span class="badge-icon">👑</span><div class="badge-name">BOROUGH BOSS</div></div>
+          <div class="badge locked" onclick="showBadge('Citywide','Locked — map all 5 boroughs')"><span class="badge-icon">🗺</span><div class="badge-name">CITYWIDE</div></div>
+        </div>
+      </div>
+
+      <div class="recent-wrap">
+        <div class="badges-label" style="margin-bottom:8px">Recent submissions</div>
+        <div id="recentSubmissions"></div>
+      </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" id="submitCancelBtn">CANCEL</button>
-      <button class="btn-go" id="submitGoBtn">SUBMIT SPOT →</button>
+
+    <!-- ═══ SCREEN 3: LEADERBOARD ═══ -->
+    <div class="screen" id="s2">
+      <div class="lb-screen-head">
+        <div class="lb-screen-title">Rankings</div>
+        <div class="lb-screen-sub">Resets every Monday · Top contributor wins $50 cash</div>
+      </div>
+      <div class="lb-tabs">
+        <div class="lb-tab active" onclick="switchLbTab(this,'week')">This Week</div>
+        <div class="lb-tab" onclick="switchLbTab(this,'alltime')">All Time</div>
+        <div class="lb-tab" onclick="switchLbTab(this,'borough')">By Borough</div>
+      </div>
+      <div class="borough-row">
+        <div class="bpill active" onclick="switchBorough(this,'All NYC')">All NYC</div>
+        <div class="bpill" onclick="switchBorough(this,'Manhattan')">Manhattan</div>
+        <div class="bpill" onclick="switchBorough(this,'Brooklyn')">Brooklyn</div>
+        <div class="bpill" onclick="switchBorough(this,'Queens')">Queens</div>
+        <div class="bpill" onclick="switchBorough(this,'Bronx')">Bronx</div>
+        <div class="bpill" onclick="switchBorough(this,'Staten Island')">Staten Island</div>
+      </div>
+      <div class="podium" id="podium"></div>
+      <div class="lb-list" id="lbList"></div>
+      <div class="lb-nudge">
+        <div class="lb-nudge-title">Submit 3 more spots → reach Top 10</div>
+        <div class="lb-nudge-sub">Top contributor this week wins $50 cash · Resets Monday 9am</div>
+      </div>
     </div>
+
+    <!-- ═══ SCREEN 4: SPOT DETAIL ═══ -->
+    <div class="screen" id="s3">
+      <div class="spot-map">
+        <div class="map-lines"></div>
+        <div class="map-rd rd-h" style="top:33%"></div>
+        <div class="map-rd rd-h" style="top:60%"></div>
+        <div class="map-rd rd-h" style="top:78%"></div>
+        <div class="map-rd rd-v" style="left:27%"></div>
+        <div class="map-rd rd-v" style="left:60%"></div>
+        <div class="spot-pin-hero" id="pinHero">
+          <div class="sph-pill" id="pinLabel">$4.00 · Plain Slice</div>
+          <div class="sph-dot"></div>
+        </div>
+        <div class="nearby-pin" style="top:54%;left:14%;border-color:rgba(43,127,224,0.4);color:#aaa;">$6.00 <span style="color:var(--blue)">Dumplings</span></div>
+        <div class="nearby-pin" style="top:22%;left:55%;border-color:rgba(224,32,32,0.4);color:#aaa;">$4.50 <span style="color:var(--red)">Falafel</span></div>
+      </div>
+      <div class="spot-body" id="spotBody"></div>
+    </div>
+
+    <!-- ═══ SCREEN 5: SUBMIT ═══ -->
+    <div class="screen" id="s4">
+      <div class="submit-hero">
+        <h2>Submit A Spot</h2>
+        <p>Exact dish. Exact price. Earn points — top contributors win $50/week.</p>
+      </div>
+      <div class="pts-row">
+        <div class="pts-box"><div class="pts-num">+150</div><div class="pts-lbl">Base submission</div></div>
+        <div class="pts-box"><div class="pts-num g">+100</div><div class="pts-lbl">With receipt photo</div></div>
+        <div class="pts-box"><div class="pts-num b">+50</div><div class="pts-lbl">New neighborhood</div></div>
+        <div class="pts-box"><div class="pts-num p">+25</div><div class="pts-lbl">Per upvote</div></div>
+      </div>
+      <div class="submit-form">
+        <label class="sf-lbl">Restaurant name <em>*</em></label>
+        <input class="sf-input" id="restInput" type="text" placeholder="e.g. Joe's Pizza">
+        <label class="sf-lbl">Exact dish to order <em>*</em></label>
+        <input class="sf-input" id="dishInput" type="text" placeholder="e.g. Plain slice — not 'the pizza is cheap'">
+        <div class="sf-2col">
+          <div>
+            <label class="sf-lbl">Price <em>*</em></label>
+            <input class="sf-input" id="priceInput" type="text" placeholder="$4.00" oninput="updateSubmitBtn()">
+          </div>
+          <div>
+            <label class="sf-lbl">Neighborhood <em>*</em></label>
+            <select class="sf-select" id="hoodSelect">
+              <option value="">Select…</option>
+              <option>East Village</option><option>Greenwich Village</option>
+              <option>Midtown</option><option>Lower East Side</option>
+              <option>Crown Heights</option><option>Harlem</option>
+              <option>Flushing</option><option>Bed-Stuy</option>
+              <option>Upper West Side</option><option>Williamsburg</option>
+              <option>Astoria</option><option>Park Slope</option>
+            </select>
+          </div>
+        </div>
+        <label class="sf-lbl">Why it's worth it <em>*</em></label>
+        <textarea class="sf-textarea" id="whyInput" placeholder="One honest sentence."></textarea>
+        <div class="receipt-box" id="receiptBox" onclick="toggleReceipt()">
+          <div class="receipt-badge">+100 PTS</div>
+          <div class="receipt-icon" id="receiptIcon">📷</div>
+          <div class="receipt-text" id="receiptText">Upload receipt photo</div>
+          <div class="receipt-bonus" id="receiptBonus">Adds 🧾 verified badge + 100 bonus points</div>
+        </div>
+        <label class="sf-lbl">Tags</label>
+        <div class="tags-row">
+          <span class="sf-tag" onclick="toggleTag(this)">Cash only</span>
+          <span class="sf-tag" onclick="toggleTag(this)">Vegetarian</span>
+          <span class="sf-tag" onclick="toggleTag(this)">Hidden gem</span>
+          <span class="sf-tag" onclick="toggleTag(this)">Lunch special</span>
+          <span class="sf-tag" onclick="toggleTag(this)">Late night</span>
+          <span class="sf-tag" onclick="toggleTag(this)">No frills</span>
+        </div>
+        <label class="sf-lbl">Your @username</label>
+        <input class="sf-input" id="handleInput" type="text" placeholder="@handle — shows on your pin">
+      </div>
+      <div class="submit-btn-wrap">
+        <button class="submit-btn" id="submitBtn" onclick="submitSpot()">SUBMIT → EARN 150 PTS</button>
+        <div class="submit-note">You're ranked <em>#12 in East Village</em><br>3 more spots = Top 10 · Top = $50 cash</div>
+      </div>
+    </div>
+
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════
-// DATA
-// ════════════════════════════════════
-const MEALS=[
-  {id:1,name:"Pork & chive dumplings (12pc)",restaurant:"Shu Jiao Fu Zhou",price:6.00,neighborhood:"East Village",cuisine:"Chinese",dish:"dumplings",lat:40.7264,lng:-73.9860,why:"Best dumplings in the city, full stop. Cash only, tiny spot, worth the line.",tags:["Cash only","Hidden gem"],receipt:true,submitter:"@dumplingking",verif:14},
-  {id:2,name:"Falafel pita with hot sauce",restaurant:"Mamoun's Falafel",price:4.50,neighborhood:"Greenwich Village",cuisine:"Middle Eastern",dish:"falafel",lat:40.7306,lng:-74.0007,why:"Legit NYC institution. Crispy falafel, fresh pita, addictive hot sauce.",tags:["Vegetarian"],receipt:false,submitter:"@nycbites",verif:22},
-  {id:3,name:"Plain slice",restaurant:"Joe's Pizza",price:4.00,neighborhood:"Greenwich Village",cuisine:"Pizza",dish:"pizza",lat:40.7304,lng:-74.0027,why:"The platonic ideal of a NYC slice. No notes. Perfect.",tags:[],receipt:true,submitter:"@slicehead",verif:31},
-  {id:4,name:"Spicy cumin lamb noodles",restaurant:"Xi'an Famous Foods",price:11.00,neighborhood:"East Village",cuisine:"Chinese",dish:"noodles",lat:40.7268,lng:-73.9855,why:"Hand-ripped noodles, numbing spice. Tastes like a $25 dish.",tags:[],receipt:false,submitter:"@xian_fan",verif:8},
-  {id:5,name:"2 hot dogs + tropical drink",restaurant:"Gray's Papaya",price:6.45,neighborhood:"Upper West Side",cuisine:"American",dish:"hot dog",lat:40.7793,lng:-73.9815,why:"NYC survival kit since 1973. Never closed. Never bad.",tags:[],receipt:false,submitter:"@hotdognyc",verif:19},
-  {id:6,name:"10 pork & chive dumplings",restaurant:"North Dumpling",price:4.50,neighborhood:"Lower East Side",cuisine:"Chinese",dish:"dumplings",lat:40.7140,lng:-73.9960,why:"Tiny, no frills, insane value. Made fresh every morning.",tags:["Cash only","Hidden gem"],receipt:true,submitter:"@lesdigs",verif:7},
-  {id:7,name:"Adobada taco",restaurant:"Taqueria Milear",price:4.00,neighborhood:"Midtown",cuisine:"Mexican",dish:"tacos",lat:40.7549,lng:-73.9978,why:"The marinade on this pork is genuinely special. Order three.",tags:[],receipt:false,submitter:"@tacotues",verif:5},
-  {id:8,name:"Doubles",restaurant:"A&A Bake and Doubles",price:2.50,neighborhood:"Bed-Stuy",cuisine:"Caribbean",dish:"doubles",lat:40.6865,lng:-73.9440,why:"Cheapest legit meal in Brooklyn. Bara fried fresh, tamarind sauce.",tags:["Vegetarian","Hidden gem"],receipt:false,submitter:"@brooklyngems",verif:11},
-  {id:9,name:"Rice + 3 vegetarian mains",restaurant:"Punjabi Grocery & Deli",price:8.50,neighborhood:"Midtown",cuisine:"Indian",dish:"rice",lat:40.7533,lng:-73.9906,why:"Open 24/7. Massive portions, rotating menu.",tags:["Vegetarian","Late night"],receipt:true,submitter:"@midnightmunch",verif:9},
-  {id:10,name:"Jianbing (Chinese street crepe)",restaurant:"Eight Jane Food",price:5.00,neighborhood:"Flushing",cuisine:"Chinese",dish:"jianbing",lat:40.7596,lng:-73.8300,why:"Crispy, eggy, scallion-packed. Breakfast in Beijing.",tags:["Hidden gem"],receipt:false,submitter:"@flushingfood",verif:6},
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+const SPOTS = [
+  {id:1,dish:"Pork & chive dumplings (12pc)",rest:"Shu Jiao Fu Zhou",price:6.00,hood:"East Village",tags:["verified","cash","gem"],color:"var(--blue)",conf:87,quote:"The best deal in the East Village, period. These dumplings are hand-made and criminally cheap.",order:"Walk in, point to the 'Pork & Chive Dumplings' sign. $6 cash. No menu needed.",submitter:"@dumplingking",pts:250,veg:false},
+  {id:2,dish:"Falafel pita with hot sauce",rest:"Mamoun's Falafel",price:4.50,hood:"Greenwich Village",tags:["verified","cash"],color:"var(--red)",conf:62,quote:"The original NYC falafel. Been the same price for decades. Hot sauce makes it.",order:"Say 'falafel pita, hot sauce.' $4.50 cash. You're done in 60 seconds.",submitter:"@flushingfood",pts:200,veg:true},
+  {id:3,dish:"Plain slice",rest:"Joe's Pizza",price:4.00,hood:"Greenwich Village",tags:["verified","gem"],color:"var(--red)",conf:31,quote:"The platonic ideal of a NYC slice. No notes. Perfect.",order:"Walk in, say 'one slice.' Pay $4. Eat standing at the counter.",submitter:"@slicehead",pts:150,veg:true},
+  {id:4,dish:"Doubles w/ pepper sauce",rest:"Ali's Trinidad",price:3.00,hood:"Crown Heights",tags:["cash","gem"],color:"var(--red)",conf:44,quote:"Two fried bara stuffed with curried chickpeas. Absolutely unreal for $3.",order:"Say 'doubles, slight pepper.' $3 cash. Eat immediately.",submitter:"@tacotues",pts:175,veg:true},
+  {id:5,dish:"Adobada taco",rest:"Taqueria Milear",price:4.00,hood:"Midtown",tags:["cash"],color:"var(--red)",conf:28,quote:"Hidden in a Midtown food court. Real al pastor, not tourist nonsense.",order:"Ask for adobada taco, $4. Add onion and cilantro. No need to ask for anything else.",submitter:"@midnightmunch",pts:200,veg:false},
+  {id:6,dish:"10 pork & chive dumplings",rest:"North Dumpling",price:4.50,hood:"Lower East Side",tags:["verified","cash"],color:"var(--red)",conf:55,quote:"LES sleeper. Never a line, always fresh, always $4.50.",order:"Say '10 dumplings pork chive.' Cash only. Exact change if possible.",submitter:"@dumplingking",pts:150,veg:false},
+  {id:7,dish:"Rice + 3 vegetarian mains",rest:"Punjabi Grocery & Deli",price:8.50,hood:"Midtown",tags:["gem","veg"],color:"var(--purple)",conf:19,quote:"Wall Street workers' secret. Buffet-style Indian. Unbeatable for under $10.",order:"Point to 3 mains. They scoop. $8.50 total.",submitter:"@nycbites",pts:225,veg:true},
+  {id:8,dish:"Gray's Papaya duo + tropical drink",rest:"Gray's Papaya",price:6.45,hood:"Upper West Side",tags:["gem"],color:"var(--blue)",conf:38,quote:"NYC institution. Two dogs and a drink under $7. Perfect any time.",order:"Say 'Recession Special.' They know. $6.45.",submitter:"@slicehead",pts:175,veg:false},
+  {id:9,dish:"Jianbing (Chinese crepe)",rest:"Eight Jane Food",price:5.00,hood:"Flushing",tags:["gem","verified"],color:"var(--red)",conf:22,quote:"Authentic Beijing street food in Flushing. Egg, scallion, hoisin, crispy wonton.",order:"Point to the jianbing. $5. They make it fresh in 3 minutes.",submitter:"@flushingfood",pts:200,veg:true},
+  {id:10,dish:"Beef patty + coco bread",rest:"Golden Krust",price:3.50,hood:"Harlem",tags:["cash"],color:"var(--red)",conf:41,quote:"The combo you need. Spicy beef patty slid into buttery coco bread.",order:"Say 'beef patty in coco bread.' $3.50. Pure NYC.",submitter:"@dumplingking",pts:150,veg:false},
 ];
 
-const DROP_SPOTS=[
-  {name:"Doubles w/ pepper sauce",restaurant:"Ali's Trinidad",price:3.00,neighborhood:"Crown Heights",locked:false},
-  {name:"Beef patty + coco bread",restaurant:"Golden Krust",price:3.50,neighborhood:"Harlem",locked:false},
-  {name:"Pho (small bowl)",restaurant:"Pho Bang",price:8.00,neighborhood:"Flushing",locked:true},
-  {name:"Birria taco (2pc)",restaurant:"La Cabana",price:5.00,neighborhood:"Jackson Heights",locked:true},
-  {name:"Lamb over rice",restaurant:"The Halal Guys",price:8.00,neighborhood:"Midtown",locked:true},
+const LEADERS = [
+  {rank:1,avi:"🐉",handle:"@dumplingking",sub:"East Village · 47 spots",pts:4820,trend:"+3 this week"},
+  {rank:2,avi:"🌮",handle:"@tacotues",sub:"Midtown · 31 spots",pts:3210,trend:"+1"},
+  {rank:3,avi:"🥙",handle:"@flushingfood",sub:"Flushing · 26 spots",pts:2890,trend:"+2"},
+  {rank:4,avi:"🍕",handle:"@slicehead",sub:"Greenwich Village · 18 spots",pts:2140,trend:"+2 this week"},
+  {rank:5,avi:"🌿",handle:"@nycbites",sub:"All boroughs · 15 spots",pts:1890,trend:""},
+  {rank:6,avi:"🍛",handle:"@midnightmunch",sub:"Midtown · 11 spots",pts:1650,trend:""},
+  {rank:7,avi:"🥢",handle:"@friedriceking",sub:"Flushing · 9 spots",pts:1340,trend:"+1"},
+  {rank:8,avi:"🌯",handle:"@halalhero",sub:"Midtown · 8 spots",pts:1120,trend:""},
+  {rank:9,avi:"🫔",handle:"@eastsidemike",sub:"LES · 7 spots",pts:980,trend:""},
+  {rank:10,avi:"🍜",handle:"@ramenfan99",sub:"East Village · 6 spots",pts:820,trend:""},
+  {rank:12,avi:"👤",handle:"@you",sub:"East Village · 3 spots this week",pts:420,trend:"↑ +5 today",isYou:true},
 ];
 
-const HOOD_COORDS={
-  'Lower East Side':[40.7150,-73.9870,15],'East Village':[40.7264,-73.9818,15],
-  'Greenwich Village':[40.7336,-74.0027,15],'Midtown':[40.7549,-73.9840,14],
-  'Midtown West':[40.7549,-73.9978,15],'Upper West Side':[40.7831,-73.9712,14],
-  'Upper East Side':[40.7736,-73.9566,14],'Harlem':[40.8116,-73.9465,14],
-  'Williamsburg':[40.7081,-73.9571,15],'Bed-Stuy':[40.6872,-73.9418,14],
-  'Flushing':[40.7675,-73.8330,15],'Astoria':[40.7721,-73.9302,14],
-  'Bushwick':[40.6942,-73.9210,14],'Crown Heights':[40.6678,-73.9442,14],
-  'Park Slope':[40.6728,-73.9786,14],'Jackson Heights':[40.7557,-73.8830,14],
+// State
+let state = {
+  pts: 420,
+  spots: 3,
+  confirmations: 0,
+  streak: 23,
+  saved: 1840,
+  hasReceipt: false,
+  currentSpot: SPOTS[0],
+  activeFilter: 'all',
+  dropUnlocked: false,
 };
 
-// Typeahead suggestion data
-const SUGGESTIONS={
-  neighborhoods:['Lower East Side','East Village','Greenwich Village','Midtown','Upper West Side','Upper East Side','Harlem','Williamsburg','Bed-Stuy','Flushing','Astoria','Bushwick','Crown Heights','Park Slope','Jackson Heights','Sunset Park','The Bronx','Staten Island','Chinatown','SoHo','Tribeca','Chelsea','Hell\'s Kitchen','Murray Hill','Kips Bay','Inwood','Washington Heights','Fordham','Pelham Bay'],
-  dishes:['dumplings','tacos','pizza','falafel','ramen','pho','noodles','hot dog','doubles','jianbing','birria','banh mi','shawarma','gyro','pupusas','arepas','empanadas','curry','biryani','pad thai','sushi','bao','soup dumplings','cheeseburger','fried chicken','bánh mì','congee','rice and beans'],
-  cuisines:['Chinese','Mexican','Indian','Middle Eastern','Caribbean','Pizza','American','Korean','Japanese','Thai','Vietnamese','Ethiopian','Bangladeshi','Trinidadian','Salvadoran','Dominican','Jamaican','Pakistani','Halal','Kosher'],
-};
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderSpotCards(SPOTS.slice(0,5));
+  renderLbMini();
+  renderDropRows();
+  renderLeaderboard(LEADERS);
+  renderSpotDetail(SPOTS[0]);
+  renderRecentSubmissions();
+  startDropTimer();
+});
 
-const C={red:'#E02020',blue:'#2B7FE0',purple:'#7B52D4'};
-const pc=p=>p<6?'red':p<=10?'blue':'purple';
-
-let map=null,clusterGroup=null,activeId=null,filterMode='all',hoodFilter=null,dropUnlocked=false,searchQuery='';
-
-// ════════════════════════════════════
-// MAP INIT
-// ════════════════════════════════════
-function initMap(){
-  if(map) return;
-  map=L.map('map',{zoomControl:false}).setView([40.728,-73.965],13);
-  L.control.zoom({position:'bottomright'}).addTo(map);
-
-  // OpenStreetMap with dark CSS filter — guaranteed to work everywhere
-  const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-    maxZoom:19
-  }).addTo(map);
-
-  // Cluster group
-  clusterGroup=L.markerClusterGroup({
-    maxClusterRadius:60,
-    spiderfyOnMaxZoom:true,
-    showCoverageOnHover:false,
-    zoomToBoundsOnClick:true,
-    iconCreateFunction:function(cluster){
-      const count=cluster.getChildCount();
-      return L.divIcon({
-        html:`<div>${count}</div>`,
-        className:'marker-cluster',
-        iconSize:[40,40]
-      });
-    }
-  });
-  map.addLayer(clusterGroup);
-  refresh();
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function showScreen(idx, el) {
+  document.querySelectorAll('.screen').forEach((s,i) => s.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === idx));
 }
 
-// ════════════════════════════════════
-// SCREEN NAVIGATION
-// ════════════════════════════════════
-function showApp(callback){
-  document.getElementById('screen-hero').style.display='none';
-  const app=document.getElementById('screen-app');
-  app.style.display='flex';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    initMap();
-    if(map) map.invalidateSize();
-    if(callback) callback();
-  }));
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function showHero(){
-  document.getElementById('screen-app').style.display='none';
-  document.getElementById('screen-hero').style.display='flex';
-}
-
-function goHood(hood){
-  hoodFilter=hood||null;
-  searchQuery='';
-  showApp(()=>{
-    if(hood&&HOOD_COORDS[hood]&&map){
-      const[lat,lng,zoom]=HOOD_COORDS[hood];
-      map.setView([lat,lng],zoom);
-    }
-    refresh();
-    if(hood){
-      document.getElementById('hoodBannerTxt').textContent='Showing spots in '+hood;
-      document.getElementById('hood-banner').classList.add('show');
-    }
-  });
-}
-
-function goAll(){
-  hoodFilter=null;searchQuery='';
-  showApp(()=>{
-    if(map) map.setView([40.728,-73.965],13);
-    refresh();
-  });
-}
-
-// ════════════════════════════════════
-// FILTER + RENDER
-// ════════════════════════════════════
-function getFiltered(){
-  const q=searchQuery.toLowerCase();
-  return MEALS.filter(m=>{
-    const f=filterMode;
-    const mf=f==='all'||(f==='under6'&&m.price<6)||(f==='under10'&&m.price<=10)||(f==='under15'&&m.price<=15)||(f==='veg'&&m.tags.includes('Vegetarian'))||(f==='cash'&&m.tags.includes('Cash only'))||(f==='gem'&&m.tags.includes('Hidden gem'))||(f==='rec'&&m.receipt);
-    const mh=!hoodFilter||m.neighborhood.toLowerCase().includes(hoodFilter.toLowerCase());
-    const mq=!q||m.name.toLowerCase().includes(q)||m.restaurant.toLowerCase().includes(q)||m.neighborhood.toLowerCase().includes(q)||m.cuisine.toLowerCase().includes(q)||m.dish.toLowerCase().includes(q);
-    return mf&&mh&&mq;
-  });
-}
-
-function refresh(){
-  const filtered=getFiltered();
-  renderMarkers(filtered);
-  renderSidebar(filtered);
-  updateStats(filtered);
-}
-
-function renderMarkers(filtered){
-  if(!map||!clusterGroup) return;
-  clusterGroup.clearLayers();
-  filtered.forEach(meal=>{
-    const color=C[pc(meal.price)];
-    const label=meal.name.length>18?meal.name.slice(0,16)+'…':meal.name;
-    const icon=L.divIcon({
-      html:`<div class="map-pin" style="border-color:${color}"><span class="pin-price" style="color:${color}">$${meal.price.toFixed(2)}</span><span class="pin-name">${label}</span>${meal.receipt?'<span style="font-size:8px;margin-left:2px">🧾</span>':''}</div>`,
-      className:'',iconAnchor:[0,14]
-    });
-    const mk=L.marker([meal.lat,meal.lng],{icon});
-    mk.bindPopup(makePopup(meal),{maxWidth:265,minWidth:260,autoPan:true});
-    mk.on('click',()=>{activeId=meal.id;renderSidebar(getFiltered());});
-    clusterGroup.addLayer(mk);
-  });
-}
-
-function makeTags(tags,receipt){
-  let t='';
-  if(receipt) t+=`<span class="ctag ctag-rec">🧾 VERIFIED</span>`;
-  tags.forEach(tag=>{
-    const cl=tag==='Vegetarian'?'ctag-veg':tag==='Cash only'?'ctag-cash':tag==='Hidden gem'?'ctag-gem':'ctag-night';
-    t+=`<span class="ctag ${cl}">${tag.toUpperCase()}</span>`;
-  });
-  return t;
-}
-
-function makePopup(m){
-  const color=C[pc(m.price)];
-  const tags=makeTags(m.tags,m.receipt);
-  return`<div class="pu-body">
-    <div class="pu-price" style="color:${color}">$${m.price.toFixed(2)}</div>
-    <div class="pu-dish">${m.name}</div>
-    <div class="pu-rest">${m.restaurant.toUpperCase()} · ${m.neighborhood.toUpperCase()}</div>
-    <div class="pu-order"><span>ORDER THIS →</span> ${m.name}</div>
-    ${tags?`<div class="pu-tags">${tags}</div>`:''}
-    <div class="pu-verif">✓ ${m.verif} confirmed · submitted by ${m.submitter}</div>
-    <div class="pu-verify">
-      <button class="pu-vbtn" onclick="verify(${m.id},'good',this)">✓ GOOD</button>
-      <button class="pu-vbtn" onclick="verify(${m.id},'changed',this)">$ CHANGED</button>
-      <button class="pu-vbtn" onclick="verify(${m.id},'closed',this)">✕ CLOSED</button>
-    </div>
-    <button class="pu-share" onclick="openShare(${m.id})">↗ SHARE THIS SPOT</button>
-  </div>
-  <div class="pu-foot">
-    <span class="pu-verified">✓ ${m.verif} verifications</span>
-    <a class="pu-dir" href="https://maps.google.com/?q=${encodeURIComponent(m.restaurant+' '+m.neighborhood+' NYC')}" target="_blank">DIRECTIONS →</a>
-  </div>`;
-}
-
-function renderSidebar(filtered){
-  const sorted=[...filtered].sort((a,b)=>a.price-b.price);
-  document.getElementById('sbTitle').textContent=hoodFilter||'All Spots';
-  document.getElementById('sbSub').textContent=sorted.length+' MEALS — SORTED BY PRICE';
-  document.getElementById('mealList').innerHTML=sorted.map(m=>{
-    const color=C[pc(m.price)];
-    const tags=makeTags(m.tags,m.receipt);
-    return`<div class="meal-card${activeId===m.id?' active':''}" onclick="cardClick(${m.id})">
-      <div class="card-stripe" style="background:${color}"></div>
-      <div class="card-top">
-        <div><div class="card-name">${m.name}</div><div class="card-rest">${m.restaurant.toUpperCase()}</div></div>
-        <div class="card-price" style="color:${color}">$${m.price.toFixed(2)}</div>
+// ═══════════════════════════════════════════════
+//  SPOT CARDS — HOME
+// ═══════════════════════════════════════════════
+function renderSpotCards(spots) {
+  const el = document.getElementById('spotCards');
+  el.innerHTML = spots.map(s => {
+    const badges = s.tags.map(t => {
+      const map = {verified:'🧾 VERIFIED',cash:'💵 CASH',gem:'💎 GEM',veg:'🌿 VEG'};
+      const cls = {verified:'v',cash:'c',gem:'g',veg:'v'};
+      return `<span class="sc-badge ${cls[t]||'c'}">${map[t]||t}</span>`;
+    }).join('');
+    return `<div class="spot-card" onclick="openSpot(${s.id})">
+      <div class="sc-price" style="color:${s.color}">$${s.price.toFixed(2)}</div>
+      <div class="sc-info">
+        <div class="sc-dish">${s.dish}</div>
+        <div class="sc-rest">${s.rest}</div>
+        <div class="sc-hood">📍 ${s.hood}</div>
+        <div class="sc-badges">${badges}</div>
       </div>
-      ${tags?`<div class="card-tags">${tags}</div>`:''}
-      <div class="card-why">"${m.why}"</div>
-      <div class="card-foot"><span class="card-hood">📍 ${m.neighborhood.toUpperCase()}</span><span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3)">✓${m.verif} · ${m.submitter}</span></div>
-      <div class="verify-row">
-        <button class="vbtn" onclick="event.stopPropagation();verify(${m.id},'good',this)">✓ GOOD</button>
-        <button class="vbtn" onclick="event.stopPropagation();verify(${m.id},'changed',this)">$ CHANGED</button>
-        <button class="vbtn" onclick="event.stopPropagation();verify(${m.id},'closed',this)">✕ CLOSED</button>
-        <button class="vbtn" style="flex:0.5" onclick="event.stopPropagation();openShare(${m.id})">↗</button>
-      </div>
+      <div class="sc-arr">›</div>
     </div>`;
   }).join('');
 }
 
-function updateStats(filtered){
-  document.getElementById('statCount').textContent=filtered.length;
-  if(filtered.length){
-    const avg=filtered.reduce((s,m)=>s+m.price,0)/filtered.length;
-    document.getElementById('statAvg').textContent='$'+avg.toFixed(2);
-    document.getElementById('statCheap').textContent='$'+Math.min(...filtered.map(m=>m.price)).toFixed(2);
-  }
+function openSpot(id) {
+  const spot = SPOTS.find(s => s.id === id);
+  if (!spot) return;
+  state.currentSpot = spot;
+  renderSpotDetail(spot);
+  showScreen(3, document.querySelectorAll('.tab')[3]);
 }
 
-function cardClick(id){
-  activeId=id;
-  const m=MEALS.find(x=>x.id===id);
-  if(m&&map) map.setView([m.lat,m.lng],16);
-  renderSidebar(getFiltered());
+function showAllSpots() {
+  renderSpotCards(SPOTS);
+  document.querySelector('#s0').scrollTo(0,300);
 }
 
-// ════════════════════════════════════
-// TYPEAHEAD
-// ════════════════════════════════════
-function buildSuggestions(q){
-  if(!q||q.length<1) return [];
-  const ql=q.toLowerCase();
-  const results=[];
-  // Neighborhoods
-  const hoods=SUGGESTIONS.neighborhoods.filter(h=>h.toLowerCase().includes(ql)).slice(0,4);
-  if(hoods.length) results.push({type:'section',label:'Neighborhoods',items:hoods.map(h=>({icon:'📍',main:h,sub:'Neighborhood',action:()=>goHood(h)}))});
-  // Dishes
-  const dishes=SUGGESTIONS.dishes.filter(d=>d.toLowerCase().includes(ql)).slice(0,3);
-  if(dishes.length) results.push({type:'section',label:'Dishes',items:dishes.map(d=>({icon:'🍽',main:d.charAt(0).toUpperCase()+d.slice(1),sub:'Dish type',action:()=>doSearch(d)}))});
-  // Cuisines
-  const cuisines=SUGGESTIONS.cuisines.filter(c=>c.toLowerCase().includes(ql)).slice(0,3);
-  if(cuisines.length) results.push({type:'section',label:'Cuisines',items:cuisines.map(c=>({icon:'🌍',main:c,sub:'Cuisine type',action:()=>doSearch(c)}))});
-  // Matching meals
-  const meals=MEALS.filter(m=>m.name.toLowerCase().includes(ql)||m.restaurant.toLowerCase().includes(ql)).slice(0,3);
-  if(meals.length) results.push({type:'section',label:'Spots',items:meals.map(m=>({icon:'📌',main:m.name,sub:`${m.restaurant} · $${m.price.toFixed(2)}`,action:()=>doSearch(m.name)}))});
-  return results;
+// ═══════════════════════════════════════════════
+//  FILTER PILLS
+// ═══════════════════════════════════════════════
+function applyFilter(f, el) {
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  state.activeFilter = f;
+  let filtered = SPOTS;
+  if (f === 'under6') filtered = SPOTS.filter(s => s.price < 6);
+  else if (f === 'under10') filtered = SPOTS.filter(s => s.price < 10);
+  else if (f === 'veg') filtered = SPOTS.filter(s => s.veg);
+  else if (f === 'cash') filtered = SPOTS.filter(s => s.tags.includes('cash'));
+  else if (f === 'verified') filtered = SPOTS.filter(s => s.tags.includes('verified'));
+  else if (f === 'gem') filtered = SPOTS.filter(s => s.tags.includes('gem'));
+  renderSpotCards(filtered.length ? filtered : [{id:0,dish:'No spots match this filter yet',rest:'Be the first to submit one!',price:0,hood:'NYC',tags:[],color:'var(--text3)',conf:0}]);
 }
 
-function renderTypeahead(sections,container){
-  if(!sections.length){container.classList.remove('open');return;}
-  let html='';
-  sections.forEach((sec,i)=>{
-    if(i>0) html+=`<div class="ta-divider"></div>`;
-    html+=`<div class="ta-section"><div class="ta-label">${sec.label}</div>`;
-    sec.items.forEach((item,j)=>{
-      html+=`<div class="ta-item" data-sec="${i}" data-item="${j}"><span class="ta-item-icon">${item.icon}</span><div><div class="ta-item-main">${item.main}</div><div class="ta-item-sub">${item.sub}</div></div></div>`;
-    });
-    html+='</div>';
-  });
-  container.innerHTML=html;
-  container.classList.add('open');
-  // Attach click events
-  container.querySelectorAll('.ta-item').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const sec=parseInt(el.dataset.sec),item=parseInt(el.dataset.item);
-      sections[sec].items[item].action();
-      container.classList.remove('open');
-    });
-  });
-}
-
-function doSearch(q){
-  searchQuery=q;
-  const matchHood=SUGGESTIONS.neighborhoods.find(h=>h.toLowerCase()===q.toLowerCase());
-  if(matchHood){goHood(matchHood);}
-  else{
-    hoodFilter=null;
-    showApp(()=>{if(map)map.setView([40.728,-73.965],13);refresh();});
-  }
-}
-
-// Hero typeahead
-const heroInput=document.getElementById('heroSearch');
-const heroTA=document.getElementById('heroTypeahead');
-let heroSections=[];
-heroInput.addEventListener('input',()=>{
-  heroSections=buildSuggestions(heroInput.value);
-  renderTypeahead(heroSections,heroTA);
-});
-heroInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){e.preventDefault();heroTA.classList.remove('open');doSearch(heroInput.value.trim());heroInput.value='';}
-});
-document.getElementById('heroSearchBtn').addEventListener('click',()=>{
-  heroTA.classList.remove('open');
-  doSearch(heroInput.value.trim());
-  heroInput.value='';
-});
-
-// App typeahead
-const appInput=document.getElementById('appSearch');
-const appTA=document.getElementById('appTypeahead');
-let appSections=[];
-appInput.addEventListener('input',()=>{
-  searchQuery=appInput.value;
-  appSections=buildSuggestions(appInput.value);
-  renderTypeahead(appSections,appTA);
-  refresh();
-});
-appInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){e.preventDefault();appTA.classList.remove('open');}
-});
-
-// Close typeaheads on outside click
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.hero-search-outer')) heroTA.classList.remove('open');
-  if(!e.target.closest('.app-search-outer')) appTA.classList.remove('open');
-});
-
-// ════════════════════════════════════
-// DENSITY BARS
-// ════════════════════════════════════
-function renderDensity(){
-  const hoods={};
-  MEALS.forEach(m=>{
-    if(!hoods[m.neighborhood])hoods[m.neighborhood]={n:0,total:0};
-    hoods[m.neighborhood].n++;hoods[m.neighborhood].total+=m.price;
-  });
-  const sorted=Object.entries(hoods).sort((a,b)=>b[1].n-a[1].n);
-  const max=sorted[0][1].n;
-  document.getElementById('densityBars').innerHTML=sorted.map(([h,d])=>`
-    <div class="density-row" onclick="goHood('${h}')">
-      <span class="density-hood">${h.toUpperCase()}</span>
-      <div class="density-bar-wrap"><div class="density-bar" style="width:${Math.round(d.n/max*100)}%"></div></div>
-      <span class="density-meta">$${(d.total/d.n).toFixed(2)} · ${d.n} spot${d.n>1?'s':''}</span>
+// ═══════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════
+function handleSearch(val) {
+  const drop = document.getElementById('searchDrop');
+  if (!val.trim()) { drop.classList.remove('open'); return; }
+  const q = val.toLowerCase();
+  const results = SPOTS.filter(s =>
+    s.dish.toLowerCase().includes(q) ||
+    s.rest.toLowerCase().includes(q) ||
+    s.hood.toLowerCase().includes(q)
+  ).slice(0,4);
+  if (!results.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = results.map(s => `
+    <div class="sd-item" onclick="openSpot(${s.id})">
+      <div>
+        <div class="sd-dish">${s.dish}</div>
+        <div class="sd-meta">${s.rest} · ${s.hood} · $${s.price.toFixed(2)}</div>
+      </div>
     </div>`).join('');
+  drop.classList.add('open');
 }
 
-// ════════════════════════════════════
-// COUNTDOWN
-// ════════════════════════════════════
-function updateCountdown(){
-  const now=new Date(),nm=new Date(now);
-  nm.setDate(now.getDate()+((1-now.getDay()+7)%7||7));
-  nm.setHours(9,0,0,0);
-  const diff=nm-now,h=Math.floor(diff/3600000),m2=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
-  const el=document.getElementById('heroCountdown');
-  if(el) el.textContent=`${String(h).padStart(2,'0')}:${String(m2).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-setInterval(updateCountdown,1000);updateCountdown();
-
-// ════════════════════════════════════
-// VERIFY
-// ════════════════════════════════════
-function verify(id,type,btn){
-  const msgs={good:'✓ Marked as still good — thanks!',changed:'$ Price change noted — flagged for review.',closed:'✕ Marked possibly closed — thanks.'};
-  toast(msgs[type]);
-  if(type==='good'){btn.style.color='var(--green)';btn.style.borderColor='var(--green)';}
-  if(type==='changed'){btn.style.color='var(--amber)';btn.style.borderColor='var(--amber)';}
-  if(type==='closed'){btn.style.color='var(--red)';btn.style.borderColor='var(--red)';}
+function closeSearch() {
+  document.getElementById('searchDrop').classList.remove('open');
 }
 
-// ════════════════════════════════════
-// SHARE
-// ════════════════════════════════════
-function openShare(id){
-  const m=MEALS.find(x=>x.id===id);if(!m)return;
-  const color=C[pc(m.price)];
-  document.getElementById('shareCardContent').innerHTML=`
-    <div class="share-card">
-      <div class="share-brand">Cheap<em>Sheet</em> NYC</div>
-      <div class="share-price" style="color:${color}">$${m.price.toFixed(2)}</div>
-      <div class="share-dish">${m.name.toUpperCase()}</div>
-      <div class="share-rest">${m.restaurant} · ${m.neighborhood}</div>
-      <div class="share-order"><strong>ORDER THIS →</strong> ${m.name}${m.receipt?' · 🧾 receipt verified':''}</div>
-      <div class="share-foot">📍 ${m.neighborhood} · ${m.submitter} · cheapsheetnyc.com</div>
-    </div>`;
-  document.getElementById('shareOverlay').classList.add('open');
-}
-
-// ════════════════════════════════════
-// HUNGRY NOW
-// ════════════════════════════════════
-function openHungry(){
-  document.getElementById('hungryOverlay').classList.add('open');
-  document.getElementById('hungryContent').innerHTML='<div class="hungry-loading">GETTING YOUR LOCATION…</div>';
-  if(!navigator.geolocation){showHungryFallback();return;}
-  navigator.geolocation.getCurrentPosition(
-    pos=>showHungryResults(pos.coords.latitude,pos.coords.longitude),
-    ()=>showHungryFallback(),
-    {enableHighAccuracy:false,timeout:8000,maximumAge:60000}
+function doSearch() {
+  const val = document.getElementById('searchInput').value.toLowerCase();
+  const results = SPOTS.filter(s =>
+    s.dish.toLowerCase().includes(val) ||
+    s.rest.toLowerCase().includes(val) ||
+    s.hood.toLowerCase().includes(val)
   );
+  closeSearch();
+  renderSpotCards(results.length ? results : SPOTS);
 }
 
-function geoDistance(a,b,c,d){
-  const R=3959,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180;
-  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;
-  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+function filterByChip(term, el) {
+  document.querySelectorAll('.s1-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('searchInput').value = term;
+  doSearch();
 }
 
-function showHungryResults(lat,lng){
-  const sorted=[...MEALS].map(m=>({...m,mi:geoDistance(lat,lng,m.lat,m.lng)})).sort((a,b)=>a.mi-b.mi).slice(0,5);
-  let html='<div class="hungry-spots">';
-  sorted.forEach(m=>{
-    const color=C[pc(m.price)];
-    const mins=Math.round(m.mi/0.04);
-    html+=`<div class="nearby-card" onclick="closeOverlay('hungryOverlay');goHood('${m.neighborhood}')">
-      <div class="nearby-stripe" style="background:${color}"></div>
-      <div class="nearby-top">
-        <div><div class="nearby-name">${m.name}</div><div class="nearby-rest">${m.restaurant} · ${m.neighborhood}</div></div>
-        <div class="nearby-price" style="color:${color}">$${m.price.toFixed(2)}</div>
-      </div>
-      <div class="nearby-meta">
-        <span class="nearby-walk">🚶 <em>${mins} min walk</em> · ${m.mi.toFixed(1)} mi</span>
-        <span class="nearby-open">OPEN</span>
-        ${m.receipt?'<span class="ctag ctag-rec" style="font-size:8px">🧾</span>':''}
-      </div>
-    </div>`;
-  });
-  html+=`</div><div class="hungry-cta"><button onclick="closeOverlay('hungryOverlay');goAll()">SEE ALL ON MAP →</button></div>`;
-  document.getElementById('hungryContent').innerHTML=html;
-}
-
-function showHungryFallback(){
-  const sorted=[...MEALS].sort((a,b)=>a.price-b.price).slice(0,5);
-  let html='<div class="hungry-loc-req">📍 Location unavailable — showing <em>cheapest spots</em> instead. Enable location for nearest results.</div><div class="hungry-spots">';
-  sorted.forEach(m=>{
-    const color=C[pc(m.price)];
-    html+=`<div class="nearby-card" onclick="closeOverlay('hungryOverlay');goHood('${m.neighborhood}')">
-      <div class="nearby-stripe" style="background:${color}"></div>
-      <div class="nearby-top">
-        <div><div class="nearby-name">${m.name}</div><div class="nearby-rest">${m.restaurant} · ${m.neighborhood}</div></div>
-        <div class="nearby-price" style="color:${color}">$${m.price.toFixed(2)}</div>
-      </div>
-    </div>`;
-  });
-  html+=`</div><div class="hungry-cta"><button onclick="closeOverlay('hungryOverlay');goAll()">SEE ALL ON MAP →</button></div>`;
-  document.getElementById('hungryContent').innerHTML=html;
-}
-
-// ════════════════════════════════════
-// MONDAY DROP
-// ════════════════════════════════════
-function openDrop(){
-  document.getElementById('dropItems').innerHTML=DROP_SPOTS.map(s=>`
-    <div class="drop-item${!dropUnlocked&&s.locked?' locked':''}">
-      <div class="drop-stripe"></div>
-      <div class="drop-name">${s.name}</div>
-      <div class="drop-rest">${s.restaurant} · ${s.neighborhood}</div>
-      <div class="drop-price-tag">$${s.price.toFixed(2)}</div>
+// ═══════════════════════════════════════════════
+//  LEADERBOARD MINI
+// ═══════════════════════════════════════════════
+function renderLbMini() {
+  document.getElementById('lbMini').innerHTML = LEADERS.slice(0,3).map(l => `
+    <div class="lb-mini-row" onclick="showScreen(2,document.querySelectorAll('.tab')[2])">
+      <div class="lb-rank ${['g','s','b'][l.rank-1]}">${l.rank}</div>
+      <div class="lb-avi">${l.avi}</div>
+      <div class="lb-inf"><div class="lb-handle">${l.handle}</div><div class="lb-sub">${l.sub}</div></div>
+      <div class="lb-pts-col"><div class="lb-pts-n">${l.pts.toLocaleString()}</div><div class="lb-pts-l">pts</div></div>
     </div>`).join('');
-  document.getElementById('dropOverlay').classList.add('open');
 }
 
-// ════════════════════════════════════
-// UTILS
-// ════════════════════════════════════
-function closeOverlay(id){document.getElementById(id).classList.remove('open');}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-function receiptPicked(input){if(input.files[0])document.getElementById('receiptTxt').innerHTML=`✓ ${input.files[0].name}<br><em>Receipt attached — pin will show 🧾</em>`;}
+// ═══════════════════════════════════════════════
+//  MONDAY DROP
+// ═══════════════════════════════════════════════
+const DROP_SPOTS = [
+  {n:'01',dish:"Doubles w/ pepper sauce",rest:"Ali's Trinidad · Crown Heights",price:"$3.00"},
+  {n:'02',dish:"Beef patty + coco bread",rest:"Golden Krust · Harlem",price:"$3.50"},
+  {n:'03',dish:"Lamb over rice",rest:"Halal Guys · Midtown",price:"$7.00",locked:true},
+  {n:'04',dish:"Congee with century egg",rest:"Congee Village · LES",price:"$5.00",locked:true},
+  {n:'05',dish:"Cuban sandwich",rest:"Margon · Midtown",price:"$8.50",locked:true},
+];
 
-// ════════════════════════════════════
-// EVENT LISTENERS
-// ════════════════════════════════════
-document.getElementById('backBtn').addEventListener('click',showHero);
-document.getElementById('heroHungryBtn').addEventListener('click',openHungry);
-document.getElementById('heroDropBtn').addEventListener('click',openDrop);
-document.getElementById('appHungryBtn').addEventListener('click',openHungry);
-document.getElementById('appSubmitBtn').addEventListener('click',()=>document.getElementById('submitOverlay').classList.add('open'));
-document.getElementById('hungryCloseBtn').addEventListener('click',()=>closeOverlay('hungryOverlay'));
-document.getElementById('shareCopyBtn').addEventListener('click',()=>{if(navigator.clipboard)navigator.clipboard.writeText('https://cheapsheetnyc.com');toast('✓ LINK COPIED');});
-document.getElementById('shareDoneBtn').addEventListener('click',()=>closeOverlay('shareOverlay'));
-document.getElementById('shareCloseBtn').addEventListener('click',()=>closeOverlay('shareOverlay'));
-document.getElementById('dropCloseBtn').addEventListener('click',()=>closeOverlay('dropOverlay'));
-document.getElementById('submitCancelBtn').addEventListener('click',()=>closeOverlay('submitOverlay'));
-document.getElementById('clearHoodBtn').addEventListener('click',()=>{
-  hoodFilter=null;document.getElementById('hood-banner').classList.remove('show');
-  if(map)map.setView([40.728,-73.965],13);refresh();
-});
+function renderDropRows() {
+  document.getElementById('dropRows').innerHTML = DROP_SPOTS.map(d => {
+    const locked = d.locked && !state.dropUnlocked;
+    return `<div class="drop-row${locked?' locked':''}" onclick="${locked?'unlockDrop()':'openDropSpot()'}">
+      <div class="drop-n">${locked?'🔒':d.n}</div>
+      <div class="drop-inf">
+        <div class="drop-nm">${d.dish}</div>
+        <div class="drop-rs">${locked?'Unlocks with free signup':d.rest}</div>
+      </div>
+      <div class="drop-pr">${locked?'$--.--':d.price}</div>
+    </div>`;
+  }).join('');
+}
 
-document.getElementById('dropUnlockBtn').addEventListener('click',()=>{
-  const e=document.getElementById('dropEmail').value;
-  if(!e||!e.includes('@')){toast('ENTER A VALID EMAIL');return;}
-  dropUnlocked=true;
-  document.getElementById('dropUnlockSection').innerHTML='<div style="padding:8px;font-family:DM Mono,monospace;font-size:11px;color:var(--green)">✓ UNLOCKED — ALL 5 SPOTS VISIBLE. MONDAY DROP IN YOUR INBOX.</div>';
-  openDrop();toast('✓ SUBSCRIBED — MONDAY DROP UNLOCKED');
-});
+function unlockDrop() {
+  state.dropUnlocked = true;
+  renderDropRows();
+  addPoints(50);
+  toast('🔓 Monday Drop Unlocked! +50 PTS');
+}
 
-document.getElementById('submitGoBtn').addEventListener('click',()=>{
-  if(!document.getElementById('f_r').value||!document.getElementById('f_d').value||!document.getElementById('f_p').value){toast('FILL IN REQUIRED FIELDS');return;}
-  closeOverlay('submitOverlay');
-  setTimeout(()=>toast('✓ SPOT SUBMITTED — UNDER REVIEW. ON MAP WITHIN 48HRS.'),200);
-  ['f_r','f_d','f_p','f_w','f_u'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f_n').selectedIndex=0;
-  document.querySelectorAll('.f-tag.sel').forEach(t=>t.classList.remove('sel'));
-});
+function openDropSpot() { toast('📍 Spot saved!'); }
 
-document.querySelectorAll('.hood-pill').forEach(btn=>{
-  btn.addEventListener('click',()=>{const h=btn.dataset.hood;if(h)goHood(h);else goAll();});
-});
+function startDropTimer() {
+  function tick() {
+    const now = new Date();
+    const nextMon = new Date(now);
+    nextMon.setDate(now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7));
+    nextMon.setHours(9,0,0,0);
+    const diff = nextMon - now;
+    const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+    const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+    const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+    const el = document.getElementById('dropTimer');
+    if (el) el.textContent = `UNLOCKS IN ${h}:${m}:${s}`;
+  }
+  tick(); setInterval(tick, 1000);
+}
 
-document.querySelectorAll('#app-filters .chip').forEach(chip=>{
-  chip.addEventListener('click',()=>{
-    if(chip.dataset.f==='drop'){openDrop();return;}
-    document.querySelectorAll('#app-filters .chip').forEach(c=>c.classList.remove('on'));
-    chip.classList.add('on');filterMode=chip.dataset.f;refresh();
-  });
-});
+// ═══════════════════════════════════════════════
+//  LEADERBOARD FULL
+// ═══════════════════════════════════════════════
+function renderLeaderboard(leaders) {
+  const top3 = leaders.filter(l => l.rank <= 3 && !l.isYou);
+  const [g, s, b] = [
+    top3.find(l=>l.rank===1),
+    top3.find(l=>l.rank===2),
+    top3.find(l=>l.rank===3)
+  ];
+  document.getElementById('podium').innerHTML = `
+    <div class="podium-item pod-2"><div class="pod-rank r2">2</div><div class="pod-avi">${s.avi}</div><div class="pod-handle">${s.handle}</div><div class="pod-pts">${s.pts.toLocaleString()}</div><div class="pod-bar"></div></div>
+    <div class="podium-item pod-1"><div class="pod-rank r1">👑</div><div class="pod-avi">${g.avi}</div><div class="pod-handle">${g.handle}</div><div class="pod-pts">${g.pts.toLocaleString()}</div><div class="pod-bar"></div></div>
+    <div class="podium-item pod-3"><div class="pod-rank r3">3</div><div class="pod-avi">${b.avi}</div><div class="pod-handle">${b.handle}</div><div class="pod-pts">${b.pts.toLocaleString()}</div><div class="pod-bar"></div></div>`;
 
-['hungryOverlay','shareOverlay','dropOverlay','submitOverlay'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))closeOverlay(id);});
-});
+  const rest = leaders.filter(l => l.rank > 3);
+  document.getElementById('lbList').innerHTML = rest.map(l => `
+    <div class="lb-item${l.isYou?' you':''}" onclick="${l.isYou?'':''}" >
+      ${l.isYou?'<div class="you-bar"></div>':''}
+      <div class="li-rank" style="${l.isYou?'color:var(--orange)':''}">${l.rank}</div>
+      <div class="li-avi" style="${l.isYou?'background:rgba(216,90,48,0.1);border:1px solid rgba(216,90,48,0.3)':''}">${l.avi}</div>
+      <div class="li-info">
+        <div class="li-handle" style="${l.isYou?'color:var(--orange)':''}">${l.handle}${l.isYou?' ← YOU':''}</div>
+        <div class="li-sub">${l.sub}</div>
+      </div>
+      <div class="li-right">
+        <div class="li-pts">${l.pts.toLocaleString()}</div>
+        <div class="li-pts-l">pts</div>
+        ${l.trend?`<div class="li-up">${l.trend}</div>`:''}
+      </div>
+    </div>`).join('');
+}
 
-// ════════════════════════════════════
-// INIT
-// ════════════════════════════════════
-renderDensity();
+function switchLbTab(el, mode) {
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (mode === 'alltime') {
+    const sorted = [...LEADERS].filter(l=>!l.isYou).sort((a,b)=>b.pts-a.pts);
+    renderLeaderboard([...sorted,LEADERS.find(l=>l.isYou)]);
+    toast('All Time Rankings');
+  } else {
+    renderLeaderboard(LEADERS);
+    if (mode === 'week') toast('This Week — resets Monday');
+    else toast('Borough view coming soon');
+  }
+}
+
+function switchBorough(el, name) {
+  document.querySelectorAll('.bpill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  toast(`${name} Rankings`);
+}
+
+// ═══════════════════════════════════════════════
+//  SPOT DETAIL
+// ═══════════════════════════════════════════════
+function renderSpotDetail(spot) {
+  document.getElementById('pinLabel').textContent = `$${spot.price.toFixed(2)} · ${spot.dish.split(' ').slice(0,3).join(' ')}`;
+
+  const tagMap = {verified:'🧾 RECEIPT VERIFIED',cash:'💵 CASH OK',gem:'💎 HIDDEN GEM',veg:'🌿 VEG'};
+  const tagCls = {verified:'st-rec',cash:'st-cash',gem:'st-gem',veg:'st-rec'};
+
+  document.getElementById('spotBody').innerHTML = `
+    <div class="spot-meta">
+      <div class="spot-hood">📍 ${spot.hood.toUpperCase()}</div>
+      <div class="spot-conf">✓ ${spot.conf} confirmed this month</div>
+    </div>
+    <div class="spot-price-row">
+      <div class="spot-price" style="color:${spot.color}">$${spot.price.toFixed(2)}</div>
+      <div class="spot-verif"><div class="sv-num">${spot.conf}</div><div class="sv-lbl">VERIFIED</div></div>
+    </div>
+    <div class="spot-dish">${spot.dish}</div>
+    <div class="spot-rest">${spot.rest.toUpperCase()} · ${spot.hood} · Cash OK · Open now</div>
+    <div class="order-box">
+      <div class="order-lbl">Order this →</div>
+      <div class="order-text">${spot.order}</div>
+    </div>
+    <div class="spot-tags">
+      ${spot.tags.map(t=>`<div class="stag ${tagCls[t]||'st-cash'}">${tagMap[t]||t}</div>`).join('')}
+    </div>
+    <div class="spot-quote">"${spot.quote}"</div>
+    <div class="verify-sec">
+      <div class="verify-lbl">Still accurate? Earn points →</div>
+      <div class="verify-btns">
+        <div class="vb good" onclick="verifySpot('good',${spot.id})"><span class="vb-icon">✓</span><div class="vb-text">STILL GOOD<br>+25 pts</div></div>
+        <div class="vb" onclick="verifySpot('price',${spot.id})"><span class="vb-icon">$</span><div class="vb-text">PRICE<br>CHANGED</div></div>
+        <div class="vb" onclick="verifySpot('closed',${spot.id})"><span class="vb-icon">✕</span><div class="vb-text">NOW<br>CLOSED</div></div>
+      </div>
+      <div class="earn-note">Submitted by ${spot.submitter} · earned ${spot.pts} pts</div>
+    </div>
+    <div class="spot-actions">
+      <div class="act-dir" onclick="getDirections()">GET DIRECTIONS →</div>
+      <div class="act-share" onclick="shareSpot()">↗ SHARE</div>
+    </div>`;
+}
+
+function verifySpot(type, id) {
+  const spot = SPOTS.find(s => s.id === id);
+  if (type === 'good') {
+    spot.conf++;
+    addPoints(25);
+    toast(`✓ Confirmed! +25 PTS`);
+    renderSpotDetail(spot);
+  } else if (type === 'price') {
+    toast('📝 Price change reported — thank you');
+  } else {
+    toast('🚩 Flagged for review — thank you');
+  }
+}
+
+function getDirections() { toast('📍 Opening Maps…'); }
+function shareSpot() { toast('🔗 Link copied!'); }
+
+// ═══════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════
+function renderRecentSubmissions() {
+  const recent = [
+    {name:"Plain slice",rest:"Joe's Pizza · Greenwich Village",price:"$4.00",color:"var(--red)",pts:"+150 pts"},
+    {name:"Pork & chive dumplings",rest:"Shu Jiao Fu Zhou · East Village",price:"$6.00",color:"var(--blue)",pts:"+250 pts 🧾"},
+    {name:"Adobada taco",rest:"Taqueria Milear · Midtown West",price:"$4.00",color:"var(--red)",pts:"+200 pts 🆕"},
+  ];
+  document.getElementById('recentSubmissions').innerHTML = recent.map(r => `
+    <div class="spot-row">
+      <div class="sr-stripe" style="background:${r.color}"></div>
+      <div class="sr-info"><div class="sr-name">${r.name}</div><div class="sr-rest">${r.rest}</div></div>
+      <div class="sr-right"><div class="sr-price" style="color:${r.color}">${r.price}</div><div class="sr-pts">${r.pts}</div></div>
+    </div>`).join('');
+}
+
+function showBadge(name, desc) { toast(`${name}: ${desc}`); }
+function shareSavings() { toast('📊 Savings card copied!'); }
+
+// ═══════════════════════════════════════════════
+//  SUBMIT
+// ═══════════════════════════════════════════════
+let receiptAdded = false;
+
+function toggleReceipt() {
+  receiptAdded = !receiptAdded;
+  document.getElementById('receiptIcon').textContent = receiptAdded ? '✅' : '📷';
+  document.getElementById('receiptText').textContent = receiptAdded ? 'Receipt photo added!' : 'Upload receipt photo';
+  document.getElementById('receiptBonus').textContent = receiptAdded ? '+100 bonus points added!' : 'Adds 🧾 verified badge + 100 bonus points';
+  document.getElementById('receiptBox').style.borderColor = receiptAdded ? 'var(--green)' : '';
+  updateSubmitBtn();
+}
+
+function toggleTag(el) { el.classList.toggle('sel'); updateSubmitBtn(); }
+
+function updateSubmitBtn() {
+  const price = document.getElementById('priceInput').value;
+  let pts = 150;
+  if (receiptAdded) pts += 100;
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = `SUBMIT → EARN ${pts} PTS`;
+}
+
+function submitSpot() {
+  const rest = document.getElementById('restInput').value.trim();
+  const dish = document.getElementById('dishInput').value.trim();
+  const price = document.getElementById('priceInput').value.trim();
+  const hood = document.getElementById('hoodSelect').value;
+  const why = document.getElementById('whyInput').value.trim();
+
+  if (!rest || !dish || !price || !hood || !why) {
+    toast('⚠️ Fill all required fields');
+    return;
+  }
+
+  let pts = 150;
+  if (receiptAdded) pts += 100;
+
+  // Add to spots
+  const newSpot = {
+    id: SPOTS.length + 1,
+    dish, rest, price: parseFloat(price.replace('$','')),
+    hood, tags: receiptAdded ? ['verified'] : [],
+    color: 'var(--red)', conf: 0,
+    quote: why, order: `Order: ${dish}`,
+    submitter: document.getElementById('handleInput').value || '@you',
+    pts, veg: false
+  };
+  SPOTS.unshift(newSpot);
+
+  addPoints(pts);
+  state.spots++;
+  document.getElementById('profileSpots').textContent = state.spots;
+  document.getElementById('statSpots').textContent = 847 + (SPOTS.length - 10);
+
+  renderSpotCards(SPOTS.slice(0,5));
+  renderRecentSubmissions();
+
+  // Reset form
+  ['restInput','dishInput','priceInput','whyInput','handleInput'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('hoodSelect').value = '';
+  document.querySelectorAll('.sf-tag.sel').forEach(t => t.classList.remove('sel'));
+  if (receiptAdded) { receiptAdded = false; toggleReceipt(); }
+  updateSubmitBtn();
+
+  toast(`🎉 Spot submitted! +${pts} PTS`);
+  setTimeout(() => showScreen(1, document.querySelectorAll('.tab')[1]), 800);
+}
+
+// ═══════════════════════════════════════════════
+//  POINTS SYSTEM
+// ═══════════════════════════════════════════════
+function addPoints(n) {
+  state.pts += n;
+  const saved = Math.round(state.pts * 0.38);
+  state.saved = saved;
+
+  // Update profile
+  document.getElementById('profilePts').textContent = state.pts.toLocaleString();
+  document.getElementById('xpCur').textContent = state.pts.toLocaleString();
+  document.getElementById('savingsNum').textContent = '$' + saved.toLocaleString();
+  document.getElementById('profileSaved').textContent = '$' + saved.toLocaleString();
+
+  // XP bar (max 7000 for BOROUGH BOSS)
+  const pct = Math.min((state.pts / 7000) * 100, 100).toFixed(1);
+  document.getElementById('xpFill').style.width = pct + '%';
+
+  // Update leaderboard "you" row
+  const youEntry = LEADERS.find(l => l.isYou);
+  if (youEntry) youEntry.pts = state.pts;
+}
+
+// ═══════════════════════════════════════════════
+//  HUNGRY NOW
+// ═══════════════════════════════════════════════
+function hungryNow() {
+  const nearest = [...SPOTS].sort(() => Math.random() - 0.5).slice(0,3);
+  toast(`📍 Nearest: ${nearest[0].dish} · ${nearest[0].rest} · $${nearest[0].price.toFixed(2)}`);
+  setTimeout(() => openSpot(nearest[0].id), 500);
+}
 </script>
 </body>
 </html>
