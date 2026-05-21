@@ -552,21 +552,97 @@ a{text-decoration:none;color:inherit;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 #toast em{color:var(--or);font-style:normal;}
 
+/* ══ BOTTOM NAV (mobile only) ══ */
+#bottomNav{display:none;}
+
 /* ══ RESPONSIVE ══ */
-@media(max-width:960px){
-  .hero{grid-template-columns:1fr;padding:48px 28px;gap:40px;}
+@media(max-width:768px){
+  /* hide desktop nav tabs + auth buttons, keep logo */
+  .nav-tabs{display:none;}
+  .nav-right{display:none;}
+  #nav{padding:0 16px;justify-content:space-between;}
+  .nav-logo{font-size:20px;}
+  /* show mobile auth btn in top-right */
+  #navMobileAuth{display:flex;align-items:center;gap:8px;}
+
+  /* shell needs bottom padding for fixed tab bar */
+  #shell{padding-bottom:64px;}
+
+  /* bottom nav */
+  #bottomNav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;z-index:200;
+    height:60px;
+    background:rgba(8,8,10,0.96);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-top:1px solid var(--b1);
+    align-items:stretch;
+  }
+  .bn-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:3px;cursor:pointer;
+    border:none;background:none;padding:0 2px;
+    transition:all 0.15s;position:relative;
+  }
+  .bn-tab.active .bn-icon{opacity:1;}
+  .bn-tab.active .bn-label{color:var(--or);}
+  .bn-tab.active::after{
+    content:'';position:absolute;top:0;left:20%;right:20%;
+    height:2px;background:var(--or);border-radius:0 0 2px 2px;
+  }
+  .bn-icon{font-size:19px;opacity:0.35;transition:opacity 0.15s;line-height:1;}
+  .bn-label{
+    font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.3px;
+    color:var(--tx3);transition:color 0.15s;white-space:nowrap;
+  }
+  .bn-lock{font-size:7px;margin-left:2px;}
+
+  /* layout adjustments */
+  .hero{grid-template-columns:1fr;padding:32px 20px 40px;gap:32px;min-height:auto;}
   .hero-right{display:none;}
-  .section{padding:60px 28px;}
-  .hiw-grid{grid-template-columns:1fr;}
+  .hero-h1{font-size:clamp(44px,11vw,68px);}
+  .hero-stats{gap:20px;flex-wrap:wrap;}
+  .hstat-n{font-size:26px;}
+  .section{padding:40px 20px;}
+  .sec-h{font-size:clamp(28px,8vw,40px);}
+  .hiw-grid{grid-template-columns:1fr;gap:1px;}
+  .hiw-card{padding:24px 20px;}
+
   .browse-layout{grid-template-columns:1fr;}
   .browse-sidebar{display:none;}
+  .browse-main{padding:16px;}
+  /* mobile filter chips replace sidebar */
+  #mobileBrowseFilters{display:flex !important;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px;border-bottom:1px solid var(--b1);}
+  #mobileBrowseFilters::-webkit-scrollbar{display:none;}
+  .mbf-pill{font-family:'DM Mono',monospace;font-size:10px;color:var(--tx3);border:1px solid var(--b2);border-radius:var(--r);padding:5px 12px;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all 0.15s;}
+  .mbf-pill.on{background:var(--or);border-color:var(--or);color:#fff;}
+
+  .pw-layout{padding:16px 16px 20px;}
   .pw-grid{grid-template-columns:1fr;}
+  .pw-intro{flex-direction:column;gap:10px;margin-bottom:20px;}
+
+  .drops-layout{padding:16px 16px 20px;}
+  .drops-hero{padding:24px 20px;}
+  .drops-h{font-size:36px;}
   .drop-grid{grid-template-columns:1fr;}
-  .rewards-hero{grid-template-columns:1fr;}
-  .ranks-grid{grid-template-columns:repeat(3,1fr);}
-  .perks-grid{grid-template-columns:1fr 1fr;}
-  .pw-layout,.drops-layout,.rewards-layout,.lb-layout{padding:24px;}
-  .browse-main{padding:20px;}
+  .cd-n{font-size:34px;}
+
+  .rewards-layout{padding:16px 16px 20px;}
+  .rewards-hero{grid-template-columns:1fr;padding:24px 20px;gap:24px;}
+  .rh-pts{font-size:48px;}
+  .rh-name{font-size:30px;}
+  .ranks-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .perks-grid{grid-template-columns:1fr;gap:8px;}
+
+  .lb-layout{padding:16px 16px 20px;}
+  .lb-header{flex-direction:column;align-items:flex-start;gap:10px;}
+  .lb-prize-badge{font-size:13px;padding:7px 12px;}
+  .podium-row{gap:8px;}
+  .pod-avi{width:42px;height:42px;font-size:18px;}
+
+  .auth-inner{padding:24px 20px 20px;}
+  .twocol{flex-direction:column;gap:0;}
+  .auth-card{max-height:90vh;overflow-y:auto;}
 }
 </style>
 </head>
@@ -600,7 +676,32 @@ a{text-decoration:none;color:inherit;}
     <button class="btn-ghost" onclick="showAuth('login')">Log in</button>
     <button class="btn-fill" onclick="showAuth('signup')">Join Free</button>
   </div>
+  <div id="navMobileAuth" style="display:none;">
+    <button class="btn-fill" style="font-size:10px;padding:6px 12px;" onclick="showAuth('signup')">Join Free</button>
+  </div>
 </nav>
+
+<!-- ══ BOTTOM NAV (mobile) ══ -->
+<div id="bottomNav">
+  <button class="bn-tab active" data-tab="home" onclick="goTab('home')">
+    <span class="bn-icon">🏠</span><span class="bn-label">Home</span>
+  </button>
+  <button class="bn-tab" data-tab="browse" onclick="goTab('browse')">
+    <span class="bn-icon">🔍</span><span class="bn-label">Browse</span>
+  </button>
+  <button class="bn-tab" data-tab="pricewars" onclick="goTab('pricewars')">
+    <span class="bn-icon">⚔️</span><span class="bn-label">Price Wars</span>
+  </button>
+  <button class="bn-tab" data-tab="drops" onclick="goTab('drops')">
+    <span class="bn-icon">📅</span><span class="bn-label">Drops</span>
+  </button>
+  <button class="bn-tab" data-tab="rewards" onclick="goTab('rewards')">
+    <span class="bn-icon">🏆</span><span class="bn-label">Rewards</span>
+  </button>
+  <button class="bn-tab" data-tab="leaderboard" onclick="goTab('leaderboard')">
+    <span class="bn-icon">👑</span><span class="bn-label">Ranks<span class="bn-lock" id="bnLbLock">🔒</span></span>
+  </button>
+</div>
 
 <!-- ══ SHELL ══ -->
 <div id="shell">
@@ -654,6 +755,16 @@ a{text-decoration:none;color:inherit;}
 
   <!-- BROWSE -->
   <div class="page" id="page-browse">
+    <!-- mobile filter chips -->
+    <div id="mobileBrowseFilters" style="display:none;">
+      <div class="mbf-pill on" onclick="setMobileFilter('all',this)">All</div>
+      <div class="mbf-pill" onclick="setMobileFilter('under4',this)">Under $4</div>
+      <div class="mbf-pill" onclick="setMobileFilter('under6',this)">Under $6</div>
+      <div class="mbf-pill" onclick="setMobileFilter('under10',this)">Under $10</div>
+      <div class="mbf-pill" onclick="setMobileFilter('veg',this)">🌿 Veg</div>
+      <div class="mbf-pill" onclick="setMobileFilter('verified',this)">🧾 Verified</div>
+      <div class="mbf-pill" onclick="setMobileFilter('gem',this)">💎 Hidden Gem</div>
+    </div>
     <div class="browse-layout">
       <aside class="browse-sidebar" id="browseSidebar">
         <div class="sidebar-section">
@@ -914,7 +1025,19 @@ const S={
 // ═══════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════
+function checkMobileNav(){
+  const mobile = isMobile();
+  const mobileAuth = document.getElementById('navMobileAuth');
+  const desktopRight = document.getElementById('navRight');
+  if(mobileAuth && desktopRight){
+    mobileAuth.style.display = mobile ? 'flex' : 'none';
+    desktopRight.style.display = mobile ? 'none' : 'flex';
+  }
+}
+
 window.addEventListener('DOMContentLoaded',()=>{
+  checkMobileNav();
+  window.addEventListener('resize', checkMobileNav);
   renderAuthSignup();
   buildBrowseSidebar();
   renderBrowseGrid(SPOTS);
@@ -931,11 +1054,32 @@ window.addEventListener('DOMContentLoaded',()=>{
 function goTab(tab){
   if(tab==='leaderboard'&&!S.loggedIn){showAuth('signup');return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  // sync desktop tabs
   document.querySelectorAll('.nav-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.tab===tab);
+  });
+  // sync bottom nav tabs
+  document.querySelectorAll('.bn-tab').forEach(t=>{
     t.classList.toggle('active',t.dataset.tab===tab);
   });
   const p=document.getElementById('page-'+tab);
   if(p){p.classList.add('active');window.scrollTo(0,0);}
+  // show/hide mobile browse filters
+  const mbf=document.getElementById('mobileBrowseFilters');
+  if(mbf) mbf.style.display = (isMobile() && tab==='browse') ? 'flex' : 'none';
+}
+
+function isMobile(){return window.innerWidth<=768;}
+
+function setMobileFilter(f,el){
+  document.querySelectorAll('#mobileBrowseFilters .mbf-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  S.browseFilter.price=f==='all'||f==='under4'||f==='under6'||f==='under10'?f:'all';
+  if(f==='veg'){S.browseFilter.price='all';S.browseFilter.tag='veg';}
+  else if(f==='verified'){S.browseFilter.price='all';S.browseFilter.tag='verified';}
+  else if(f==='gem'){S.browseFilter.price='all';S.browseFilter.tag='gem';}
+  else{S.browseFilter.tag='';}
+  applyBrowseFilters();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1079,6 +1223,7 @@ function completeLogin(user){
 }
 
 function updateNavLoggedIn(){
+  // desktop
   document.getElementById('navRight').innerHTML=`
     <div class="nav-user-chip" onclick="goTab('rewards')">
       <div class="nav-avi">🐉</div>
@@ -1087,8 +1232,18 @@ function updateNavLoggedIn(){
         <div class="nav-pts-lbl">PTS</div>
       </div>
     </div>`;
+  // mobile top bar
+  const mobileAuth=document.getElementById('navMobileAuth');
+  if(mobileAuth) mobileAuth.innerHTML=`
+    <div class="nav-user-chip" onclick="goTab('rewards')" style="border-color:var(--b2);">
+      <div class="nav-avi" style="width:24px;height:24px;font-size:12px;">🐉</div>
+      <div class="nav-pts-val" style="font-size:15px;">${(S.user?.pts||420).toLocaleString()}</div>
+    </div>`;
+  // unlock leaderboard lock icons
   const lbLock=document.getElementById('lbLock');
   if(lbLock)lbLock.style.display='none';
+  const bnLbLock=document.getElementById('bnLbLock');
+  if(bnLbLock)bnLbLock.style.display='none';
 }
 
 // ═══════════════════════════════════════════════════════════
