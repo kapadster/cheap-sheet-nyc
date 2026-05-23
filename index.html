@@ -815,6 +815,152 @@ footer {
   color: var(--orange); margin-left: 6px;
 }
 
+/* ─── INSTANT BENCHMARK PANEL ─── */
+.benchmark-panel {
+  display: none;
+  background: var(--bg3); border: 1px solid rgba(216,90,48,0.25);
+  border-radius: 8px; padding: 16px 18px;
+  animation: slideDown 0.3s ease;
+}
+.benchmark-panel.visible { display: block; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bp-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--orange);
+  margin-bottom: 10px;
+}
+.bp-main {
+  font-size: 14px; color: var(--text); line-height: 1.6;
+}
+.bp-main strong { color: var(--orange); }
+.bp-main .gem { color: #7B52D4; }
+.bp-bar-wrap {
+  margin-top: 12px; height: 6px;
+  background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.bp-bar-inner {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--green), var(--orange));
+  transition: width 0.8s ease;
+}
+.bp-sub {
+  display: flex; justify-content: space-between;
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text3); margin-top: 5px;
+}
+.bp-gem-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(123,82,212,0.12); border: 1px solid rgba(123,82,212,0.25);
+  border-radius: 4px; padding: 5px 10px; margin-top: 10px;
+  font-family: 'DM Mono', monospace; font-size: 10px; color: #9B7CE8;
+}
+
+/* ─── PERSONAL SAVINGS DASHBOARD ─── */
+.diary-section {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); padding: 60px 24px;
+}
+.diary-inner { max-width: 1100px; margin: 0 auto; }
+.diary-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-top: 28px;
+}
+.diary-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px;
+}
+.diary-card.featured {
+  border-color: rgba(58,154,92,0.3);
+  background: rgba(58,154,92,0.04);
+}
+.dc2-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--text3);
+}
+.dc2-number {
+  font-family: 'Bebas Neue', sans-serif; font-size: 44px;
+  line-height: 1; margin-top: 6px;
+}
+.dc2-number.green { color: var(--green); }
+.dc2-number.orange { color: var(--orange); }
+.dc2-number.purple { color: #7B52D4; }
+.dc2-sub { font-size: 12px; color: var(--text2); margin-top: 6px; line-height: 1.5; }
+.dc2-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: 'DM Mono', monospace; font-size: 9.5px;
+  color: var(--green); margin-top: 8px;
+}
+
+/* ─── WEEKLY REPORT CARD ─── */
+.weekly-card {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; overflow: hidden; margin-top: 16px;
+}
+.wc-header {
+  background: rgba(216,90,48,0.06); border-bottom: 1px solid rgba(216,90,48,0.15);
+  padding: 12px 18px; display: flex; align-items: center; justify-content: space-between;
+}
+.wc-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 16px;
+  letter-spacing: 1.5px; color: var(--orange);
+}
+.wc-date {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text3); letter-spacing: 0.5px;
+}
+.wc-body { padding: 16px 18px; }
+.wc-stat-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 12px;
+}
+.wc-stat {}
+.wc-stat-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+  color: var(--text); line-height: 1;
+}
+.wc-stat-label {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text3); letter-spacing: 0.5px; margin-top: 2px;
+}
+.wc-highlight {
+  background: rgba(58,154,92,0.08); border: 1px solid rgba(58,154,92,0.2);
+  border-radius: 6px; padding: 10px 12px;
+  font-size: 12px; color: var(--text2); line-height: 1.5;
+}
+.wc-highlight strong { color: var(--green); }
+.wc-share-btn {
+  width: 100%; margin-top: 12px;
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 6px; padding: 9px;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text2); cursor: pointer; letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+.wc-share-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+/* ─── PRICE HISTORY MODAL ─── */
+.ph-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.ph-row:last-child { border-bottom: none; }
+.ph-date {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
+}
+.ph-price {
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--orange);
+}
+.ph-delta {
+  font-family: 'DM Mono', monospace; font-size: 9.5px;
+  padding: 2px 7px; border-radius: 3px;
+}
+.ph-delta.up { background: rgba(224,32,32,0.1); color: var(--red); }
+.ph-delta.down { background: rgba(58,154,92,0.1); color: var(--green); }
+.ph-delta.same { background: var(--bg4); color: var(--text3); }
+
 /* ─── NEIGHBORHOOD BADGES ─── */
 .hood-grid {
   display: flex; flex-wrap: wrap; gap: 8px;
@@ -919,6 +1065,7 @@ footer {
     <div class="nav-link" onclick="setNav(this,'wars')">Price Wars</div>
     <div class="nav-link" onclick="setNav(this,'board')">Leaderboard</div>
     <div class="nav-link" onclick="setNav(this,'submit')">Submit</div>
+    <div class="nav-link" onclick="setNav(this,'diary')">My Diary</div>
   </nav>
   <div class="header-right">
     <button class="btn-submit-header" onclick="document.getElementById('submit').scrollIntoView({behavior:'smooth'})">+ Submit Dish</button>
@@ -1197,6 +1344,14 @@ footer {
         <div class="price-hint">
           <strong>Pro tip:</strong> Include what you said to order it. "One plain slice" at the counter, not "I'll have a pizza." The exact script gets the exact price.
         </div>
+        <!-- INSTANT BENCHMARK - fires when price + category filled -->
+        <div class="benchmark-panel" id="benchmarkPanel">
+          <div class="bp-label">⚡ Instant Benchmark</div>
+          <div class="bp-main" id="benchmarkText"></div>
+          <div class="bp-bar-wrap"><div class="bp-bar-inner" id="benchmarkBar" style="width:0%"></div></div>
+          <div class="bp-sub"><span>Cheapest</span><span id="benchmarkAvg"></span><span>Most expensive</span></div>
+          <div class="bp-gem-badge" id="gemBadge" style="display:none;">💎 Hidden gem — cheapest in this neighborhood</div>
+        </div>
         <div class="form-group">
           <label class="form-label">Your Handle (optional)</label>
           <input class="form-input" placeholder="@yourname — get credit for finds" id="f-handle">
@@ -1214,6 +1369,67 @@ footer {
           </div>
         </div>
         <button class="btn-submit-form" onclick="submitDish()">Submit Dish · Earn Points</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONAL DIARY / SAVINGS DASHBOARD -->
+<div class="diary-section" id="diary">
+  <div class="diary-inner">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Your <span>Diary</span></div>
+        <div class="section-sub">Log for yourself — community data is the byproduct</div>
+      </div>
+    </div>
+    <div class="diary-grid">
+      <div class="diary-card featured">
+        <div class="dc2-label">Total Saved vs. Avg NYC Dining</div>
+        <div class="dc2-number green" id="diaryTotalSaved">$0</div>
+        <div class="dc2-sub">Based on $18.40 avg NYC meal. Every dish you log updates this live.</div>
+        <div class="dc2-delta" id="diarySavedDelta">↑ Log a dish to start tracking</div>
+      </div>
+      <div class="diary-card">
+        <div class="dc2-label">Dishes Logged</div>
+        <div class="dc2-number orange" id="diaryDishCount">0</div>
+        <div class="dc2-sub">Your personal price history. Revisit any restaurant and know if prices changed.</div>
+      </div>
+      <div class="diary-card">
+        <div class="dc2-label">Hidden Gems Found</div>
+        <div class="dc2-number purple" id="diaryGems">0</div>
+        <div class="dc2-sub">Dishes cheaper than 80% of comparable spots in that neighborhood.</div>
+      </div>
+    </div>
+    <!-- Weekly Report Card -->
+    <div class="weekly-card" id="weeklyCard">
+      <div class="wc-header">
+        <span class="wc-title">Your Weekly Cheap Eats Report</span>
+        <span class="wc-date" id="weeklyDate"></span>
+      </div>
+      <div class="wc-body">
+        <div class="wc-stat-row">
+          <div class="wc-stat">
+            <div class="wc-stat-num" id="wcDishes">0</div>
+            <div class="wc-stat-label">Dishes this week</div>
+          </div>
+          <div class="wc-stat">
+            <div class="wc-stat-num" id="wcSpent">$0</div>
+            <div class="wc-stat-label">Total spent</div>
+          </div>
+          <div class="wc-stat">
+            <div class="wc-stat-num" id="wcSaved">$0</div>
+            <div class="wc-stat-label">Saved vs. avg</div>
+          </div>
+          <div class="wc-stat">
+            <div class="wc-stat-num" id="wcGems">0</div>
+            <div class="wc-stat-label">Gems found</div>
+          </div>
+        </div>
+        <div class="wc-highlight" id="wcHighlight">
+          Log your first dish this week to generate your personal report.
+        </div>
+        <button class="wc-share-btn" onclick="shareWeeklyReport()">📊 Share your weekly report →</button>
       </div>
     </div>
   </div>
@@ -1555,6 +1771,7 @@ function showDishModal(id) {
         ${d.tip ? `<div style="background:rgba(216,90,48,0.06);border:1px solid rgba(216,90,48,0.15);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.5;margin-top:4px;">💡 <strong style="color:var(--orange);">Order tip:</strong> ${d.tip}</div>` : ''}
       </div>
     </div>
+    ${getPriceHistoryHTML(d.rest)}
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button onclick="verifyDishFromModal(${d.id})" style="flex:1;background:rgba(58,154,92,0.1);border:1px solid rgba(58,154,92,0.2);border-radius:6px;padding:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--green);cursor:pointer;letter-spacing:0.5px;">✓ Still correct price</button>
       <button onclick="priceChangedModal(${d.id})" style="flex:1;background:rgba(224,32,32,0.07);border:1px solid rgba(224,32,32,0.15);border-radius:6px;padding:10px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);cursor:pointer;letter-spacing:0.5px;">↑ Price changed</button>
@@ -1587,7 +1804,164 @@ function priceChangedModal(id) {
   closeModal();
 }
 
-// ─── SUBMIT ───
+// ─── PERSONAL DIARY STATE ───
+const userDiary = {
+  dishes: [],      // { name, rest, hood, cat, price, date }
+  totalSaved: 0,
+  gemsFound: 0,
+};
+const NYC_AVG_MEAL = 18.40;
+
+// ─── BENCHMARK ENGINE ───
+// Average prices per category (seeded — would come from your 300-500 pre-launch logs)
+const CATEGORY_BENCHMARKS = {
+  pizza:    { avg: 4.20, min: 1.50, max: 8.00 },
+  tacos:    { avg: 4.80, min: 2.50, max: 9.00 },
+  dumplings:{ avg: 5.50, min: 2.50, max: 12.00 },
+  bagels:   { avg: 2.80, min: 1.00, max: 5.50 },
+  ramen:    { avg: 14.00, min: 7.00, max: 22.00 },
+  falafel:  { avg: 6.50, min: 3.50, max: 10.00 },
+  burritos: { avg: 8.50, min: 4.00, max: 14.00 },
+  burgers:  { avg: 10.00, min: 5.00, max: 18.00 },
+  sushi:    { avg: 15.00, min: 6.00, max: 28.00 },
+  soup:     { avg: 7.00, min: 3.00, max: 14.00 },
+  sandwiches:{ avg: 8.00, min: 3.50, max: 14.00 },
+  other:    { avg: 9.00, min: 2.00, max: 18.00 },
+};
+
+function computeBenchmark(price, cat, hood) {
+  const key = (cat || 'other').toLowerCase().replace(/\s/g,'');
+  const bench = CATEGORY_BENCHMARKS[key] || CATEGORY_BENCHMARKS.other;
+  const range = bench.max - bench.min;
+  const pct = Math.max(0, Math.min(100, ((price - bench.min) / range) * 100));
+  const cheaperPct = Math.round(100 - pct);
+  const diff = bench.avg - price;
+  const isGem = price <= bench.avg * 0.72; // cheaper than 80% → gem
+  const isCheap = price < bench.avg;
+  return { bench, pct, cheaperPct, diff, isGem, isCheap };
+}
+
+function showBenchmark() {
+  const price = parseFloat(document.getElementById('f-price').value);
+  const cat = document.getElementById('f-cat').value;
+  if (!price || price <= 0 || !cat) {
+    document.getElementById('benchmarkPanel').classList.remove('visible');
+    return;
+  }
+  const hood = document.getElementById('f-hood').value || 'NYC';
+  const { bench, pct, cheaperPct, diff, isGem, isCheap } = computeBenchmark(price, cat, hood);
+
+  let msg = '';
+  if (isGem) {
+    msg = `You paid <strong>$${price.toFixed(2)}</strong> — that's a <span class="gem">hidden gem</span>. Cheaper than <strong>${cheaperPct}%</strong> of ${cat} buyers${hood ? ' in ' + hood : ' in NYC'}. Average is <strong>$${bench.avg.toFixed(2)}</strong>.`;
+  } else if (isCheap) {
+    msg = `You paid <strong>$${price.toFixed(2)}</strong> — <strong>$${diff.toFixed(2)} below average</strong> for ${cat} in NYC. Cheaper than <strong>${cheaperPct}%</strong> of people who logged this.`;
+  } else {
+    const over = (price - bench.avg).toFixed(2);
+    msg = `You paid <strong>$${price.toFixed(2)}</strong> — <strong>$${over} above average</strong> for ${cat} in NYC. Average is $${bench.avg.toFixed(2)}. Still good info — helps the next person negotiate.`;
+  }
+
+  document.getElementById('benchmarkText').innerHTML = msg;
+  document.getElementById('benchmarkBar').style.width = (100 - pct) + '%';
+  document.getElementById('benchmarkAvg').textContent = `avg $${bench.avg.toFixed(2)}`;
+  document.getElementById('gemBadge').style.display = isGem ? 'inline-flex' : 'none';
+  document.getElementById('benchmarkPanel').classList.add('visible');
+}
+
+// ─── PRICE HISTORY (per-restaurant tracking) ───
+const priceHistory = {}; // keyed by rest name
+
+function recordPriceHistory(rest, price) {
+  if (!priceHistory[rest]) priceHistory[rest] = [];
+  priceHistory[rest].push({ price, date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) });
+}
+
+function getPriceHistoryHTML(rest) {
+  const history = priceHistory[rest];
+  if (!history || history.length < 2) return '';
+  return `
+    <div style="margin-top:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Your Price History Here</div>
+      ${history.map((h, i) => {
+        const prev = history[i-1];
+        let delta = '', deltaClass = 'same';
+        if (prev) {
+          const d = h.price - prev.price;
+          if (d > 0) { delta = `↑ +$${d.toFixed(2)}`; deltaClass = 'up'; }
+          else if (d < 0) { delta = `↓ $${d.toFixed(2)}`; deltaClass = 'down'; }
+          else { delta = '→ same'; }
+        }
+        return `<div class="ph-row">
+          <span class="ph-date">${h.date}</span>
+          <span class="ph-price">$${h.price.toFixed(2)}</span>
+          ${delta ? `<span class="ph-delta ${deltaClass}">${delta}</span>` : '<span></span>'}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ─── DIARY UPDATER ───
+function updateDiary(dish, isGem) {
+  userDiary.dishes.push({ ...dish, date: new Date() });
+  const saved = Math.max(0, NYC_AVG_MEAL - dish.price);
+  userDiary.totalSaved += saved;
+  if (isGem) userDiary.gemsFound++;
+
+  // Animate savings counter
+  const savedEl = document.getElementById('diaryTotalSaved');
+  const target = userDiary.totalSaved;
+  let start = parseFloat(savedEl.textContent.replace('$','')) || 0;
+  const steps = 30;
+  const inc = (target - start) / steps;
+  let step = 0;
+  const anim = setInterval(() => {
+    start += inc; step++;
+    savedEl.textContent = '$' + start.toFixed(2);
+    if (step >= steps) { savedEl.textContent = '$' + target.toFixed(2); clearInterval(anim); }
+  }, 20);
+
+  document.getElementById('diaryDishCount').textContent = userDiary.dishes.length;
+  document.getElementById('diaryGems').textContent = userDiary.gemsFound;
+
+  const deltaEl = document.getElementById('diarySavedDelta');
+  deltaEl.textContent = `↑ +$${saved.toFixed(2)} from this log`;
+
+  updateWeeklyReport();
+}
+
+// ─── WEEKLY REPORT ───
+function updateWeeklyReport() {
+  const now = new Date();
+  // Get dishes from this week (Mon–Sun)
+  const startOfWeek = new Date(now);
+  const day = now.getDay();
+  startOfWeek.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  startOfWeek.setHours(0,0,0,0);
+
+  const weekDishes = userDiary.dishes.filter(d => new Date(d.date) >= startOfWeek);
+  const weekSpent = weekDishes.reduce((s, d) => s + d.price, 0);
+  const weekSaved = weekDishes.reduce((s, d) => s + Math.max(0, NYC_AVG_MEAL - d.price), 0);
+  const weekGems = weekDishes.filter(d => {
+    const { isGem } = computeBenchmark(d.price, d.cat, d.hood);
+    return isGem;
+  }).length;
+
+  document.getElementById('wcDishes').textContent = weekDishes.length;
+  document.getElementById('wcSpent').textContent = '$' + weekSpent.toFixed(2);
+  document.getElementById('wcSaved').textContent = '$' + weekSaved.toFixed(2);
+  document.getElementById('wcGems').textContent = weekGems;
+
+  const dateStr = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  document.getElementById('weeklyDate').textContent = 'Week of ' + dateStr;
+
+  if (weekDishes.length > 0) {
+    const cheapest = weekDishes.reduce((a, b) => a.price < b.price ? a : b);
+    document.getElementById('wcHighlight').innerHTML =
+      `This week you logged <strong style="color:var(--text);">${weekDishes.length} meal${weekDishes.length>1?'s':''}</strong>, spent <strong style="color:var(--orange);">$${weekSpent.toFixed(2)}</strong>, and saved an estimated <strong style="color:var(--green);">$${weekSaved.toFixed(2)}</strong> vs. avg NYC dining.${weekGems > 0 ? ` You found <strong style="color:#9B7CE8;">${weekGems} hidden gem${weekGems>1?'s':''}</strong> 💎.` : ''} Best find: <strong style="color:var(--text);">${cheapest.name}</strong> at $${cheapest.price.toFixed(2)}.`;
+  }
+}
+
 function receiptUploaded(input) {
   if (input.files && input.files[0]) {
     document.getElementById('ppPts').textContent = '40';
@@ -1596,6 +1970,16 @@ function receiptUploaded(input) {
   }
 }
 
+function shareWeeklyReport() {
+  const dishes = document.getElementById('wcDishes').textContent;
+  const saved = document.getElementById('wcSaved').textContent;
+  const gems = document.getElementById('wcGems').textContent;
+  const text = `This week on CheapSheet NYC: ${dishes} meals logged, ${saved} saved vs. avg NYC prices, ${gems} hidden gems found 💎 cheapsheetnyc.com`;
+  if (navigator.share) navigator.share({ title:'My CheapSheet Week', text, url: window.location.href });
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text); showToast('Report copied — share it!', 0); }
+}
+
+// ─── SUBMIT (UPGRADED) ───
 function submitDish() {
   const rest = document.getElementById('f-rest').value.trim();
   const dish = document.getElementById('f-dish').value.trim();
@@ -1607,12 +1991,15 @@ function submitDish() {
     return;
   }
 
-  // Add to live data
+  const priceNum = parseFloat(price);
+  const cat = (document.getElementById('f-cat').value || 'other').toLowerCase();
+  const { isGem, isCheap, cheaperPct, diff } = computeBenchmark(priceNum, cat, hood);
+
+  // Record to dish list
   const newDish = {
     id: DISHES.length + 1,
-    name: dish, rest, hood,
-    cat: document.getElementById('f-cat').value || 'other',
-    price: parseFloat(price), emoji: '🍽️',
+    name: dish, rest, hood, cat,
+    price: priceNum, emoji: '🍽️',
     lat: 40.728 + (Math.random()-0.5)*0.1,
     lng: -73.975 + (Math.random()-0.5)*0.1,
     by: document.getElementById('f-handle').value || 'Anonymous',
@@ -1622,12 +2009,33 @@ function submitDish() {
   buildHeroCard();
   document.getElementById('statDishes').textContent = DISHES.length;
 
+  // Record price history for this restaurant
+  recordPriceHistory(rest, priceNum);
+
+  // Update personal diary
+  updateDiary({ name: dish, rest, hood, cat, price: priceNum }, isGem);
+
+  // Show contextual toast based on outcome
+  if (isGem) {
+    showToast('💎 Hidden gem found!', 40);
+    setTimeout(() => showToast('You\'re in the cheapest 20% for this dish', 0), 3200);
+  } else if (isCheap) {
+    showToast(`🔥 Smart find — $${diff.toFixed(2)} below average!`, 25);
+  } else {
+    showToast('✓ Logged! Helps the next person know the price.', 10);
+  }
+
+  // Scroll to diary to show the update
+  setTimeout(() => {
+    document.getElementById('diary').scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 1200);
+
   // Reset form
   ['f-rest','f-dish','f-price','f-handle'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-hood').selectedIndex = 0;
+  document.getElementById('f-cat').selectedIndex = 0;
   document.getElementById('ppPts').textContent = '25';
-
-  showToast('🔥 Dish logged! You earned', 25);
+  document.getElementById('benchmarkPanel').classList.remove('visible');
 }
 
 // ─── SHARE ───
@@ -1695,10 +2103,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Map init after DOM paint
   setTimeout(() => {
-    // Remap the map element ID
     document.getElementById('map-el').style.height = '440px';
     initMap();
   }, 100);
+
+  // Wire live benchmark to price + category inputs
+  ['f-price', 'f-cat', 'f-hood'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', showBenchmark);
+    if (el) el.addEventListener('change', showBenchmark);
+  });
+
+  // Init weekly report date
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const wdEl = document.getElementById('weeklyDate');
+  if (wdEl) wdEl.textContent = 'Week of ' + dateStr;
 
   // Animate stats on scroll
   const observer = new IntersectionObserver(entries => {
