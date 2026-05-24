@@ -6,2033 +6,1338 @@
 <meta name="theme-color" content="#0A0A0A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>CheapSheet NYC</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-/* ═══════════════════════════════════════════
-   TOKENS
-═══════════════════════════════════════════ */
-:root {
-  --orange:#D85A30; --orange-dim:#A8431F; --og:rgba(216,90,48,0.12);
-  --bg:#0A0A0A; --bg2:#111; --bg3:#171717; --bg4:#1E1E1E;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-  --text:#F0F0EE; --text2:#999; --text3:#555;
-  --green:#3A9A5C; --red:#E02020; --gold:#D4A017; --purple:#7B52D4;
-  --radius:7px;
-  --tab-h:60px;
-  --header-h:52px;
+/* ─── TOKENS ─── */
+:root{
+  --or:#D85A30;--or2:#A8431F;--og:rgba(216,90,48,0.12);--ob:rgba(216,90,48,0.2);
+  --bg:#0A0A0A;--bg2:#111;--bg3:#181818;--bg4:#222;
+  --b:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);--b3:rgba(255,255,255,0.2);
+  --t:#F0F0EE;--t2:#999;--t3:#555;
+  --green:#3A9A5C;--red:#E02020;--gold:#D4A017;--purple:#7B52D4;
+  --r:8px;--tab:58px;--hdr:52px;
 }
-
-/* ═══════════════════════════════════════════
-   RESET
-═══════════════════════════════════════════ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;background:#000;font-family:'DM Sans',sans-serif;color:var(--text);}
-button{font-family:'DM Sans',sans-serif;cursor:pointer;}
-input,select,textarea{font-family:'DM Sans',sans-serif;}
-::-webkit-scrollbar{width:0;height:0;}
+html{height:100%;}
+body{
+  font-family:'DM Sans',sans-serif;color:var(--t);background:var(--bg);
+  /* Mobile: fixed height, no scroll on body */
+  height:100%;overflow:hidden;
+}
+/* Desktop: normal scroll */
+@media(min-width:768px){
+  body{overflow:auto;height:auto;}
+}
+button,input,select,textarea{font-family:'DM Sans',sans-serif;}
+input,select{-webkit-appearance:none;appearance:none;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 
-/* ═══════════════════════════════════════════
-   APP SHELL
-═══════════════════════════════════════════ */
-#app{
-  width:100%;height:100vh;max-width:430px;
-  margin:0 auto;
+/* ─── MOBILE APP SHELL ─── */
+#mobileApp{
   display:flex;flex-direction:column;
-  background:var(--bg);
-  position:relative;overflow:hidden;
-  box-shadow:0 0 60px rgba(0,0,0,0.8);
+  width:100%;height:100dvh; /* dynamic viewport height — key fix */
+  background:var(--bg);position:fixed;inset:0;
 }
+@media(min-width:768px){#mobileApp{display:none;}}
 
-/* On desktop, show app frame */
-@media(min-width:600px){
-  body{background:#050505;display:flex;align-items:center;justify-content:center;}
-  #app{border-radius:0;height:100vh;max-width:100%;}
+/* Mobile header */
+.m-hdr{
+  height:var(--hdr);flex-shrink:0;
+  background:rgba(10,10,10,0.98);border-bottom:1px solid var(--b);
+  display:flex;align-items:center;padding:0 16px;gap:10px;
+  position:relative;z-index:50;
 }
-@media(min-width:900px){
-  body{background:#050505;}
-  #app{max-width:100%;border-radius:0;}
+.m-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px;flex:1;}
+.m-logo span{color:var(--or);}
+.m-pts{
+  display:flex;align-items:center;gap:4px;
+  background:var(--og);border:1px solid var(--ob);
+  border-radius:20px;padding:4px 10px;cursor:pointer;
 }
-
-/* ═══════════════════════════════════════════
-   HEADER
-═══════════════════════════════════════════ */
-#header{
-  height:var(--header-h);flex-shrink:0;
-  background:rgba(10,10,10,0.97);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;
-  padding:0 16px;gap:12px;
-  position:relative;z-index:100;
-}
-.header-logo{
-  font-family:'Bebas Neue',sans-serif;font-size:20px;
-  letter-spacing:1.5px;color:var(--text);flex:1;
-  cursor:pointer;
-}
-.header-logo span{color:var(--orange);}
-.header-right{display:flex;align-items:center;gap:8px;}
-.header-points{
-  display:flex;align-items:center;gap:5px;
-  background:var(--og);border:1px solid rgba(216,90,48,0.2);
-  border-radius:20px;padding:4px 10px;
-}
-.hp-num{
-  font-family:'Bebas Neue',sans-serif;font-size:16px;
-  color:var(--orange);line-height:1;
-}
-.hp-label{
-  font-family:'DM Mono',monospace;font-size:8px;
-  color:rgba(216,90,48,0.7);letter-spacing:0.5px;
-}
-.header-avi{
+.m-pts-n{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--or);line-height:1;}
+.m-pts-l{font-family:'DM Mono',monospace;font-size:8px;color:rgba(216,90,48,0.7);}
+.m-avi{
   width:30px;height:30px;border-radius:8px;
-  background:var(--bg4);border:1.5px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;cursor:pointer;overflow:hidden;
+  background:var(--bg4);border:1.5px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;
 }
 
-/* ═══════════════════════════════════════════
-   SCREENS
-═══════════════════════════════════════════ */
-#screens{flex:1;overflow:hidden;position:relative;}
-.screen{
+/* Mobile screens */
+.m-screens{flex:1;min-height:0;position:relative;overflow:hidden;}
+.m-screen{
   position:absolute;inset:0;
   overflow-y:auto;overflow-x:hidden;
   display:none;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding-bottom:20px;
 }
-.screen.active{display:block;}
+.m-screen.active{display:block;}
+/* Map screen is flex */
+#ms-map{display:none;flex-direction:column;overflow:hidden;}
+#ms-map.active{display:flex;}
 
-/* ═══════════════════════════════════════════
-   BOTTOM TAB BAR
-═══════════════════════════════════════════ */
-#tabbar{
-  height:var(--tab-h);flex-shrink:0;
-  display:flex;
-  background:rgba(10,10,10,0.98);
-  border-top:1px solid var(--border);
+/* Mobile tab bar */
+.m-tabs{
+  height:var(--tab);flex-shrink:0;
+  display:flex;background:rgba(10,10,10,0.98);
+  border-top:1px solid var(--b);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-.tab{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:4px;
-  cursor:pointer;position:relative;
-  border-top:2px solid transparent;
-  transition:all 0.15s;
-  padding:8px 4px 4px;
+.m-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;
+  border-top:2px solid transparent;padding-top:2px;transition:all 0.15s;
+  background:none;border-left:none;border-right:none;border-bottom:none;
 }
-.tab.active{border-top-color:var(--orange);}
-.tab-icon{font-size:18px;opacity:0.35;transition:opacity 0.15s;}
-.tab.active .tab-icon{opacity:1;}
-.tab-label{
-  font-family:'DM Mono',monospace;font-size:8px;
-  color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;
-  transition:color 0.15s;
-}
-.tab.active .tab-label{color:var(--orange);}
-.tab-badge{
-  position:absolute;top:6px;right:calc(50% - 14px);
-  background:var(--orange);color:#fff;
-  font-family:'DM Mono',monospace;font-size:7px;
-  width:14px;height:14px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
+.m-tab.active{border-top-color:var(--or);}
+.m-tab-ic{font-size:17px;opacity:0.3;transition:opacity 0.15s;}
+.m-tab.active .m-tab-ic{opacity:1;}
+.m-tab-lb{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--t3);letter-spacing:0.5px;text-transform:uppercase;transition:color 0.15s;}
+.m-tab.active .m-tab-lb{color:var(--or);}
+.m-tab-badge{
+  position:absolute;top:6px;right:calc(50% - 16px);
+  background:var(--or);color:#fff;font-size:7px;
+  width:13px;height:13px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
 }
 
-/* ═══════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════ */
-#toast{
-  position:fixed;bottom:calc(var(--tab-h) + 12px);
-  left:50%;transform:translateX(-50%) translateY(10px);
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:8px;padding:10px 18px;
-  display:flex;align-items:center;gap:10px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.7);
-  opacity:0;pointer-events:none;transition:all 0.25s;
-  z-index:500;white-space:nowrap;
-  font-size:12.5px;color:var(--text);
-}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-#toast-pts{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);
-}
+/* ─── DESKTOP LAYOUT ─── */
+#desktopApp{display:none;}
+@media(min-width:768px){#desktopApp{display:block;}}
 
-/* ═══════════════════════════════════════════
-   AUTH OVERLAY (shown until login)
-═══════════════════════════════════════════ */
-#authOverlay{
-  position:fixed;inset:0;z-index:900;
-  background:rgba(0,0,0,0.97);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-end;
-  padding:0 0 env(safe-area-inset-bottom,0px);
+.d-nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(10,10,10,0.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--b);
+  height:56px;display:flex;align-items:center;padding:0 32px;gap:24px;
 }
-#authOverlay.hidden{display:none;}
+.d-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;cursor:pointer;margin-right:8px;}
+.d-logo span{color:var(--or);}
+.d-nav-links{display:flex;gap:2px;flex:1;}
+.d-nl{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--t3);padding:6px 12px;border-radius:5px;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.15s;background:none;border-left:none;border-right:none;border-top:none;
+}
+.d-nl:hover{color:var(--t2);}
+.d-nl.active{color:var(--t);border-bottom-color:var(--or);}
+.d-nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.d-pts{
+  display:flex;align-items:center;gap:5px;
+  background:var(--og);border:1px solid var(--ob);
+  border-radius:20px;padding:5px 12px;
+}
+.d-pts-n{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--or);line-height:1;}
+.d-pts-l{font-family:'DM Mono',monospace;font-size:8px;color:rgba(216,90,48,0.6);}
+.d-avi{
+  width:32px;height:32px;border-radius:8px;background:var(--bg4);
+  border:1.5px solid var(--b2);display:flex;align-items:center;
+  justify-content:center;font-size:16px;cursor:pointer;
+}
+.d-submit-btn{
+  background:var(--or);color:#fff;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  padding:8px 14px;border-radius:var(--r);border:none;cursor:pointer;transition:background 0.15s;
+}
+.d-submit-btn:hover{background:var(--or2);}
 
-.auth-bg{
-  position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(216,90,48,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 30% at 20% 20%, rgba(216,90,48,0.06) 0%, transparent 60%);
-  pointer-events:none;
-}
-.auth-top{
-  position:absolute;top:0;left:0;right:0;
-  display:flex;flex-direction:column;align-items:center;
-  padding:60px 24px 0;text-align:center;
-  pointer-events:none;
-}
-.auth-logo{
-  font-family:'Bebas Neue',sans-serif;font-size:36px;
-  letter-spacing:2px;color:var(--text);
-}
-.auth-logo span{color:var(--orange);}
-.auth-tagline{
-  font-family:'DM Mono',monospace;font-size:10px;
-  letter-spacing:2px;text-transform:uppercase;
-  color:var(--text3);margin-top:6px;
-}
-.auth-proof{
-  display:flex;gap:20px;justify-content:center;margin-top:24px;
-}
-.auth-proof-item{text-align:center;}
-.ap-num{
-  font-family:'Bebas Neue',sans-serif;font-size:28px;
-  color:var(--orange);line-height:1;
-}
-.ap-label{
-  font-family:'DM Mono',monospace;font-size:8.5px;
-  color:var(--text3);letter-spacing:1px;margin-top:2px;
-}
+/* Desktop sections */
+.d-section{display:none;animation:fadeUp 0.2s ease;}
+.d-section.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.d-wrap{max-width:1100px;margin:0 auto;padding:32px 32px;}
+.d-wrap-wide{max-width:100%;padding:0;}
 
-.auth-sheet{
-  width:100%;max-width:430px;
-  background:var(--bg2);
-  border-top:1px solid var(--border2);
-  border-radius:20px 20px 0 0;
-  padding:24px 24px 32px;
-  position:relative;z-index:1;
-}
-.auth-handle{
-  width:36px;height:4px;border-radius:2px;
-  background:var(--border2);margin:0 auto 20px;
-}
-.auth-tabs{
-  display:flex;gap:0;margin-bottom:22px;
-  background:var(--bg3);border-radius:8px;padding:3px;
-}
-.auth-tab{
-  flex:1;padding:8px;text-align:center;
-  font-family:'DM Mono',monospace;font-size:10px;
-  letter-spacing:1px;text-transform:uppercase;
-  color:var(--text3);border-radius:6px;cursor:pointer;
-  transition:all 0.15s;border:none;background:none;
-}
-.auth-tab.active{
-  background:var(--orange);color:#fff;
-}
+/* Desktop grid layouts */
+.d-hero-grid{display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start;margin-bottom:40px;}
+.d-two-col{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+.d-three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 
-.auth-form{display:flex;flex-direction:column;gap:12px;}
-.auth-field{
-  display:flex;flex-direction:column;gap:5px;
-}
-.auth-label{
-  font-family:'DM Mono',monospace;font-size:9px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
-  display:flex;align-items:center;gap:6px;
-}
-.auth-label-fun{color:var(--orange);font-size:8px;}
-.auth-input{
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:var(--radius);color:var(--text);
-  font-size:14px;padding:11px 14px;outline:none;
-  transition:border-color 0.15s;
-  -webkit-appearance:none;appearance:none;
-}
-.auth-input:focus{border-color:var(--orange);}
-.auth-input::placeholder{color:var(--text3);}
-.auth-input-row{display:flex;gap:10px;}
-.auth-btn{
-  background:var(--orange);color:#fff;
-  font-family:'Bebas Neue',sans-serif;font-size:18px;
-  letter-spacing:2px;padding:13px;border-radius:var(--radius);
-  border:none;cursor:pointer;transition:all 0.15s;
-  margin-top:4px;
-}
-.auth-btn:hover{background:var(--orange-dim,#A8431F);}
-.auth-btn:active{transform:scale(0.98);}
-.auth-or{
-  text-align:center;font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--text3);letter-spacing:1px;
-  position:relative;margin:4px 0;
-}
-.auth-or::before,.auth-or::after{
-  content:'';position:absolute;top:50%;
-  width:calc(50% - 20px);height:1px;background:var(--border2);
-}
-.auth-or::before{left:0;} .auth-or::after{right:0;}
-.auth-sub{
-  text-align:center;font-size:11px;color:var(--text3);
-  line-height:1.5;
-}
-.auth-sub a{color:var(--orange);text-decoration:none;cursor:pointer;}
+/* ─── SHARED COMPONENTS ─── */
 
-/* Verification step */
-.verify-step{display:none;flex-direction:column;gap:14px;align-items:center;text-align:center;}
-.verify-step.active{display:flex;}
-.verify-title{
-  font-family:'Bebas Neue',sans-serif;font-size:28px;
-  letter-spacing:1.5px;color:var(--text);
-}
-.verify-sub{font-size:13px;color:var(--text2);line-height:1.6;}
-.verify-code-row{display:flex;gap:8px;justify-content:center;}
-.verify-digit{
-  width:44px;height:52px;
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:var(--radius);
-  font-family:'Bebas Neue',sans-serif;font-size:28px;
-  text-align:center;color:var(--text);outline:none;
-  transition:border-color 0.15s;-webkit-appearance:none;
-}
-.verify-digit:focus{border-color:var(--orange);}
-.verify-resend{
-  font-family:'DM Mono',monospace;font-size:10px;
-  color:var(--orange);cursor:pointer;letter-spacing:0.5px;
-}
+/* Card */
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:var(--r);}
+.card-orange{background:var(--bg2);border:1px solid var(--ob);border-radius:var(--r);}
 
-/* ═══════════════════════════════════════════
-   ONBOARDING (post-signup questions)
-═══════════════════════════════════════════ */
-#onboardOverlay{
-  position:fixed;inset:0;z-index:890;
-  background:var(--bg);
-  display:none;flex-direction:column;
-  overflow:hidden;
+/* Section label */
+.sec-eyebrow{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--or);margin-bottom:6px;
 }
-#onboardOverlay.active{display:flex;}
-.ob-header{
-  padding:20px 24px 0;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.ob-logo{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;
-  letter-spacing:1.5px;color:var(--text);
-}
-.ob-logo span{color:var(--orange);}
-.ob-skip{
-  font-family:'DM Mono',monospace;font-size:10px;
-  color:var(--text3);cursor:pointer;letter-spacing:0.5px;
-  background:none;border:none;
-}
-.ob-progress{
-  height:2px;background:var(--border);margin:20px 24px 0;border-radius:1px;overflow:hidden;
-}
-.ob-progress-fill{
-  height:100%;background:var(--orange);
-  border-radius:1px;transition:width 0.4s ease;
-}
-.ob-screens{flex:1;overflow:hidden;position:relative;}
-.ob-screen{
-  position:absolute;inset:0;padding:32px 24px 24px;
-  display:none;flex-direction:column;justify-content:space-between;
-}
-.ob-screen.active{display:flex;}
-.ob-q-label{
-  font-family:'DM Mono',monospace;font-size:10px;
-  letter-spacing:2px;text-transform:uppercase;color:var(--orange);
-  margin-bottom:12px;
-}
-.ob-q{
-  font-family:'Bebas Neue',sans-serif;font-size:32px;
-  letter-spacing:1px;color:var(--text);line-height:1.1;margin-bottom:8px;
-}
-.ob-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:24px;}
-.ob-options{display:flex;flex-direction:column;gap:10px;}
-.ob-opt{
-  background:var(--bg2);border:1.5px solid var(--border2);
-  border-radius:10px;padding:14px 16px;
-  display:flex;align-items:center;gap:12px;cursor:pointer;
-  transition:all 0.15s;
-}
-.ob-opt:active,.ob-opt.selected{border-color:var(--orange);background:var(--og);}
-.ob-opt-icon{font-size:22px;width:30px;text-align:center;}
-.ob-opt-text{}
-.ob-opt-title{font-size:14px;font-weight:500;color:var(--text);}
-.ob-opt-sub{font-size:11px;color:var(--text3);margin-top:2px;}
-.ob-nav{display:flex;justify-content:flex-end;padding-top:16px;}
-.ob-next{
-  background:var(--orange);color:#fff;
-  font-family:'Bebas Neue',sans-serif;font-size:16px;
-  letter-spacing:2px;padding:12px 28px;border-radius:var(--radius);
-  border:none;cursor:pointer;
-}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--t);}
+.sec-title span{color:var(--or);}
+.sec-sub{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.5;}
 
-/* ═══════════════════════════════════════════
-   SCREEN 1 — HOME / FEED
-═══════════════════════════════════════════ */
-.s-home{padding-bottom:20px;}
-
-/* Hero banner */
-.home-hero{
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  padding:16px;
-}
-.hh-greeting{
-  font-family:'DM Mono',monospace;font-size:10px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
-  margin-bottom:4px;
-}
-.hh-title{
-  font-family:'Bebas Neue',sans-serif;font-size:28px;
-  letter-spacing:1px;color:var(--text);line-height:1;margin-bottom:12px;
-}
-.hh-title span{color:var(--orange);}
-
-/* Savings bar (live) */
+/* Savings strip */
 .savings-strip{
-  background:rgba(58,154,92,0.08);border:1px solid rgba(58,154,92,0.2);
-  border-radius:8px;padding:10px 14px;
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;
+  background:rgba(58,154,92,0.07);border:1px solid rgba(58,154,92,0.18);
+  border-radius:var(--r);padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
-.ss-left{}
-.ss-amount{
-  font-family:'Bebas Neue',sans-serif;font-size:30px;
-  color:var(--green);line-height:1;
-}
-.ss-label{
-  font-family:'DM Mono',monospace;font-size:8.5px;
-  color:rgba(58,154,92,0.7);letter-spacing:1px;margin-top:1px;
-}
-.ss-cta{
-  font-size:11px;color:var(--text2);text-align:right;max-width:130px;line-height:1.4;
-}
-.ss-cta b{color:var(--text);}
+.ss-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--green);line-height:1;}
+.ss-lbl{font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(58,154,92,0.7);letter-spacing:1px;margin-top:2px;}
+.ss-right{font-size:11.5px;color:var(--t2);text-align:right;line-height:1.5;}
+.ss-right b{color:var(--t);}
 
-/* Streak */
+/* Streak bar */
 .streak-bar{
-  display:flex;align-items:center;gap:8px;
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;padding:9px 12px;
-}
-.streak-flame{font-size:18px;}
-.streak-info{flex:1;}
-.streak-label{font-size:11.5px;font-weight:500;color:var(--text);}
-.streak-sub{
-  font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--text3);margin-top:1px;
+  background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
 }
 .streak-days{display:flex;gap:4px;}
-.sd{
-  width:22px;height:22px;border-radius:4px;
-  font-family:'Bebas Neue',sans-serif;font-size:11px;
-  display:flex;align-items:center;justify-content:center;
-}
-.sd.done{background:var(--orange);color:#fff;}
-.sd.today{background:rgba(216,90,48,0.2);border:1.5px solid var(--orange);color:var(--orange);}
-.sd.empty{background:var(--bg4);color:var(--text3);}
+.sd{width:22px;height:22px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sd.done{background:var(--or);color:#fff;}
+.sd.today{background:var(--og);border:1.5px solid var(--or);color:var(--or);}
+.sd.empty{background:var(--bg4);color:var(--t3);}
+.streak-info{flex:1;}
+.streak-title{font-size:12px;font-weight:600;color:var(--t);}
+.streak-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
 
-/* Section headers */
-.sec-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 16px 10px;
-}
-.sec-title{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;
-  letter-spacing:1px;color:var(--text);
-}
-.sec-title span{color:var(--orange);}
-.sec-link{
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--orange);cursor:pointer;letter-spacing:0.3px;
-}
-
-/* Deal card (horizontal scroll) */
-.cards-scroll{
-  display:flex;gap:10px;padding:0 16px 4px;
-  overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
+/* Deal cards (horizontal scroll) */
+.cards-scroll{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;scrollbar-width:none;}
 .cards-scroll::-webkit-scrollbar{display:none;}
 .deal-card{
-  flex-shrink:0;width:160px;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:10px;overflow:hidden;cursor:pointer;
-  transition:transform 0.1s;
+  flex-shrink:0;width:155px;background:var(--bg2);border:1px solid var(--b);
+  border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform 0.12s,border-color 0.15s;
   position:relative;
 }
+.deal-card:hover{transform:translateY(-2px);border-color:var(--b2);}
 .deal-card:active{transform:scale(0.97);}
-.deal-card-top{
-  padding:12px 12px 8px;
-  display:flex;align-items:flex-start;justify-content:space-between;
-}
-.dc-emoji{font-size:24px;}
-.dc-price{
-  font-family:'Bebas Neue',sans-serif;font-size:24px;
-  color:var(--orange);line-height:1;
-}
-.dc-name{
-  font-size:12px;font-weight:500;color:var(--text);
-  padding:0 12px;line-height:1.3;
-}
-.dc-rest{
-  font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--text3);padding:3px 12px 0;
-}
-.dc-foot{
-  padding:8px 12px 10px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-top:1px solid var(--border);margin-top:8px;
-}
-.dc-hood{font-size:9px;color:var(--text3);}
-.dc-gem{
-  font-family:'DM Mono',monospace;font-size:8px;
-  color:#9B7CE8;background:rgba(123,82,212,0.1);
-  border:1px solid rgba(123,82,212,0.2);
-  border-radius:3px;padding:2px 6px;
-}
-.deal-card .hot-tag{
-  position:absolute;top:8px;right:8px;
-  background:var(--orange);color:#fff;
-  font-family:'DM Mono',monospace;font-size:7px;
-  border-radius:3px;padding:2px 5px;letter-spacing:0.5px;
-}
+.dc-top{padding:11px 12px 8px;display:flex;align-items:flex-start;justify-content:space-between;}
+.dc-emoji{font-size:22px;}
+.dc-price{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--or);line-height:1;}
+.dc-name{font-size:11.5px;font-weight:500;padding:0 12px;line-height:1.35;}
+.dc-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);padding:3px 12px 0;}
+.dc-foot{padding:8px 12px 10px;border-top:1px solid var(--b);margin-top:8px;display:flex;align-items:center;justify-content:space-between;}
+.dc-hood{font-size:9px;color:var(--t3);}
+.dc-tag{font-family:'DM Mono',monospace;font-size:7.5px;border-radius:3px;padding:2px 5px;}
+.dc-tag.hot{background:var(--og);color:var(--or);border:1px solid var(--ob);}
+.dc-tag.gem{background:rgba(123,82,212,0.1);color:#9B7CE8;border:1px solid rgba(123,82,212,0.2);}
+.dc-tag.ver{background:rgba(58,154,92,0.1);color:var(--green);border:1px solid rgba(58,154,92,0.2);}
 
-/* Near me row */
+/* Near-me list */
 .near-item{
   display:flex;align-items:center;gap:12px;
-  padding:12px 16px;border-bottom:1px solid var(--border);
+  padding:12px 16px;border-bottom:1px solid var(--b);
   cursor:pointer;transition:background 0.1s;
 }
-.near-item:active{background:var(--bg2);}
-.ni-emoji{font-size:20px;width:32px;text-align:center;}
+.near-item:last-child{border-bottom:none;}
+.near-item:active,.near-item:hover{background:var(--bg2);}
+.ni-emoji{font-size:20px;width:30px;text-align:center;flex-shrink:0;}
 .ni-info{flex:1;}
-.ni-name{font-size:13px;font-weight:500;color:var(--text);}
-.ni-rest{
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--text3);margin-top:1px;
-}
-.ni-right{text-align:right;}
-.ni-price{
-  font-family:'Bebas Neue',sans-serif;font-size:20px;
-  color:var(--orange);line-height:1;
-}
-.ni-dist{
-  font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--text3);margin-top:1px;
-}
+.ni-name{font-size:13px;font-weight:500;}
+.ni-rest{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);margin-top:1px;}
+.ni-right{text-align:right;flex-shrink:0;}
+.ni-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--or);line-height:1;}
+.ni-dist{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
 
-/* Benchmark banner (inline) */
-.bench-banner{
-  margin:0 16px 0;
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:10px;padding:14px 16px;overflow:hidden;
-  position:relative;
+/* Monday Drop */
+.drop-card{overflow:hidden;}
+.drop-head{
+  background:rgba(216,90,48,0.06);border-bottom:1px solid var(--ob);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
 }
-.bench-banner::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--green),var(--orange));
-}
-.bb-label{
-  font-family:'DM Mono',monospace;font-size:9px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);
-  margin-bottom:8px;
-}
-.bb-text{font-size:13px;color:var(--text);line-height:1.5;}
-.bb-text strong{color:var(--orange);}
-.bb-bar{height:5px;background:var(--border);border-radius:3px;margin-top:10px;overflow:hidden;}
-.bb-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--orange));transition:width 0.8s ease;}
-
-/* Monday Drop teaser */
-.drop-teaser{
-  margin:0 16px;
-  background:var(--bg2);border:1px solid rgba(216,90,48,0.2);
-  border-radius:10px;overflow:hidden;
-}
-.dt-head{
-  background:rgba(216,90,48,0.07);border-bottom:1px solid rgba(216,90,48,0.15);
-  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
-}
-.dt-title{
-  font-family:'Bebas Neue',sans-serif;font-size:15px;
-  letter-spacing:2px;color:var(--orange);
-}
-.dt-cd{
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--text3);
-}
+.drop-head-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--or);}
+.drop-cd{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
 .drop-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  cursor:pointer;
+  display:flex;align-items:center;gap:10px;padding:10px 16px;
+  border-bottom:1px solid var(--b);cursor:pointer;transition:background 0.1s;
 }
 .drop-row:last-child{border-bottom:none;}
-.dr-num{
-  font-family:'Bebas Neue',sans-serif;font-size:14px;
-  color:var(--text3);width:16px;
-}
-.dr-info{flex:1;}
-.dr-name{font-size:12.5px;font-weight:500;color:var(--text);}
-.dr-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.dr-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);}
-.drop-row.locked .dr-name,.drop-row.locked .dr-rest{filter:blur(4px);}
-.drop-row.locked .dr-price{filter:blur(4px);}
-.lock-pill{
-  font-family:'DM Mono',monospace;font-size:8px;
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:3px;padding:3px 7px;color:var(--text3);
-  white-space:nowrap;
-}
+.drop-row:hover{background:rgba(255,255,255,0.02);}
+.drop-num{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--t3);width:16px;flex-shrink:0;}
+.drop-info{flex:1;}
+.drop-name{font-size:12.5px;font-weight:500;}
+.drop-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.drop-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--or);flex-shrink:0;}
+.drop-row.locked .drop-name,.drop-row.locked .drop-rest{filter:blur(5px);pointer-events:none;}
+.drop-row.locked .drop-price{filter:blur(5px);}
+.lock-pill{font-family:'DM Mono',monospace;font-size:8px;background:var(--bg3);border:1px solid var(--b2);border-radius:3px;padding:3px 8px;color:var(--t3);white-space:nowrap;flex-shrink:0;}
 
-/* ═══════════════════════════════════════════
-   SCREEN 2 — MAP
-═══════════════════════════════════════════ */
-.s-map{display:flex;flex-direction:column;}
-.map-search{
-  padding:10px 14px;background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  display:flex;gap:8px;
-}
-.map-search-input{
-  flex:1;background:var(--bg3);border:1px solid var(--border2);
-  border-radius:20px;padding:8px 14px;
-  font-size:13px;color:var(--text);outline:none;
-  -webkit-appearance:none;
-}
-.map-search-input::placeholder{color:var(--text3);}
-.map-filter-row{
-  display:flex;gap:6px;padding:8px 14px;
-  overflow-x:auto;background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;flex-shrink:0;
-}
-.map-filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{
-  flex-shrink:0;
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  letter-spacing:0.5px;padding:5px 12px;border-radius:16px;
-  border:1px solid var(--border2);background:transparent;
-  color:var(--text3);cursor:pointer;transition:all 0.15s;
-  white-space:nowrap;
-}
-.filter-chip.active{background:var(--og);border-color:var(--orange);color:var(--orange);}
-#map-container{flex:1;min-height:0;position:relative;}
-#map-el{width:100%;height:100%;}
-.map-list-toggle{
-  position:absolute;bottom:12px;right:12px;z-index:400;
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:8px;padding:8px 12px;
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--text);cursor:pointer;
-  box-shadow:0 4px 16px rgba(0,0,0,0.5);
-}
+/* Leaderboard */
+.lb-podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;padding:16px 16px 8px;}
+.pod{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.pod-avi{border-radius:10px;background:var(--bg4);border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;}
+.pod.first .pod-avi{width:52px;height:52px;font-size:24px;border-color:var(--gold);}
+.pod.second .pod-avi,.pod.third .pod-avi{width:42px;height:42px;font-size:20px;}
+.pod-handle{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--t2);}
+.pod-pts{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--or);}
+.pod.first .pod-pts{color:var(--gold);font-size:20px;}
+.pod-base{width:100%;border-radius:5px 5px 0 0;display:flex;align-items:center;justify-content:center;padding:6px 0;}
+.pod.first .pod-base{background:rgba(212,160,23,0.1);height:48px;}
+.pod.second .pod-base{background:rgba(255,255,255,0.04);height:36px;}
+.pod.third .pod-base{background:rgba(255,255,255,0.02);height:24px;}
+.pod-base-n{font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.12);}
 
-/* Map list panel */
-.map-list-panel{
-  position:absolute;bottom:0;left:0;right:0;
-  height:55%;background:var(--bg2);
-  border-top:1px solid var(--border2);border-radius:16px 16px 0 0;
-  z-index:401;transform:translateY(100%);
-  transition:transform 0.3s ease;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
-.map-list-panel.open{transform:translateY(0);}
-.map-list-handle{
-  width:36px;height:4px;border-radius:2px;
-  background:var(--border2);margin:12px auto 8px;
-}
-.map-list-item{
-  display:flex;align-items:center;gap:10px;
-  padding:11px 16px;border-bottom:1px solid var(--border);
-  cursor:pointer;
-}
-.mli-emoji{font-size:18px;width:28px;text-align:center;}
-.mli-info{flex:1;}
-.mli-name{font-size:12.5px;font-weight:500;color:var(--text);}
-.mli-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.mli-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);}
-
-/* ═══════════════════════════════════════════
-   SCREEN 3 — LOG / SUBMIT
-═══════════════════════════════════════════ */
-.s-log{padding:16px 16px 32px;}
-.log-header{margin-bottom:18px;}
-.log-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--text);}
-.log-title span{color:var(--orange);}
-.log-sub{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.5;}
-
-/* Benchmark preview in log screen */
-.bench-preview{
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:10px;padding:14px;margin-bottom:14px;
-  display:none;animation:fadeIn 0.25s ease;
-}
-.bench-preview.show{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
-.bp-tag{
-  font-family:'DM Mono',monospace;font-size:8.5px;
-  letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--orange);margin-bottom:6px;
-}
-.bp-msg{font-size:13px;color:var(--text);line-height:1.5;}
-.bp-msg strong{color:var(--orange);}
-.bp-msg .gem{color:#9B7CE8;}
-.bp-bar{height:5px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden;}
-.bp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--orange));transition:width 0.7s ease;}
-.bp-meta{
-  display:flex;justify-content:space-between;
-  font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-top:4px;
-}
-.gem-badge{
-  display:flex;align-items:center;gap:6px;margin-top:8px;
-  background:rgba(123,82,212,0.1);border:1px solid rgba(123,82,212,0.2);
-  border-radius:5px;padding:5px 10px;
-  font-family:'DM Mono',monospace;font-size:9.5px;color:#9B7CE8;
-}
-
-/* Form */
-.form-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
-.f-label{
-  font-family:'DM Mono',monospace;font-size:9px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
-}
-.f-input{
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:var(--radius);color:var(--text);
-  font-size:14px;padding:11px 13px;outline:none;
-  transition:border-color 0.15s;-webkit-appearance:none;
-  width:100%;
-}
-.f-input:focus{border-color:var(--orange);}
-.f-input::placeholder{color:var(--text3);}
-.f-select{
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:var(--radius);color:var(--text);
-  font-size:14px;padding:11px 13px;outline:none;
-  appearance:none;-webkit-appearance:none;
-  cursor:pointer;transition:border-color 0.15s;width:100%;
-}
-.f-select:focus{border-color:var(--orange);}
-.form-row{display:flex;gap:10px;}
-.form-row .form-field{flex:1;}
-.price-tip{
-  background:rgba(216,90,48,0.06);border:1px solid rgba(216,90,48,0.15);
-  border-radius:var(--radius);padding:10px 12px;
-  font-size:11.5px;color:var(--text2);line-height:1.5;margin-bottom:12px;
-}
-.price-tip strong{color:var(--orange);}
-.receipt-zone{
-  border:1.5px dashed var(--border2);border-radius:var(--radius);
-  padding:18px;text-align:center;cursor:pointer;
-  transition:border-color 0.15s;margin-bottom:12px;
-}
-.receipt-zone:active{border-color:var(--orange);}
-.rz-icon{font-size:20px;color:var(--text3);}
-.rz-text{
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--text3);margin-top:5px;letter-spacing:0.5px;
-}
-
-/* Points preview */
-.pts-preview{
-  display:flex;align-items:center;gap:12px;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;
-}
-.pts-num{
-  font-family:'Bebas Neue',sans-serif;font-size:36px;
-  color:var(--orange);line-height:1;
-}
-.pts-info{}
-.pts-label{font-size:13px;font-weight:500;color:var(--text);}
-.pts-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
-
-.submit-btn{
-  width:100%;background:var(--orange);color:#fff;
-  font-family:'Bebas Neue',sans-serif;font-size:20px;
-  letter-spacing:2px;padding:14px;border-radius:var(--radius);
-  border:none;cursor:pointer;transition:all 0.15s;
-}
-.submit-btn:active{transform:scale(0.98);}
-
-/* ═══════════════════════════════════════════
-   SCREEN 4 — LEADERBOARD
-═══════════════════════════════════════════ */
-.s-board{padding-bottom:20px;}
-.board-hero{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:16px;
-}
-.bh-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--text);}
-.bh-title span{color:var(--orange);}
-.bh-sub{font-size:11.5px;color:var(--text2);margin-top:3px;}
-
-/* Podium */
-.podium{
-  display:flex;align-items:flex-end;justify-content:center;
-  gap:8px;padding:20px 16px 8px;
-}
-.pod-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
-  max-width:100px;
-}
-.pod-avi{
-  width:44px;height:44px;border-radius:10px;
-  background:var(--bg4);border:2px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;font-size:20px;
-}
-.pod-item.first .pod-avi{border-color:var(--gold);width:52px;height:52px;font-size:24px;}
-.pod-handle{
-  font-family:'DM Mono',monospace;font-size:9px;
-  color:var(--text2);letter-spacing:0.5px;
-}
-.pod-pts{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;
-  color:var(--orange);
-}
-.pod-item.first .pod-pts{font-size:22px;color:var(--gold);}
-.pod-crown{font-size:18px;text-align:center;}
-.pod-base{
-  width:100%;border-radius:6px 6px 0 0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(255,255,255,0.15);
-  padding-top:8px;
-}
-.pod-item.first .pod-base{background:rgba(212,160,23,0.12);height:50px;}
-.pod-item.second .pod-base{background:rgba(255,255,255,0.04);height:36px;}
-.pod-item.third .pod-base{background:rgba(255,255,255,0.02);height:26px;}
-
-/* Board tabs */
-.board-tabs{
-  display:flex;border-bottom:1px solid var(--border);
-}
-.board-tab{
-  flex:1;padding:10px;text-align:center;
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  letter-spacing:1px;text-transform:uppercase;
-  color:var(--text3);border-bottom:2px solid transparent;
-  cursor:pointer;transition:all 0.15s;background:none;border-top:none;border-left:none;border-right:none;
-}
-.board-tab.active{color:var(--orange);border-bottom-color:var(--orange);}
-
-.lb-row{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 16px;border-bottom:1px solid var(--border);
-  cursor:pointer;transition:background 0.1s;
-}
-.lb-row:active{background:var(--bg2);}
-.lb-rank{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;
-  color:var(--text3);width:22px;text-align:center;
-}
-.lb-rank.gold{color:var(--gold);}
-.lb-avi{
-  width:34px;height:34px;border-radius:8px;
-  background:var(--bg4);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-}
+.lb-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b);cursor:pointer;transition:background 0.1s;}
+.lb-row:last-child{border-bottom:none;}
+.lb-row:hover{background:rgba(255,255,255,0.02);}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--t3);width:22px;text-align:center;flex-shrink:0;}
+.lb-rank.g{color:var(--gold);}
+.lb-avi{width:34px;height:34px;border-radius:8px;background:var(--bg4);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .lb-info{flex:1;}
-.lb-handle{font-size:13px;font-weight:500;color:var(--text);}
-.lb-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.lb-pts{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--orange);}
+.lb-handle{font-size:13px;font-weight:500;}
+.lb-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.lb-pts{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--or);flex-shrink:0;}
 
-/* Your rank card */
-.your-rank-card{
-  margin:12px 16px;background:var(--bg2);
-  border:1px solid rgba(216,90,48,0.25);border-radius:10px;
-  padding:14px;display:flex;align-items:center;gap:12px;
+.your-rank{
+  margin:12px 16px;background:var(--og);border:1px solid var(--ob);
+  border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;
 }
-.yrc-label{
-  font-family:'DM Mono',monospace;font-size:8.5px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);
-  margin-bottom:4px;
-}
-.yrc-rank{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--text);line-height:1;}
-.yrc-info{flex:1;}
-.yrc-pts{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange);}
-.yrc-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px;}
+.yr-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--t);line-height:1;}
+.yr-info{flex:1;}
+.yr-label{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--or);margin-bottom:3px;}
+.yr-pts{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--or);}
+.yr-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);}
 
-/* ═══════════════════════════════════════════
-   SCREEN 5 — PROFILE
-═══════════════════════════════════════════ */
-.s-profile{padding-bottom:32px;}
+/* Profile */
 .profile-hero{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:20px 16px;
+  background:var(--bg2);border-bottom:1px solid var(--b);padding:20px 16px;
 }
-.ph-row1{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.ph-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
 .ph-avi{
-  width:60px;height:60px;border-radius:14px;
-  background:var(--og);border:2px solid var(--orange);
-  display:flex;align-items:center;justify-content:center;font-size:28px;
-  position:relative;
+  width:62px;height:62px;border-radius:14px;background:var(--og);
+  border:2px solid var(--or);display:flex;align-items:center;
+  justify-content:center;font-size:30px;position:relative;flex-shrink:0;
 }
-.ph-edit-avi{
-  position:absolute;bottom:-4px;right:-4px;
-  background:var(--bg2);border:1px solid var(--border2);
-  border-radius:50%;width:18px;height:18px;
-  font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;
-}
-.ph-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--text);}
-.ph-handle{font-family:'DM Mono',monospace;font-size:10px;color:var(--orange);}
-.ph-rank-badge{
-  margin-top:5px;
-  font-family:'DM Mono',monospace;font-size:9px;
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:4px;padding:3px 8px;color:var(--text3);
-  display:inline-block;
-}
-.ph-rank-badge.elite{border-color:rgba(212,160,23,0.4);color:var(--gold);}
+.ph-edit{position:absolute;bottom:-4px;right:-4px;background:var(--bg2);border:1px solid var(--b2);border-radius:50%;width:18px;height:18px;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.ph-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;}
+.ph-handle{font-family:'DM Mono',monospace;font-size:10px;color:var(--or);margin-top:1px;}
+.ph-badge{display:inline-block;margin-top:6px;font-family:'DM Mono',monospace;font-size:9px;background:var(--bg3);border:1px solid var(--b2);border-radius:4px;padding:3px 8px;color:var(--t3);}
+.ph-badge.elite{border-color:rgba(212,160,23,0.4);color:var(--gold);}
+.ph-stats{display:flex;border-top:1px solid var(--b);padding-top:14px;}
+.phs{flex:1;text-align:center;border-right:1px solid var(--b);}
+.phs:last-child{border-right:none;}
+.phs-n{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--t);line-height:1;}
+.phs-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);letter-spacing:0.5px;margin-top:2px;}
 
-/* Stats row */
-.profile-stats{
-  display:flex;text-align:center;
-  border-top:1px solid var(--border);padding-top:14px;
-  gap:0;
-}
-.pstat{flex:1;border-right:1px solid var(--border);}
-.pstat:last-child{border-right:none;}
-.pstat-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);line-height:1;}
-.pstat-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:0.5px;margin-top:3px;}
+/* Form elements */
+.f-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.f-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);}
+.f-input{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-size:14px;padding:11px 13px;outline:none;transition:border-color 0.15s;width:100%;}
+.f-input:focus{border-color:var(--or);}
+.f-input::placeholder{color:var(--t3);}
+.f-select{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-size:14px;padding:11px 13px;outline:none;cursor:pointer;transition:border-color 0.15s;width:100%;}
+.f-select:focus{border-color:var(--or);}
+.f-row{display:flex;gap:10px;}
+.f-row .f-group{flex:1;}
 
-/* Badges */
-.badges-section{padding:0 16px;}
-.badge-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.badge-item{
-  background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;padding:10px 12px;
-  display:flex;align-items:center;gap:8px;
-  flex:1;min-width:140px;
+/* Benchmark panel */
+.bench-panel{
+  background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);
+  padding:14px;display:none;animation:fadeUp 0.2s ease;margin-bottom:12px;
+  position:relative;overflow:hidden;
 }
-.badge-item.earned{border-color:rgba(216,90,48,0.25);}
+.bench-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--or));}
+.bench-panel.show{display:block;}
+.bench-tag{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--or);margin-bottom:6px;}
+.bench-msg{font-size:13px;color:var(--t);line-height:1.55;}
+.bench-msg strong{color:var(--or);}
+.bench-msg .gem{color:#9B7CE8;}
+.bench-bar{height:5px;background:var(--b);border-radius:3px;margin-top:8px;overflow:hidden;}
+.bench-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--or));transition:width 0.7s ease;}
+.bench-meta{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);margin-top:4px;}
+.gem-badge{display:flex;align-items:center;gap:6px;margin-top:8px;background:rgba(123,82,212,0.1);border:1px solid rgba(123,82,212,0.2);border-radius:5px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:9.5px;color:#9B7CE8;}
+
+/* Badges grid */
+.badge-grid{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px;}
+.badge-item{background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:8px;flex:1;min-width:140px;}
+.badge-item.earned{border-color:var(--ob);}
 .badge-item.locked{opacity:0.4;}
 .bi-icon{font-size:20px;}
-.bi-info{}
-.bi-title{font-size:12px;font-weight:500;color:var(--text);}
-.bi-sub{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);margin-top:1px;}
+.bi-name{font-size:12px;font-weight:500;}
+.bi-sub{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--t3);margin-top:1px;}
 
 /* Weekly report */
-.weekly-report{
-  margin:12px 16px;background:var(--bg2);
-  border:1px solid var(--border);border-radius:10px;overflow:hidden;
-}
-.wr-head{
-  padding:10px 14px;background:rgba(216,90,48,0.05);
-  border-bottom:1px solid rgba(216,90,48,0.12);
-  display:flex;justify-content:space-between;align-items:center;
-}
-.wr-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--orange);}
-.wr-date{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);}
-.wr-body{padding:12px 14px;}
-.wr-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.wr-stat{}
-.ws-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text);line-height:1;}
-.ws-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-top:2px;}
-.wr-highlight{
-  font-size:12px;color:var(--text2);line-height:1.5;
-  background:rgba(58,154,92,0.06);border:1px solid rgba(58,154,92,0.15);
-  border-radius:6px;padding:9px 11px;
-}
-.wr-highlight strong{color:var(--green);}
-.wr-share{
-  width:100%;margin-top:10px;
-  background:none;border:1px solid var(--border2);
-  border-radius:6px;padding:8px;
-  font-family:'DM Mono',monospace;font-size:9.5px;
-  color:var(--text3);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;
-}
-.wr-share:active{border-color:var(--orange);color:var(--orange);}
+.weekly-card{overflow:hidden;}
+.wc-head{background:rgba(216,90,48,0.05);border-bottom:1px solid var(--ob);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;}
+.wc-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--or);}
+.wc-date{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--t3);}
+.wc-body{padding:14px 16px;}
+.wc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.wcs-n{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--t);line-height:1;}
+.wcs-l{font-family:'DM Mono',monospace;font-size:8px;color:var(--t3);margin-top:2px;}
+.wc-highlight{font-size:12px;color:var(--t2);line-height:1.55;background:rgba(58,154,92,0.06);border:1px solid rgba(58,154,92,0.15);border-radius:6px;padding:9px 11px;}
+.wc-highlight strong{color:var(--green);}
+.wc-share{width:100%;margin-top:10px;background:none;border:1px solid var(--b2);border-radius:6px;padding:9px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;}
+.wc-share:hover{border-color:var(--or);color:var(--or);}
+
+/* Map */
+.map-search{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--b);display:flex;gap:8px;}
+.map-search-inp{flex:1;background:var(--bg3);border:1px solid var(--b2);border-radius:20px;padding:8px 14px;font-size:13px;color:var(--t);outline:none;}
+.map-search-inp::placeholder{color:var(--t3);}
+.map-filters{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;background:var(--bg2);border-bottom:1px solid var(--b);-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;}
+.map-filters::-webkit-scrollbar{display:none;}
+.m-chip{flex-shrink:0;font-family:'DM Mono',monospace;font-size:9.5px;padding:5px 12px;border-radius:16px;border:1px solid var(--b2);background:transparent;color:var(--t3);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.m-chip.active{background:var(--og);border-color:var(--or);color:var(--or);}
+.map-list-toggle{position:absolute;bottom:12px;right:12px;z-index:400;background:var(--bg2);border:1px solid var(--b2);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t);cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+.map-panel{position:absolute;bottom:0;left:0;right:0;height:55%;background:var(--bg2);border-top:1px solid var(--b2);border-radius:16px 16px 0 0;z-index:401;transform:translateY(100%);transition:transform 0.3s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.map-panel.open{transform:translateY(0);}
+.map-handle{width:36px;height:4px;border-radius:2px;background:var(--b2);margin:12px auto 8px;}
+.map-list-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b);cursor:pointer;transition:background 0.1s;}
+.map-list-item:hover{background:var(--bg3);}
+.mli-emoji{font-size:18px;width:26px;text-align:center;}
+.mli-info{flex:1;}
+.mli-name{font-size:12.5px;font-weight:500;}
+.mli-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.mli-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--or);flex-shrink:0;}
+
+/* Desktop map container */
+.d-map-wrap{border-radius:var(--r);overflow:hidden;border:1px solid var(--b);height:480px;position:relative;}
+#d-map-el,#m-map-el{width:100%;height:100%;}
+
+/* Settings list */
+.settings-list{padding:0 16px;}
+.s-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--b);cursor:pointer;transition:background 0.1s;}
+.s-item:last-child{border-bottom:none;}
+.s-icon{font-size:16px;width:24px;text-align:center;color:var(--t2);}
+.s-info{flex:1;}
+.s-title{font-size:13px;}
+.s-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+.s-arrow{color:var(--t3);}
 
 /* Price history */
-.price-hist-section{padding:0 16px;}
-.ph-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 0;border-bottom:1px solid var(--border);
-  cursor:pointer;
-}
-.phi-emoji{font-size:16px;width:24px;text-align:center;}
-.phi-info{flex:1;}
-.phi-name{font-size:12.5px;color:var(--text);}
-.phi-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-top:1px;}
-.phi-right{text-align:right;}
-.phi-price{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);}
-.phi-date{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--text3);margin-top:1px;}
-.phi-delta{
-  font-family:'DM Mono',monospace;font-size:8.5px;
-  padding:1px 6px;border-radius:3px;margin-top:2px;display:inline-block;
-}
+.ph-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--b);cursor:pointer;}
+.phi-emoji{font-size:16px;width:22px;text-align:center;}
+.phi-name{font-size:12.5px;}
+.phi-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.phi-price{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--or);}
+.phi-date{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--t3);}
+.phi-delta{font-family:'DM Mono',monospace;font-size:8px;padding:1px 5px;border-radius:3px;margin-top:2px;display:inline-block;}
 .phi-delta.up{background:rgba(224,32,32,0.1);color:var(--red);}
 .phi-delta.down{background:rgba(58,154,92,0.1);color:var(--green);}
 
-/* Settings */
-.settings-list{padding:0 16px;}
-.settings-item{
-  display:flex;align-items:center;gap:12px;
-  padding:13px 0;border-bottom:1px solid var(--border);
-  cursor:pointer;
-}
-.si-icon{font-size:16px;width:24px;text-align:center;color:var(--text2);}
-.si-info{flex:1;}
-.si-title{font-size:13px;color:var(--text);}
-.si-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.si-arrow{color:var(--text3);font-size:12px;}
+/* Shared submit button */
+.btn-primary{background:var(--or);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;padding:14px;border-radius:var(--r);border:none;cursor:pointer;transition:all 0.15s;width:100%;}
+.btn-primary:hover{background:var(--or2);}
+.btn-primary:active{transform:scale(0.98);}
 
-/* ═══════════════════════════════════════════
-   DISH DETAIL BOTTOM SHEET
-═══════════════════════════════════════════ */
-#dishSheet{
-  position:fixed;inset:0;z-index:800;
-  pointer-events:none;
+/* Section header row */
+.sec-hrow{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;}
+.sec-hrow .sec-title{font-size:18px;}
+.sec-link{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--or);cursor:pointer;}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;z-index:2000;
+  bottom:calc(var(--tab) + 12px);
+  left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--bg3);border:1px solid var(--b2);border-radius:8px;
+  padding:10px 16px;display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);opacity:0;pointer-events:none;
+  transition:all 0.25s;white-space:nowrap;
 }
-#dishSheet.open{pointer-events:all;}
-.dish-overlay{
-  position:absolute;inset:0;background:rgba(0,0,0,0.7);
-  opacity:0;transition:opacity 0.25s;cursor:pointer;
-}
-#dishSheet.open .dish-overlay{opacity:1;}
-.dish-panel{
+@media(min-width:768px){#toast{bottom:24px;}}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast-msg{font-size:13px;color:var(--t);}
+#toast-pts{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--or);}
+
+/* ─── DISH BOTTOM SHEET ─── */
+#dish-sheet{position:fixed;inset:0;z-index:1000;pointer-events:none;}
+#dish-sheet.open{pointer-events:all;}
+.ds-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);opacity:0;transition:opacity 0.25s;cursor:pointer;}
+#dish-sheet.open .ds-overlay{opacity:1;}
+.ds-panel{
   position:absolute;bottom:0;left:0;right:0;
-  max-width:430px;margin:0 auto;
-  background:var(--bg2);border-radius:20px 20px 0 0;
-  border-top:1px solid var(--border2);
-  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  padding:0 0 env(safe-area-inset-bottom,16px);
-  max-height:85vh;overflow-y:auto;
+  max-width:600px;margin:0 auto;
+  background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--b2);
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.2,0.64,1);
+  padding-bottom:env(safe-area-inset-bottom,16px);max-height:88vh;overflow-y:auto;
 }
-#dishSheet.open .dish-panel{transform:translateY(0);}
-.dish-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:12px auto 0;}
-.dish-content{padding:16px 20px 24px;}
-.dish-emoji-big{font-size:44px;text-align:center;margin-bottom:8px;}
-.dish-price-big{
-  font-family:'Bebas Neue',sans-serif;font-size:56px;
-  color:var(--orange);line-height:1;text-align:center;
-}
-.dish-name-big{font-size:16px;font-weight:500;color:var(--text);text-align:center;margin-top:4px;}
-.dish-rest-big{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text3);text-align:center;margin-top:3px;}
-.dish-info-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;
-}
-.dig-item{
-  background:var(--bg3);border-radius:8px;padding:10px 12px;
-}
-.dig-label{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);}
-.dig-val{font-size:13px;color:var(--text);margin-top:3px;}
-.dish-tip-box{
-  background:rgba(216,90,48,0.06);border:1px solid rgba(216,90,48,0.15);
-  border-radius:8px;padding:11px 13px;margin-bottom:12px;
-  font-size:12.5px;color:var(--text2);line-height:1.55;
-}
-.dish-tip-box strong{color:var(--orange);}
-.dish-actions{display:flex;gap:8px;}
-.dish-act-btn{
-  flex:1;padding:11px;border-radius:var(--radius);
-  font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.5px;
-  border:1px solid var(--border2);background:transparent;
-  cursor:pointer;transition:all 0.15s;color:var(--text3);
-}
-.dish-act-btn.verify:active,.dish-act-btn.verify:hover{border-color:rgba(58,154,92,0.5);color:var(--green);}
-.dish-act-btn.flag:active,.dish-act-btn.flag:hover{border-color:rgba(224,32,32,0.3);color:var(--red);}
-.dish-share-btn{
-  width:100%;margin-top:8px;background:var(--orange);color:#fff;
-  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
-  padding:12px;border-radius:var(--radius);border:none;cursor:pointer;
-}
+#dish-sheet.open .ds-panel{transform:translateY(0);}
+.ds-handle{width:36px;height:4px;border-radius:2px;background:var(--b2);margin:12px auto 0;}
+.ds-body{padding:16px 20px 24px;}
+.ds-emoji{font-size:44px;text-align:center;}
+.ds-price{font-family:'Bebas Neue',sans-serif;font-size:58px;color:var(--or);line-height:1;text-align:center;}
+.ds-name{font-size:16px;font-weight:500;text-align:center;margin-top:4px;}
+.ds-rest{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--t3);text-align:center;margin-top:3px;}
+.ds-bench{background:var(--bg3);border-radius:8px;padding:12px 14px;margin:14px 0;font-size:13px;color:var(--t);line-height:1.55;}
+.ds-bench strong{color:var(--or);}
+.ds-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.ds-ig{background:var(--bg3);border-radius:8px;padding:10px 12px;}
+.ds-ig-l{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);}
+.ds-ig-v{font-size:13px;margin-top:3px;}
+.ds-tip{background:var(--og);border:1px solid var(--ob);border-radius:8px;padding:11px 13px;font-size:12.5px;color:var(--t2);line-height:1.55;margin-bottom:12px;}
+.ds-tip strong{color:var(--or);}
+.ds-acts{display:flex;gap:8px;margin-bottom:8px;}
+.ds-act{flex:1;padding:10px;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:9.5px;border:1px solid var(--b2);background:transparent;cursor:pointer;transition:all 0.15s;color:var(--t3);}
+.ds-act.verify:hover{border-color:rgba(58,154,92,0.5);color:var(--green);}
+.ds-act.flag:hover{border-color:rgba(224,32,32,0.3);color:var(--red);}
+.ds-share{width:100%;background:var(--or);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:12px;border-radius:var(--r);border:none;cursor:pointer;transition:background 0.15s;}
+.ds-share:hover{background:var(--or2);}
 
-/* ═══════════════════════════════════════════
-   LEAFLET OVERRIDES
-═══════════════════════════════════════════ */
-.leaflet-popup-content-wrapper{
-  background:var(--bg2)!important;border:1px solid var(--border2)!important;
-  border-radius:8px!important;color:var(--text)!important;
-  box-shadow:0 8px 32px rgba(0,0,0,0.6)!important;padding:0!important;
+/* ─── AUTH OVERLAY ─── */
+#auth-overlay{
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,0.96);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
 }
+#auth-overlay.hidden{display:none;}
+.auth-bg-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 35% at 50% 110%,rgba(216,90,48,0.2) 0%,transparent 70%);
+}
+.auth-top-content{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;
+  padding:clamp(40px,8vh,80px) 24px 0;text-align:center;pointer-events:none;
+}
+.auth-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,48px);letter-spacing:2px;}
+.auth-logo span{color:var(--or);}
+.auth-tagline{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-top:6px;}
+.auth-stats{display:flex;gap:clamp(16px,4vw,40px);justify-content:center;margin-top:28px;}
+.as-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,36px);color:var(--or);line-height:1;}
+.as-lbl{font-family:'DM Mono',monospace;font-size:8.5px;color:var(--t3);letter-spacing:1px;margin-top:2px;}
+
+/* Auth sheet */
+.auth-sheet{
+  width:100%;max-width:480px;background:var(--bg2);
+  border-top:1px solid var(--b2);border-radius:24px 24px 0 0;
+  padding:24px 24px calc(24px + env(safe-area-inset-bottom,0px));
+  position:relative;z-index:1;
+}
+.auth-sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--b2);margin:0 auto 22px;}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:9px;padding:3px;margin-bottom:20px;}
+.auth-tab-btn{flex:1;padding:9px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);border-radius:7px;cursor:pointer;transition:all 0.15s;background:none;border:none;}
+.auth-tab-btn.active{background:var(--or);color:#fff;}
+
+/* Auth forms */
+.auth-form{display:none;flex-direction:column;gap:11px;}
+.auth-form.active{display:flex;}
+.auth-field{display:flex;flex-direction:column;gap:5px;}
+.auth-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:6px;}
+.auth-fun{color:var(--or);font-size:8px;font-style:italic;}
+.auth-inp{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-size:14.5px;padding:12px 14px;outline:none;transition:border-color 0.15s;width:100%;}
+.auth-inp:focus{border-color:var(--or);}
+.auth-inp::placeholder{color:var(--t3);}
+.auth-inp-row{display:flex;gap:10px;}
+.auth-inp-row .auth-field{flex:1;}
+.auth-btn{background:var(--or);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;padding:13px;border-radius:var(--r);border:none;cursor:pointer;transition:all 0.15s;margin-top:4px;}
+.auth-btn:hover{background:var(--or2);}
+.auth-btn:active{transform:scale(0.98);}
+.auth-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.auth-note{text-align:center;font-size:11px;color:var(--t3);line-height:1.5;}
+.auth-note a{color:var(--or);cursor:pointer;}
+.auth-or{text-align:center;font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);position:relative;margin:2px 0;}
+.auth-or::before,.auth-or::after{content:'';position:absolute;top:50%;width:calc(50% - 22px);height:1px;background:var(--b2);}
+.auth-or::before{left:0;}.auth-or::after{right:0;}
+
+/* Verify step */
+.verify-step{display:none;flex-direction:column;gap:14px;align-items:center;text-align:center;}
+.verify-step.active{display:flex;}
+.verify-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;}
+.verify-sub{font-size:13px;color:var(--t2);line-height:1.6;}
+.verify-digits{display:flex;gap:8px;justify-content:center;}
+.vd{width:44px;height:54px;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);font-family:'Bebas Neue',sans-serif;font-size:28px;text-align:center;color:var(--t);outline:none;transition:border-color 0.15s;caret-color:transparent;}
+.vd:focus{border-color:var(--or);}
+.vd.filled{border-color:rgba(58,154,92,0.4);background:rgba(58,154,92,0.05);}
+.vd.error{border-color:var(--red);animation:shake 0.3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}
+}
+.verify-resend{font-family:'DM Mono',monospace;font-size:10px;color:var(--or);cursor:pointer;letter-spacing:0.5px;}
+.verify-hint{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);padding:4px 12px;background:var(--bg3);border-radius:4px;margin-top:2px;}
+
+/* ─── ONBOARDING OVERLAY ─── */
+#ob-overlay{
+  position:fixed;inset:0;z-index:2900;background:var(--bg);
+  display:none;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+#ob-overlay.active{display:flex;}
+.ob-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0;}
+.ob-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;}
+.ob-logo span{color:var(--or);}
+.ob-skip{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);cursor:pointer;background:none;border:none;letter-spacing:0.5px;}
+.ob-progress{height:3px;background:var(--b);margin:16px 24px 0;border-radius:2px;overflow:hidden;}
+.ob-fill{height:100%;background:var(--or);border-radius:2px;transition:width 0.4s cubic-bezier(0.34,1.2,0.64,1);}
+.ob-body{flex:1;overflow:hidden;position:relative;}
+.ob-screen{position:absolute;inset:0;padding:32px 24px 24px;display:none;flex-direction:column;}
+.ob-screen.active{display:flex;}
+.ob-q-num{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:10px;}
+.ob-q{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,34px);letter-spacing:1px;line-height:1.1;margin-bottom:6px;}
+.ob-q-sub{font-size:13px;color:var(--t2);margin-bottom:22px;line-height:1.5;}
+.ob-opts{display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;}
+.ob-opt{
+  background:var(--bg2);border:1.5px solid var(--b2);border-radius:12px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:all 0.15s;flex-shrink:0;
+}
+.ob-opt:hover{border-color:var(--b3);}
+.ob-opt.sel{border-color:var(--or);background:var(--og);}
+.ob-opt-ic{font-size:22px;width:32px;text-align:center;flex-shrink:0;}
+.ob-opt-title{font-size:14px;font-weight:500;}
+.ob-opt-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+.ob-opts-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.ob-opts-grid .ob-opt{flex:calc(50% - 4px);min-width:0;padding:12px 14px;}
+.ob-nav{display:flex;justify-content:flex-end;padding-top:16px;flex-shrink:0;}
+.ob-next{background:var(--or);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:12px 28px;border-radius:var(--r);border:none;cursor:pointer;transition:all 0.15s;}
+.ob-next:active{transform:scale(0.97);}
+
+/* ─── LEAFLET OVERRIDES ─── */
+.leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--b2)!important;border-radius:10px!important;color:var(--t)!important;box-shadow:0 8px 32px rgba(0,0,0,0.6)!important;padding:0!important;}
 .leaflet-popup-content{margin:0!important;padding:12px 14px!important;}
 .leaflet-popup-tip{background:var(--bg2)!important;}
-.leaflet-control-zoom a{
-  background:var(--bg2)!important;color:var(--text)!important;
-  border-color:var(--border2)!important;
-}
-.pop-name{font-weight:600;font-size:12.5px;color:var(--text);}
-.pop-dish{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--text2);margin-top:2px;}
-.pop-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--orange);margin-top:3px;}
-.pop-btn{
-  margin-top:8px;width:100%;background:var(--orange);color:#fff;
-  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.5px;
-  padding:6px;border-radius:5px;border:none;cursor:pointer;
-}
+.leaflet-control-zoom a{background:var(--bg2)!important;color:var(--t)!important;border-color:var(--b2)!important;}
+.pop-name{font-weight:600;font-size:12.5px;}
+.pop-dish{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t2);margin-top:2px;}
+.pop-price{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--or);}
+.pop-btn{margin-top:8px;width:100%;background:var(--or);color:#fff;font-family:'DM Mono',monospace;font-size:9px;padding:7px;border-radius:6px;border:none;cursor:pointer;}
 
-/* ═══════════════════════════════════════════
-   UTILITY
-═══════════════════════════════════════════ */
-.locked-blur{filter:blur(6px);user-select:none;pointer-events:none;}
-.lock-gate{
-  background:rgba(10,10,10,0.8);border-radius:8px;
-  padding:20px;text-align:center;margin:16px;
-}
-.lg-icon{font-size:28px;margin-bottom:8px;}
-.lg-text{font-size:13px;color:var(--text2);line-height:1.6;}
-.lg-btn{
-  margin-top:12px;background:var(--orange);color:#fff;
-  font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;
-  padding:10px 24px;border-radius:var(--radius);border:none;cursor:pointer;
-}
+/* Desktop ticker */
+.d-ticker{background:var(--or);padding:8px 0;overflow:hidden;}
+.d-ticker-track{display:flex;white-space:nowrap;animation:tick 50s linear infinite;}
+@keyframes tick{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.d-ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 28px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.9);}
+.d-ticker-dot{color:rgba(255,255,255,0.4);font-size:8px;}
+
+/* Desktop hero */
+.d-hero{padding:48px 32px 40px;max-width:1100px;margin:0 auto;}
+.d-hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--or);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.d-hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--or);}
+.d-hero-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,6vw,80px);line-height:0.92;letter-spacing:1px;margin-bottom:20px;}
+.d-hero-h1 em{font-style:normal;color:var(--or);}
+.d-hero-sub{font-size:15px;color:var(--t2);line-height:1.7;max-width:440px;margin-bottom:28px;}
+.d-hero-btns{display:flex;gap:10px;flex-wrap:wrap;}
+.d-btn-primary{background:var(--or);color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:12px 22px;border-radius:var(--r);border:none;cursor:pointer;transition:all 0.15s;}
+.d-btn-primary:hover{background:var(--or2);transform:translateY(-1px);}
+.d-btn-secondary{background:transparent;color:var(--t2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:12px 22px;border-radius:var(--r);border:1px solid var(--b2);cursor:pointer;transition:all 0.15s;}
+.d-btn-secondary:hover{color:var(--t);border-color:var(--b3);}
+.d-hero-stats{display:flex;gap:32px;margin-top:36px;}
+.dhs-n{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--or);line-height:1;}
+.dhs-l{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:1px;margin-top:2px;}
+
+/* Live card (desktop hero side) */
+.live-card{background:var(--bg2);border:1px solid var(--b2);border-radius:10px;overflow:hidden;}
+.lc-head{background:var(--og);border-bottom:1px solid var(--ob);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.lc-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--or);}
+.lc-live{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--green);}
+.lc-live::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.lc-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b);cursor:pointer;transition:background 0.1s;}
+.lc-row:last-child{border-bottom:none;}
+.lc-row:hover{background:rgba(255,255,255,0.02);}
+.lc-emoji{font-size:20px;width:28px;text-align:center;}
+.lc-info{flex:1;}
+.lc-name{font-size:13px;font-weight:500;}
+.lc-rest{font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.lc-right{text-align:right;}
+.lc-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--or);line-height:1;}
+.lc-tag{font-family:'DM Mono',monospace;font-size:7.5px;background:var(--og);color:var(--or);border:1px solid var(--ob);border-radius:3px;padding:2px 5px;display:inline-block;margin-top:3px;}
 </style>
 </head>
 <body>
 
 <!-- ═══ TOAST ═══ -->
-<div id="toast"><span id="toast-msg">Nice find!</span><span id="toast-pts"></span></div>
+<div id="toast"><span id="toast-msg"></span><span id="toast-pts"></span></div>
 
 <!-- ═══ AUTH OVERLAY ═══ -->
-<div id="authOverlay">
-  <div class="auth-bg"></div>
-  <div class="auth-top">
+<div id="auth-overlay">
+  <div class="auth-bg-glow"></div>
+  <div class="auth-top-content">
     <div class="auth-logo">Cheap<span>Sheet</span> NYC</div>
     <div class="auth-tagline">The exact dish. The exact price.</div>
-    <div class="auth-proof">
-      <div class="auth-proof-item"><div class="ap-num">847</div><div class="ap-label">Dishes</div></div>
-      <div class="auth-proof-item"><div class="ap-num">23</div><div class="ap-label">Hoods</div></div>
-      <div class="auth-proof-item"><div class="ap-num">$34K</div><div class="ap-label">Saved</div></div>
+    <div class="auth-stats">
+      <div><div class="as-num">847</div><div class="as-lbl">Dishes</div></div>
+      <div><div class="as-num">23</div><div class="as-lbl">Hoods</div></div>
+      <div><div class="as-num">$34K</div><div class="as-lbl">Saved</div></div>
     </div>
   </div>
   <div class="auth-sheet">
-    <div class="auth-handle"></div>
-    <!-- Tabs -->
+    <div class="auth-sheet-handle"></div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
-      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+      <button class="auth-tab-btn active" onclick="authTab(this,'login')">Log In</button>
+      <button class="auth-tab-btn" onclick="authTab(this,'signup')">Sign Up</button>
     </div>
-    <!-- LOGIN FORM -->
-    <div id="loginForm" class="auth-form">
+
+    <!-- LOGIN -->
+    <div class="auth-form active" id="af-login">
       <div class="auth-field">
-        <label class="auth-label">Email or Phone</label>
-        <input class="auth-input" id="loginEmail" type="text" placeholder="you@example.com" autocomplete="email">
+        <div class="auth-lbl">Email or phone</div>
+        <input class="auth-inp" id="li-email" type="text" placeholder="you@example.com" autocomplete="email">
       </div>
       <div class="auth-field">
-        <label class="auth-label">Password</label>
-        <input class="auth-input" id="loginPwd" type="password" placeholder="••••••••" autocomplete="current-password">
+        <div class="auth-lbl">Password</div>
+        <input class="auth-inp" id="li-pwd" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="auth-btn" onclick="doLogin()">Log In</button>
-      <div class="auth-sub">Forgot password? <a onclick="showToast('Check your email 📧',0)">Reset it</a></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Log In →</button>
+      <div class="auth-note">No account? <a onclick="authTab(document.querySelectorAll('.auth-tab-btn')[1],'signup')">Sign up free</a></div>
     </div>
-    <!-- SIGNUP FORM -->
-    <div id="signupForm" class="auth-form" style="display:none;">
+
+    <!-- SIGNUP -->
+    <div class="auth-form" id="af-signup">
       <div class="auth-field">
-        <label class="auth-label">Username <span class="auth-label-fun">— your CheapSheet alias</span></label>
-        <input class="auth-input" id="suUsername" type="text" placeholder="@SliceHunter" autocomplete="username" maxlength="20">
+        <div class="auth-lbl">Username <span class="auth-fun">— your CheapSheet alias</span></div>
+        <input class="auth-inp" id="su-user" type="text" placeholder="@SliceHunter" maxlength="20" autocomplete="username">
       </div>
-      <div class="auth-input-row">
-        <div class="auth-field" style="flex:1;">
-          <label class="auth-label">Email</label>
-          <input class="auth-input" id="suEmail" type="email" placeholder="you@email.com" autocomplete="email">
+      <div class="auth-inp-row">
+        <div class="auth-field">
+          <div class="auth-lbl">Phone *</div>
+          <input class="auth-inp" id="su-phone" type="tel" placeholder="(212) 555-0100" autocomplete="tel" inputmode="tel">
         </div>
-        <div class="auth-field" style="flex:1;">
-          <label class="auth-label">Phone</label>
-          <input class="auth-input" id="suPhone" type="tel" placeholder="(212) 000-0000" autocomplete="tel">
+        <div class="auth-field">
+          <div class="auth-lbl">Email</div>
+          <input class="auth-inp" id="su-email" type="email" placeholder="you@email.com" autocomplete="email">
         </div>
       </div>
       <div class="auth-field">
-        <label class="auth-label">Password</label>
-        <input class="auth-input" id="suPwd" type="password" placeholder="Min 8 characters" autocomplete="new-password">
+        <div class="auth-lbl">Password</div>
+        <input class="auth-inp" id="su-pwd" type="password" placeholder="Min 8 characters" autocomplete="new-password">
       </div>
       <div class="auth-field">
-        <label class="auth-label">Favorite $5 dish in NYC <span class="auth-label-fun">🌮 No wrong answers</span></label>
-        <input class="auth-input" id="suDish" type="text" placeholder="e.g. Pork dumpling from Vanessa's" autocomplete="off">
+        <div class="auth-lbl">Favorite cheap dish in NYC <span class="auth-fun">🌮</span></div>
+        <input class="auth-inp" id="su-dish" type="text" placeholder="e.g. Plain slice from Joe's..." autocomplete="off">
       </div>
-      <button class="auth-btn" onclick="doSignup()">Create Account · Free</button>
-      <div class="auth-sub">By signing up you agree to share cheap food with strangers. That's basically it.</div>
+      <button class="auth-btn" id="su-btn" onclick="doSignup()">Create Account · Free 🔥</button>
+      <div class="auth-note">Phone gets you real SMS codes. By signing up you agree to share cheap food with strangers.</div>
     </div>
-    <!-- VERIFY STEP -->
-    <div id="verifyStep" class="verify-step">
-      <div>
-        <div class="verify-title">Check your phone 📱</div>
-        <div class="verify-sub">We sent a 6-digit code to <strong id="verifyTarget" style="color:var(--orange);"></strong>. Enter it below.</div>
+
+    <!-- VERIFY -->
+    <div class="verify-step" id="af-verify">
+      <div class="verify-title">Check your phone 📱</div>
+      <div class="verify-sub">Code sent to <strong id="verify-target" style="color:var(--or);"></strong></div>
+      <div class="verify-hint" id="verify-hint">Demo mode: enter any 6 digits</div>
+      <div class="verify-digits">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,0)" onkeydown="vdKey(this,0,event)">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,1)" onkeydown="vdKey(this,1,event)">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,2)" onkeydown="vdKey(this,2,event)">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,3)" onkeydown="vdKey(this,3,event)">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,4)" onkeydown="vdKey(this,4,event)">
+        <input class="vd" maxlength="1" type="tel" inputmode="numeric" pattern="[0-9]" oninput="vdInput(this,5)" onkeydown="vdKey(this,5,event)">
       </div>
-      <div class="verify-code-row">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,0)">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,1)">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,2)">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,3)">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,4)">
-        <input class="verify-digit" maxlength="1" type="number" oninput="digitInput(this,5)">
-      </div>
-      <div class="verify-resend" onclick="showToast('Code resent!',0)">Resend code</div>
-      <button class="auth-btn" style="width:100%;" onclick="doVerify()">Verify & Enter App</button>
+      <div class="verify-resend" onclick="resendCode()">Resend code →</div>
+      <button class="auth-btn" id="verify-btn" onclick="doVerify()" style="width:100%;">Verify & Enter →</button>
     </div>
   </div>
 </div>
 
 <!-- ═══ ONBOARDING ═══ -->
-<div id="onboardOverlay">
-  <div class="ob-header">
+<div id="ob-overlay">
+  <div class="ob-hdr">
     <div class="ob-logo">Cheap<span>Sheet</span></div>
-    <button class="ob-skip" onclick="finishOnboard()">Skip →</button>
+    <button class="ob-skip" onclick="obFinish()">Skip →</button>
   </div>
-  <div class="ob-progress"><div class="ob-progress-fill" id="obProgress" style="width:25%"></div></div>
-  <div class="ob-screens">
+  <div class="ob-progress"><div class="ob-fill" id="ob-fill" style="width:33%"></div></div>
+  <div class="ob-body">
     <!-- Step 1 -->
-    <div class="ob-screen active" id="obS1">
-      <div>
-        <div class="ob-q-label">Step 1 of 3</div>
-        <div class="ob-q">How often do you eat out in NYC?</div>
-        <div class="ob-sub">We'll personalize your feed based on how you eat.</div>
-        <div class="ob-options">
-          <div class="ob-opt" onclick="selectOb(this,'freq','daily')">
-            <div class="ob-opt-icon">🔥</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">Daily</div><div class="ob-opt-sub">I grab food out every day</div></div>
-          </div>
-          <div class="ob-opt" onclick="selectOb(this,'freq','few')">
-            <div class="ob-opt-icon">🍜</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">A few times a week</div><div class="ob-opt-sub">Mix of cooking and going out</div></div>
-          </div>
-          <div class="ob-opt" onclick="selectOb(this,'freq','weekends')">
-            <div class="ob-opt-icon">🗓️</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">Weekends mostly</div><div class="ob-opt-sub">Cooking during the week</div></div>
-          </div>
-        </div>
+    <div class="ob-screen active" id="obs1">
+      <div class="ob-q-num">01 / 03</div>
+      <div class="ob-q">How often do you eat out?</div>
+      <div class="ob-q-sub">We'll tune your feed so you see deals that actually fit your life.</div>
+      <div class="ob-opts">
+        <div class="ob-opt" onclick="obSel(this,'freq','daily')"><div class="ob-opt-ic">🔥</div><div><div class="ob-opt-title">Every day</div><div class="ob-opt-sub">Bodega breakfast, lunch spot, dinner — all of it</div></div></div>
+        <div class="ob-opt" onclick="obSel(this,'freq','few')"><div class="ob-opt-ic">🍜</div><div><div class="ob-opt-title">A few times a week</div><div class="ob-opt-sub">Mix of cooking at home and going out</div></div></div>
+        <div class="ob-opt" onclick="obSel(this,'freq','weekends')"><div class="ob-opt-ic">🗓️</div><div><div class="ob-opt-title">Weekends mostly</div><div class="ob-opt-sub">Treating myself without breaking the bank</div></div></div>
       </div>
       <div class="ob-nav"><button class="ob-next" onclick="obNext(1)">Next →</button></div>
     </div>
     <!-- Step 2 -->
-    <div class="ob-screen" id="obS2">
-      <div>
-        <div class="ob-q-label">Step 2 of 3</div>
-        <div class="ob-q">What's your budget per meal?</div>
-        <div class="ob-sub">NYC average is $18. Let's beat that.</div>
-        <div class="ob-options">
-          <div class="ob-opt" onclick="selectOb(this,'budget','5')">
-            <div class="ob-opt-icon">💰</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">Under $5</div><div class="ob-opt-sub">Slice mode. Bodega energy.</div></div>
-          </div>
-          <div class="ob-opt" onclick="selectOb(this,'budget','10')">
-            <div class="ob-opt-icon">💵</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">$5–$10</div><div class="ob-opt-sub">Real food, real price</div></div>
-          </div>
-          <div class="ob-opt" onclick="selectOb(this,'budget','15')">
-            <div class="ob-opt-icon">🎯</div>
-            <div class="ob-opt-text"><div class="ob-opt-title">$10–$15</div><div class="ob-opt-sub">Afford something hot</div></div>
-          </div>
-        </div>
+    <div class="ob-screen" id="obs2">
+      <div class="ob-q-num">02 / 03</div>
+      <div class="ob-q">What's your per-meal budget?</div>
+      <div class="ob-q-sub">NYC avg is $18.40. Let's find you something better.</div>
+      <div class="ob-opts">
+        <div class="ob-opt" onclick="obSel(this,'budget','5')"><div class="ob-opt-ic">💰</div><div><div class="ob-opt-title">Under $5</div><div class="ob-opt-sub">Slice mode. Bodega energy. Unstoppable.</div></div></div>
+        <div class="ob-opt" onclick="obSel(this,'budget','10')"><div class="ob-opt-ic">💵</div><div><div class="ob-opt-title">$5 – $10</div><div class="ob-opt-sub">Real food, real price, no sad desk salad</div></div></div>
+        <div class="ob-opt" onclick="obSel(this,'budget','15')"><div class="ob-opt-ic">🎯</div><div><div class="ob-opt-title">$10 – $15</div><div class="ob-opt-sub">Can afford something hot and filling</div></div></div>
       </div>
       <div class="ob-nav"><button class="ob-next" onclick="obNext(2)">Next →</button></div>
     </div>
     <!-- Step 3 -->
-    <div class="ob-screen" id="obS3">
-      <div>
-        <div class="ob-q-label">Step 3 of 3</div>
-        <div class="ob-q">Favorite food neighborhoods?</div>
-        <div class="ob-sub">Pick up to 3. We'll show you deals there first.</div>
-        <div class="ob-options" style="display:flex;flex-wrap:wrap;gap:8px;flex-direction:row;">
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'Chinatown')">
-            <div class="ob-opt-icon">🥟</div><div class="ob-opt-text"><div class="ob-opt-title">Chinatown</div></div>
-          </div>
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'Williamsburg')">
-            <div class="ob-opt-icon">🍕</div><div class="ob-opt-text"><div class="ob-opt-title">Williamsburg</div></div>
-          </div>
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'East Village')">
-            <div class="ob-opt-icon">🌮</div><div class="ob-opt-text"><div class="ob-opt-title">East Village</div></div>
-          </div>
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'Flushing')">
-            <div class="ob-opt-icon">🍜</div><div class="ob-opt-text"><div class="ob-opt-title">Flushing</div></div>
-          </div>
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'Midtown')">
-            <div class="ob-opt-icon">🥙</div><div class="ob-opt-text"><div class="ob-opt-title">Midtown</div></div>
-          </div>
-          <div class="ob-opt" style="flex:calc(50% - 4px);min-width:0;" onclick="toggleHood(this,'Astoria')">
-            <div class="ob-opt-icon">🧆</div><div class="ob-opt-text"><div class="ob-opt-title">Astoria</div></div>
-          </div>
-        </div>
+    <div class="ob-screen" id="obs3">
+      <div class="ob-q-num">03 / 03</div>
+      <div class="ob-q">Your neighborhoods?</div>
+      <div class="ob-q-sub">Pick up to 3. We'll surface deals there first.</div>
+      <div class="ob-opts ob-opts-grid" id="ob-hood-opts">
+        <div class="ob-opt" onclick="obHood(this,'Chinatown')"><div class="ob-opt-ic">🥟</div><div class="ob-opt-title">Chinatown</div></div>
+        <div class="ob-opt" onclick="obHood(this,'East Village')"><div class="ob-opt-ic">🌮</div><div class="ob-opt-title">East Village</div></div>
+        <div class="ob-opt" onclick="obHood(this,'Williamsburg')"><div class="ob-opt-ic">🍕</div><div class="ob-opt-title">Williamsburg</div></div>
+        <div class="ob-opt" onclick="obHood(this,'Flushing')"><div class="ob-opt-ic">🍜</div><div class="ob-opt-title">Flushing</div></div>
+        <div class="ob-opt" onclick="obHood(this,'Midtown')"><div class="ob-opt-ic">🥙</div><div class="ob-opt-title">Midtown</div></div>
+        <div class="ob-opt" onclick="obHood(this,'Astoria')"><div class="ob-opt-ic">🧆</div><div class="ob-opt-title">Astoria</div></div>
+        <div class="ob-opt" onclick="obHood(this,'Harlem')"><div class="ob-opt-ic">🍗</div><div class="ob-opt-title">Harlem</div></div>
+        <div class="ob-opt" onclick="obHood(this,'LES')"><div class="ob-opt-ic">🍝</div><div class="ob-opt-title">LES</div></div>
       </div>
-      <div class="ob-nav"><button class="ob-next" onclick="finishOnboard()">Done — Show Me Deals 🔥</button></div>
+      <div class="ob-nav"><button class="ob-next" onclick="obFinish()">Show Me Deals 🔥</button></div>
     </div>
   </div>
 </div>
 
-<!-- ═══ APP ═══ -->
-<div id="app">
-  <!-- Header -->
-  <div id="header">
-    <div class="header-logo" onclick="switchTab('home')">Cheap<span>Sheet</span> NYC</div>
-    <div class="header-right">
-      <div class="header-points" id="headerPts">
-        <span class="hp-num" id="headerPtsNum">0</span>
-        <span class="hp-label">PTS</span>
-      </div>
-      <div class="header-avi" onclick="switchTab('profile')" id="headerAvi">😊</div>
+<!-- ═══ MOBILE APP ═══ -->
+<div id="mobileApp">
+  <div class="m-hdr">
+    <div class="m-logo" onclick="mTab('home')">Cheap<span>Sheet</span> NYC</div>
+    <div class="header-right" style="display:flex;align-items:center;gap:8px;">
+      <div class="m-pts" onclick="mTab('profile')"><span class="m-pts-n" id="m-pts-n">0</span><span class="m-pts-l">PTS</span></div>
+      <div class="m-avi" onclick="mTab('profile')" id="m-avi">😊</div>
     </div>
   </div>
-
-  <!-- Screens -->
-  <div id="screens">
-    <!-- HOME -->
-    <div class="screen active s-home" id="scHome"></div>
-    <!-- MAP -->
-    <div class="screen s-map" id="scMap">
-      <div class="map-search">
-        <input class="map-search-input" placeholder="🔍 Search dish, restaurant, hood..." id="mapSearchInput" oninput="filterMapList()">
-      </div>
-      <div class="map-filter-row" id="mapFilters"></div>
-      <div id="map-container">
-        <div id="map-el"></div>
-        <button class="map-list-toggle" onclick="toggleMapList()">☰ List</button>
-        <div class="map-list-panel" id="mapListPanel">
-          <div class="map-list-handle"></div>
-          <div id="mapListItems"></div>
-        </div>
+  <div class="m-screens">
+    <div class="m-screen active" id="ms-home"></div>
+    <div id="ms-map">
+      <div class="map-search"><input class="map-search-inp" id="m-map-search" placeholder="🔍 Search dish, restaurant, neighborhood..." oninput="mapSearch()"></div>
+      <div class="map-filters" id="m-map-filters"></div>
+      <div style="flex:1;min-height:0;position:relative;">
+        <div id="m-map-el" style="width:100%;height:100%;"></div>
+        <button class="map-list-toggle" onclick="toggleMapPanel()">☰ List</button>
+        <div class="map-panel" id="m-map-panel"><div class="map-handle"></div><div id="m-map-list"></div></div>
       </div>
     </div>
-    <!-- LOG -->
-    <div class="screen s-log" id="scLog"></div>
-    <!-- BOARD -->
-    <div class="screen s-board" id="scBoard"></div>
-    <!-- PROFILE -->
-    <div class="screen s-profile" id="scProfile"></div>
+    <div class="m-screen" id="ms-log"></div>
+    <div class="m-screen" id="ms-board"></div>
+    <div class="m-screen" id="ms-profile"></div>
   </div>
-
-  <!-- Tab Bar -->
-  <div id="tabbar">
-    <div class="tab active" onclick="switchTab('home')" id="tab-home">
-      <span class="tab-icon">🏠</span>
-      <span class="tab-label">Home</span>
-    </div>
-    <div class="tab" onclick="switchTab('map')" id="tab-map">
-      <span class="tab-icon">🗺️</span>
-      <span class="tab-label">Map</span>
-    </div>
-    <div class="tab" onclick="switchTab('log')" id="tab-log">
-      <span class="tab-icon">➕</span>
-      <span class="tab-label">Log</span>
-    </div>
-    <div class="tab" onclick="switchTab('board')" id="tab-board">
-      <span class="tab-icon">🏆</span>
-      <span class="tab-label">Ranks</span>
-      <span class="tab-badge">3</span>
-    </div>
-    <div class="tab" onclick="switchTab('profile')" id="tab-profile">
-      <span class="tab-icon">👤</span>
-      <span class="tab-label">Me</span>
-    </div>
+  <div class="m-tabs">
+    <button class="m-tab active" id="mt-home" onclick="mTab('home')"><span class="m-tab-ic">🏠</span><span class="m-tab-lb">Home</span></button>
+    <button class="m-tab" id="mt-map" onclick="mTab('map')"><span class="m-tab-ic">🗺️</span><span class="m-tab-lb">Map</span></button>
+    <button class="m-tab" id="mt-log" onclick="mTab('log')" style="position:relative;"><span class="m-tab-ic">➕</span><span class="m-tab-lb">Log</span></button>
+    <button class="m-tab" id="mt-board" onclick="mTab('board')" style="position:relative;"><span class="m-tab-ic">🏆</span><span class="m-tab-lb">Ranks</span><span class="m-tab-badge">3</span></button>
+    <button class="m-tab" id="mt-profile" onclick="mTab('profile')"><span class="m-tab-ic">👤</span><span class="m-tab-lb">Me</span></button>
   </div>
 </div>
 
-<!-- ═══ DISH BOTTOM SHEET ═══ -->
-<div id="dishSheet">
-  <div class="dish-overlay" onclick="closeDishSheet()"></div>
-  <div class="dish-panel">
-    <div class="dish-handle"></div>
-    <div class="dish-content" id="dishContent"></div>
+<!-- ═══ DESKTOP APP ═══ -->
+<div id="desktopApp">
+  <nav class="d-nav">
+    <div class="d-logo" onclick="dTab('home')">Cheap<span>Sheet</span> NYC</div>
+    <div class="d-nav-links">
+      <button class="d-nl active" id="dt-home" onclick="dTab('home')">Home</button>
+      <button class="d-nl" id="dt-map" onclick="dTab('map')">Map</button>
+      <button class="d-nl" id="dt-log" onclick="dTab('log')">Log a Dish</button>
+      <button class="d-nl" id="dt-board" onclick="dTab('board')">Leaderboard</button>
+      <button class="d-nl" id="dt-profile" onclick="dTab('profile')">Profile</button>
+    </div>
+    <div class="d-nav-right">
+      <div class="d-pts"><span class="d-pts-n" id="d-pts-n">0</span><span class="d-pts-l">PTS</span></div>
+      <div class="d-avi" id="d-avi">😊</div>
+      <button class="d-submit-btn" onclick="dTab('log')">+ Log Dish</button>
+    </div>
+  </nav>
+  <div id="dt-home-sec" class="d-section active">
+    <div class="d-ticker"><div class="d-ticker-track" id="d-ticker"></div></div>
+    <div id="d-home-content"></div>
   </div>
+  <div id="dt-map-sec" class="d-section">
+    <div style="max-width:1100px;margin:0 auto;padding:32px 32px;">
+      <div style="margin-bottom:20px;"><div class="sec-eyebrow">Interactive</div><div class="sec-title">Cheap Eats <span>Map</span></div></div>
+      <div class="map-filters" id="d-map-filters" style="border-radius:8px;border:1px solid var(--b);overflow-x:auto;padding:10px;margin-bottom:12px;background:var(--bg2);"></div>
+      <div class="d-map-wrap"><div id="d-map-el"></div></div>
+    </div>
+    <div style="max-width:1100px;margin:0 auto;padding:0 32px 40px;">
+      <div style="margin:20px 0 12px;"><div class="sec-title" style="font-size:20px;">All Dishes</div></div>
+      <div id="d-dish-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"></div>
+    </div>
+  </div>
+  <div id="dt-log-sec" class="d-section">
+    <div class="d-wrap" style="max-width:640px;"><div id="d-log-content"></div></div>
+  </div>
+  <div id="dt-board-sec" class="d-section">
+    <div class="d-wrap"><div id="d-board-content"></div></div>
+  </div>
+  <div id="dt-profile-sec" class="d-section">
+    <div class="d-wrap"><div id="d-profile-content"></div></div>
+  </div>
+</div>
+
+<!-- ═══ DISH SHEET ═══ -->
+<div id="dish-sheet">
+  <div class="ds-overlay" onclick="closeDish()"></div>
+  <div class="ds-panel"><div class="ds-handle"></div><div class="ds-body" id="ds-body"></div></div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════
+// ════════════════════════════════
 // DATA
-// ═══════════════════════════════════════════
-const DISHES = [
-  {id:1,name:"Plain Slice",rest:"Joe's Pizza",hood:"West Village",cat:"pizza",price:3.50,emoji:"🍕",lat:40.7332,lng:-74.0027,tip:"Say 'one plain slice' — don't wait to be asked.",by:"@SliceHunter",hot:true,verified:true},
-  {id:2,name:"Pork & Chive Dumplings (6pc)",rest:"Vanessa's Dumpling House",hood:"Chinatown",cat:"dumplings",price:3.25,emoji:"🥟",lat:40.7163,lng:-73.9956,by:"@DumplingPro",verified:true,tip:"Cash only. Get the sesame pancake too while you're there."},
+// ════════════════════════════════
+const DISHES=[
+  {id:1,name:"Plain Slice",rest:"Joe's Pizza",hood:"West Village",cat:"pizza",price:3.50,emoji:"🍕",lat:40.7332,lng:-74.0027,tip:"Say 'one plain slice' at the counter. Don't wait to be asked.",by:"@SliceHunter",hot:true,verified:true},
+  {id:2,name:"Pork & Chive Dumplings (6pc)",rest:"Vanessa's Dumpling House",hood:"Chinatown",cat:"dumplings",price:3.25,emoji:"🥟",lat:40.7163,lng:-73.9956,tip:"Cash only. Get the sesame pancake too.",by:"@DumplingPro",verified:true},
   {id:3,name:"Al Pastor Taco",rest:"Los Tacos No.1",hood:"Chelsea",cat:"tacos",price:4.50,emoji:"🌮",lat:40.7429,lng:-74.0002,tip:"Order at the counter, cash preferred.",by:"@TacoTracker"},
   {id:4,name:"Everything Bagel w/ Cream Cheese",rest:"Ess-a-Bagel",hood:"Midtown",cat:"bagels",price:3.75,emoji:"🥯",lat:40.7527,lng:-73.9756,by:"@BagelBoss",verified:true},
-  {id:5,name:"Chicken Over Rice (half)",rest:"Halal Guys 53rd",hood:"Midtown",cat:"other",price:7.00,emoji:"🍗",lat:40.7614,lng:-73.9797,tip:"Half portion is plenty. Ask for 'white sauce on the side'.",by:"@HalalHead"},
-  {id:6,name:"Tonkotsu Ramen",rest:"Ichiran",hood:"Midtown",cat:"ramen",price:11.90,emoji:"🍜",lat:40.7580,lng:-73.9855,by:"@RamenRaider"},
-  {id:7,name:"Falafel Wrap",rest:"Mamoun's",hood:"East Village",cat:"falafel",price:5.00,emoji:"🧆",lat:40.7305,lng:-74.0000,by:"@WrapGod",hot:true,tip:"Get the hot sauce on everything."},
-  {id:8,name:"Cheese Slice",rest:"Di Fara Pizza",hood:"Midwood",cat:"pizza",price:5.00,emoji:"🍕",lat:40.6247,lng:-73.9610,tip:"Arrive before noon or wait 45 min.",by:"@PizzaPath"},
-  {id:9,name:"Xiao Long Bao (8pc)",rest:"Joe's Shanghai",hood:"Flushing",cat:"dumplings",price:6.95,emoji:"🥟",lat:40.7607,lng:-73.8325,by:"@SoupDumpKing",verified:true,tip:"Bite a small hole first and sip the broth."},
-  {id:10,name:"B.E.C. on a Roll",rest:"Corner Bodega",hood:"Williamsburg",cat:"other",price:3.00,emoji:"🍳",lat:40.7128,lng:-73.9614,tip:"Ask for it 'on a roll' not a wrap.",by:"@BECBrigade"},
-  {id:11,name:"Bean & Cheese Burrito",rest:"Tortilleria Mexicana",hood:"Sunset Park",cat:"burritos",price:4.75,emoji:"🌯",lat:40.6501,lng:-74.0059,by:"@BurritoBloc"},
-  {id:12,name:"Sesame Noodles (sm)",rest:"Xi'an Famous Foods",hood:"LES",cat:"other",price:5.50,emoji:"🍝",lat:40.7157,lng:-73.9895,by:"@SpiceTrail",verified:true},
-  {id:13,name:"Butter Bagel",rest:"Absolute Bagels",hood:"Upper West Side",cat:"bagels",price:1.75,emoji:"🥯",lat:40.7938,lng:-73.9709,by:"@BagelBoss",hot:true},
-  {id:14,name:"Chicken Taco",rest:"El Atoradero",hood:"Prospect Heights",cat:"tacos",price:3.50,emoji:"🌮",lat:40.6773,lng:-73.9626,by:"@TacoTracker"},
-  {id:15,name:"Spicy Pork Ramen",rest:"Ippudo West",hood:"West Village",cat:"ramen",price:9.00,emoji:"🍜",lat:40.7341,lng:-74.0050,by:"@RamenRaider",tip:"Lunch special until 2:30pm only."},
-  {id:16,name:"Mango Lassi",rest:"Jackson Diner",hood:"Jackson Heights",cat:"other",price:3.50,emoji:"🥭",lat:40.7505,lng:-73.8888,by:"@CurryKing"},
+  {id:5,name:"Chicken Over Rice (half)",rest:"Halal Guys 53rd",hood:"Midtown",cat:"other",price:7.00,emoji:"🍗",lat:40.7614,lng:-73.9797,tip:"Half portion is plenty. Ask for white sauce on the side.",by:"@HalalHead"},
+  {id:6,name:"Falafel Wrap",rest:"Mamoun's",hood:"East Village",cat:"falafel",price:5.00,emoji:"🧆",lat:40.7305,lng:-74.0000,tip:"Hot sauce on everything.",by:"@WrapGod",hot:true},
+  {id:7,name:"Xiao Long Bao (8pc)",rest:"Joe's Shanghai",hood:"Flushing",cat:"dumplings",price:6.95,emoji:"🥟",lat:40.7607,lng:-73.8325,tip:"Bite a small hole first, sip the broth.",by:"@SoupDumpKing",verified:true},
+  {id:8,name:"B.E.C. on a Roll",rest:"Corner Bodega",hood:"Williamsburg",cat:"other",price:3.00,emoji:"🍳",lat:40.7128,lng:-73.9614,tip:"Ask for it 'on a roll' not a wrap.",by:"@BECBrigade"},
+  {id:9,name:"Butter Bagel",rest:"Absolute Bagels",hood:"Upper West Side",cat:"bagels",price:1.75,emoji:"🥯",lat:40.7938,lng:-73.9709,by:"@BagelBoss",hot:true},
+  {id:10,name:"Sesame Noodles (sm)",rest:"Xi'an Famous Foods",hood:"LES",cat:"other",price:5.50,emoji:"🍝",lat:40.7157,lng:-73.9895,by:"@SpiceTrail",verified:true},
+  {id:11,name:"Chicken Taco",rest:"El Atoradero",hood:"Prospect Heights",cat:"tacos",price:3.50,emoji:"🌮",lat:40.6773,lng:-73.9626,by:"@TacoTracker"},
+  {id:12,name:"Spicy Pork Ramen",rest:"Ippudo West",hood:"West Village",cat:"ramen",price:9.00,emoji:"🍜",lat:40.7341,lng:-74.0050,tip:"Lunch special until 2:30pm only.",by:"@RamenRaider"},
+  {id:13,name:"Mango Lassi",rest:"Jackson Diner",hood:"Jackson Heights",cat:"other",price:3.50,emoji:"🥭",lat:40.7505,lng:-73.8888,by:"@CurryKing"},
+  {id:14,name:"Bean & Cheese Burrito",rest:"Tortilleria Mexicana",hood:"Sunset Park",cat:"burritos",price:4.75,emoji:"🌯",lat:40.6501,lng:-74.0059,by:"@BurritoBloc"},
 ];
-
-const LEADERBOARD = [
-  {rank:1,handle:"@DumplingPro",avi:"🥟",pts:4820,dishes:198,badges:"🏆🔥💎",hood:"Chinatown"},
-  {rank:2,handle:"@SliceHunter",avi:"🍕",pts:3960,dishes:162,badges:"🍕🏅",hood:"West Village"},
-  {rank:3,handle:"@TacoTracker",avi:"🌮",pts:3210,dishes:134,badges:"🌮🔥",hood:"East Village"},
-  {rank:4,handle:"@BagelBoss",avi:"🥯",pts:2890,dishes:119,badges:"🥯🏅",hood:"UWS"},
-  {rank:5,handle:"@HalalHead",avi:"🍗",pts:2340,dishes:97,badges:"🔥",hood:"Midtown"},
-  {rank:6,handle:"@RamenRaider",avi:"🍜",pts:1980,dishes:82,badges:"🍜",hood:"West Village"},
-  {rank:7,handle:"@WrapGod",avi:"🧆",pts:1640,dishes:68,badges:"🧆",hood:"East Village"},
-  {rank:8,handle:"@SoupDumpKing",avi:"🥟",pts:1290,dishes:54,badges:"💎",hood:"Flushing"},
+const LB=[
+  {rank:1,handle:"@DumplingPro",avi:"🥟",pts:4820,dishes:198,badges:"🏆🔥💎"},
+  {rank:2,handle:"@SliceHunter",avi:"🍕",pts:3960,dishes:162,badges:"🍕🏅"},
+  {rank:3,handle:"@TacoTracker",avi:"🌮",pts:3210,dishes:134,badges:"🌮🔥"},
+  {rank:4,handle:"@BagelBoss",avi:"🥯",pts:2890,dishes:119,badges:"🥯🏅"},
+  {rank:5,handle:"@HalalHead",avi:"🍗",pts:2340,dishes:97,badges:"🔥"},
+  {rank:6,handle:"@RamenRaider",avi:"🍜",pts:1980,dishes:82,badges:"🍜"},
+  {rank:7,handle:"@WrapGod",avi:"🧆",pts:1640,dishes:68,badges:"🧆"},
+  {rank:8,handle:"@SoupDumpKing",avi:"🥟",pts:1290,dishes:54,badges:"💎"},
 ];
+const BENCH={pizza:{avg:4.20,min:1.50,max:8},tacos:{avg:4.80,min:2.50,max:9},dumplings:{avg:5.50,min:2.50,max:12},bagels:{avg:2.80,min:1,max:5.50},ramen:{avg:14,min:7,max:22},falafel:{avg:6.50,min:3.50,max:10},burritos:{avg:8.50,min:4,max:14},burgers:{avg:10,min:5,max:18},other:{avg:9,min:2,max:18}};
+const NYC_AVG=18.40;
+const TWILIO_PROXY=''; // set to your Vercel URL to enable real SMS
 
-const CAT_BENCHMARKS = {
-  pizza:{avg:4.20,min:1.50,max:8.00},tacos:{avg:4.80,min:2.50,max:9.00},
-  dumplings:{avg:5.50,min:2.50,max:12.00},bagels:{avg:2.80,min:1.00,max:5.50},
-  ramen:{avg:14.00,min:7.00,max:22.00},falafel:{avg:6.50,min:3.50,max:10.00},
-  burritos:{avg:8.50,min:4.00,max:14.00},burgers:{avg:10.00,min:5.00,max:18.00},
-  other:{avg:9.00,min:2.00,max:18.00},
-};
-
-const NYC_AVG = 18.40;
-
-// ═══════════════════════════════════════════
+// ════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════
-let USER = null; // null = not logged in
-let userPoints = 0;
-let userDishes = []; // personal logs
-let userTotalSaved = 0;
-let userGems = 0;
-let userStreak = 3;
-let currentTab = 'home';
-let mapInit = false;
-let mapInstance = null;
-let allMarkers = [];
-let activeFilter = 'all';
-let mapListOpen = false;
-let obHoods = [];
-let obPrefs = {};
+// ════════════════════════════════
+let USER=null,userPts=0,userDishes=[],userSaved=0,userGems=0,userStreak=3;
+let mCurTab='home',dCurTab='home';
+let mMapInit=false,dMapInit=false;
+let mMapInst=null,dMapInst=null;
+let mMarkers=[],dMarkers=[];
+let mapActiveFilter='all',mapListOpen=false;
+let obPrefs={},obHoods=[];
 
-// ═══════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════
-function switchAuthTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('loginForm').style.display = tab === 'login' ? 'flex' : 'none';
-  document.getElementById('signupForm').style.display = tab === 'signup' ? 'flex' : 'none';
-  document.getElementById('verifyStep').classList.remove('active');
-  document.getElementById('loginForm').style.flexDirection = 'column';
-  document.getElementById('signupForm').style.flexDirection = 'column';
+// ════════════════════════════════
+// BENCHMARK
+// ════════════════════════════════
+function getBench(price,cat){
+  const k=(cat||'other').toLowerCase().replace(/\s/g,'');
+  const b=BENCH[k]||BENCH.other;
+  const pct=Math.max(0,Math.min(100,((price-b.min)/(b.max-b.min))*100));
+  const cheaperPct=Math.round(100-pct);
+  const isGem=price<=b.avg*0.72;
+  const isCheap=price<b.avg;
+  const diff=b.avg-price;
+  return{b,pct,cheaperPct,isGem,isCheap,diff};
 }
 
-function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pwd = document.getElementById('loginPwd').value;
-  if (!email || !pwd) { showToast('Fill in both fields',0); return; }
-  // Demo: any credentials work
-  USER = { username: email.split('@')[0] || 'SliceHunter', email, avatar: '🍕' };
+// ════════════════════════════════
+// TOAST
+// ════════════════════════════════
+let toastT;
+function toast(msg,pts=0){
+  const el=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  const pEl=document.getElementById('toast-pts');
+  if(pts){pEl.textContent=' +'+pts+' pts';pEl.style.display='inline';}
+  else pEl.style.display='none';
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),3000);
+}
+function addPts(n){
+  userPts+=n;
+  document.getElementById('m-pts-n').textContent=userPts.toLocaleString();
+  document.getElementById('d-pts-n').textContent=userPts.toLocaleString();
+}
+
+// ════════════════════════════════
+// AUTH
+// ════════════════════════════════
+function authTab(btn,tab){
+  document.querySelectorAll('.auth-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('af-login').classList.toggle('active',tab==='login');
+  document.getElementById('af-signup').classList.toggle('active',tab==='signup');
+  document.getElementById('af-verify').classList.remove('active');
+}
+
+function doLogin(){
+  const email=document.getElementById('li-email').value.trim();
+  const pwd=document.getElementById('li-pwd').value;
+  if(!email||!pwd){toast('Fill in both fields');return;}
+  USER={username:email.split('@')[0]||'SliceHunter',email,avatar:'🍕'};
   enterApp();
 }
 
-function doSignup() {
-  const username = document.getElementById('suUsername').value.trim().replace('@','');
-  const email = document.getElementById('suEmail').value.trim();
-  const phone = document.getElementById('suPhone').value.trim();
-  const pwd = document.getElementById('suPwd').value;
-  const dish = document.getElementById('suDish').value.trim();
-  if (!username || (!email && !phone) || !pwd) { showToast('Fill required fields',0); return; }
-  USER = { username: username || 'NewEater', email, phone, avatar: '😊', favDish: dish };
-  // Show verify step
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('signupForm').style.display = 'none';
-  document.getElementById('verifyStep').classList.add('active');
-  document.getElementById('verifyTarget').textContent = phone || email;
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-}
-
-function digitInput(el, idx) {
-  if (el.value.length >= 1) {
-    const digits = document.querySelectorAll('.verify-digit');
-    if (idx < 5) digits[idx+1].focus();
-    checkAutoVerify();
+async function doSignup(){
+  const username=document.getElementById('su-user').value.trim().replace('@','');
+  const phone=document.getElementById('su-phone').value.replace(/\D/g,'');
+  const email=document.getElementById('su-email').value.trim();
+  const pwd=document.getElementById('su-pwd').value;
+  const dish=document.getElementById('su-dish').value.trim();
+  if(!username){toast('Pick a username');return;}
+  if(!phone&&!email){toast('Add phone or email');return;}
+  if(pwd.length<6){toast('Password: min 6 chars');return;}
+  USER={username,phone:phone?'+1'+phone:null,email,avatar:pickAvi(dish),favDish:dish};
+  const btn=document.getElementById('su-btn');
+  btn.textContent='Sending...';btn.disabled=true;
+  if(phone&&TWILIO_PROXY){
+    const res=await fetch(TWILIO_PROXY+'/api/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:'+1'+phone})}).then(r=>r.json()).catch(()=>({ok:false}));
+    if(!res.ok){btn.textContent='Create Account · Free 🔥';btn.disabled=false;toast('Couldn\'t send SMS — try email');return;}
+    document.getElementById('verify-hint').style.display='none';
   }
+  btn.textContent='Create Account · Free 🔥';btn.disabled=false;
+  showVerify(phone?`(${phone.slice(0,3)}) ***-**${phone.slice(-2)}`:email);
 }
 
-function checkAutoVerify() {
-  const digits = document.querySelectorAll('.verify-digit');
-  const code = Array.from(digits).map(d => d.value).join('');
-  if (code.length === 6) setTimeout(doVerify, 300);
+function showVerify(target){
+  ['af-login','af-signup'].forEach(id=>{document.getElementById(id).classList.remove('active');});
+  document.getElementById('af-verify').classList.add('active');
+  document.getElementById('verify-target').textContent=target;
+  document.querySelectorAll('.auth-tab-btn').forEach(b=>b.classList.remove('active'));
+  setTimeout(()=>document.querySelectorAll('.vd')[0].focus(),100);
 }
 
-function doVerify() {
-  // Demo: accept any 6-digit code
-  const digits = document.querySelectorAll('.verify-digit');
-  const code = Array.from(digits).map(d => d.value).join('');
-  if (code.length < 6) { showToast('Enter the 6-digit code',0); return; }
-  // New user → show onboarding
-  document.getElementById('authOverlay').classList.add('hidden');
-  document.getElementById('onboardOverlay').classList.add('active');
+function vdInput(el,idx){
+  el.value=el.value.slice(-1);
+  if(el.value){el.classList.add('filled');const vds=document.querySelectorAll('.vd');if(idx<5)vds[idx+1].focus();checkAutoVerify();}
+  else el.classList.remove('filled');
+}
+function vdKey(el,idx,e){if(e.key==='Backspace'&&!el.value&&idx>0){const vds=document.querySelectorAll('.vd');vds[idx-1].focus();vds[idx-1].value='';vds[idx-1].classList.remove('filled');}}
+function checkAutoVerify(){const code=Array.from(document.querySelectorAll('.vd')).map(d=>d.value).join('');if(code.length===6)setTimeout(doVerify,350);}
+
+async function doVerify(){
+  const code=Array.from(document.querySelectorAll('.vd')).map(d=>d.value).join('');
+  if(code.length<6){toast('Enter all 6 digits');return;}
+  const btn=document.getElementById('verify-btn');
+  btn.textContent='Verifying...';btn.disabled=true;
+  let valid=true;
+  if(TWILIO_PROXY&&USER&&USER.phone){
+    const res=await fetch(TWILIO_PROXY+'/api/verify-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:USER.phone,code})}).then(r=>r.json()).catch(()=>({ok:false,valid:false}));
+    valid=res.ok&&res.valid;
+  }
+  btn.textContent='Verify & Enter →';btn.disabled=false;
+  if(!valid){
+    document.querySelectorAll('.vd').forEach(d=>{d.classList.add('error');d.value='';d.classList.remove('filled');});
+    setTimeout(()=>document.querySelectorAll('.vd').forEach(d=>d.classList.remove('error')),600);
+    document.querySelectorAll('.vd')[0].focus();
+    toast('Wrong code — try again');return;
+  }
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('ob-overlay').classList.add('active');
 }
 
-function enterApp() {
-  document.getElementById('authOverlay').classList.add('hidden');
-  document.getElementById('onboardOverlay').classList.remove('active');
-  document.getElementById('headerAvi').textContent = USER.avatar || '😊';
-  renderHome();
-  renderBoard();
-  renderProfile();
-  renderLog();
+async function resendCode(){
+  if(!USER||!USER.phone){toast('No phone to resend to');return;}
+  if(TWILIO_PROXY){await fetch(TWILIO_PROXY+'/api/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:USER.phone})}).catch(()=>{});}
+  toast('Code resent! 📱');
 }
 
-// ═══════════════════════════════════════════
+function pickAvi(dish){
+  if(!dish)return'😊';const d=dish.toLowerCase();
+  if(d.includes('pizza')||d.includes('slice'))return'🍕';
+  if(d.includes('dump')||d.includes('bao'))return'🥟';
+  if(d.includes('taco')||d.includes('burrito'))return'🌮';
+  if(d.includes('ramen')||d.includes('noodle'))return'🍜';
+  if(d.includes('bagel'))return'🥯';return'🍽️';
+}
+
+function enterApp(){
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('ob-overlay').classList.remove('active');
+  const avi=USER?USER.avatar:'😊';
+  document.getElementById('m-avi').textContent=avi;
+  document.getElementById('d-avi').textContent=avi;
+  buildAll();
+}
+
+// ════════════════════════════════
 // ONBOARDING
-// ═══════════════════════════════════════════
-let obStep = 1;
-function selectOb(el, key, val) {
-  el.closest('.ob-options').querySelectorAll('.ob-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  obPrefs[key] = val;
+// ════════════════════════════════
+let obStep=1;
+function obSel(el,key,val){el.closest('.ob-opts').querySelectorAll('.ob-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');obPrefs[key]=val;}
+function obHood(el,h){
+  if(el.classList.contains('sel')){el.classList.remove('sel');obHoods=obHoods.filter(x=>x!==h);}
+  else if(obHoods.length<3){el.classList.add('sel');obHoods.push(h);}
+  else toast('Max 3 neighborhoods');
 }
-function toggleHood(el, hood) {
-  if (el.classList.contains('selected')) {
-    el.classList.remove('selected');
-    obHoods = obHoods.filter(h => h !== hood);
-  } else if (obHoods.length < 3) {
-    el.classList.add('selected');
-    obHoods.push(hood);
-  }
+function obNext(step){
+  document.getElementById('obs'+step).classList.remove('active');
+  obStep=step+1;
+  document.getElementById('obs'+obStep).classList.add('active');
+  document.getElementById('ob-fill').style.width=(obStep/3*100)+'%';
 }
-function obNext(step) {
-  document.getElementById('obS' + step).classList.remove('active');
-  obStep = step + 1;
-  document.getElementById('obS' + obStep).classList.add('active');
-  document.getElementById('obProgress').style.width = ((obStep / 3) * 100) + '%';
-}
-function finishOnboard() {
-  document.getElementById('onboardOverlay').classList.remove('active');
-  document.getElementById('headerAvi').textContent = USER ? (USER.avatar || '😊') : '😊';
-  if (!USER) USER = { username:'Guest', avatar:'😊' };
-  renderHome();
-  renderBoard();
-  renderProfile();
-  renderLog();
+function obFinish(){
+  document.getElementById('ob-overlay').classList.remove('active');
+  if(!USER)USER={username:'Guest',avatar:'😊'};
+  const avi=USER.avatar||'😊';
+  document.getElementById('m-avi').textContent=avi;
+  document.getElementById('d-avi').textContent=avi;
+  buildAll();
 }
 
-// ═══════════════════════════════════════════
-// TAB NAVIGATION
-// ═══════════════════════════════════════════
-function switchTab(tab) {
-  if (!USER && tab !== 'home') {
-    showToast('Sign in to access this 🔒',0);
-    return;
-  }
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sc' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  currentTab = tab;
-  if (tab === 'map' && !mapInit) { initMap(); mapInit = true; }
-  if (tab === 'map') setTimeout(()=>{ if(mapInstance) mapInstance.invalidateSize(); },100);
+// ════════════════════════════════
+// BUILD ALL SCREENS
+// ════════════════════════════════
+function buildAll(){buildHomeM();buildHomeD();buildMapFilters();buildBoardM();buildBoardD();buildLogM();buildLogD();buildProfileM();buildProfileD();buildTicker();}
+
+// ════════════════════════════════
+// MAP
+// ════════════════════════════════
+function buildMapFilters(){
+  const cats=['all','pizza','tacos','dumplings','bagels','ramen','falafel','burritos'];
+  const html=cats.map(c=>`<button class="m-chip ${c==='all'?'active':''}" onclick="filterMapCat(this,'${c}')">${c==='all'?'All':c[0].toUpperCase()+c.slice(1)}</button>`).join('')+
+    `<select class="m-chip" onchange="filterMapPrice(this.value)" style="padding:5px 8px;"><option value="">Any Price</option><option value="5">Under $5</option><option value="8">Under $8</option><option value="12">Under $12</option></select>`;
+  document.getElementById('m-map-filters').innerHTML=html;
+  document.getElementById('d-map-filters').innerHTML=html.replace(/m-chip/g,'m-chip').replace(/filterMap/g,'filterMap');
 }
 
-// ═══════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════
-let toastTimer;
-function showToast(msg, pts) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  const pEl = document.getElementById('toast-pts');
-  pEl.textContent = pts ? ' +' + pts + ' pts' : '';
-  pEl.style.fontFamily = "'Bebas Neue', sans-serif";
-  pEl.style.fontSize = '18px';
-  pEl.style.color = 'var(--orange)';
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+function buildMarkers(inst,markersArr){
+  markersArr.forEach(m=>inst.removeLayer(m));markersArr.length=0;
+  DISHES.forEach(d=>{
+    const col=d.price<5?'#D85A30':d.price<=10?'#C8820A':'#555';
+    const ic=L.divIcon({html:`<div style="background:${col};width:26px;height:26px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:1.5px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg);font-size:12px;">${d.emoji}</span></div>`,className:'',iconSize:[26,26],iconAnchor:[13,26]});
+    const m=L.marker([d.lat,d.lng],{icon:ic}).addTo(inst);
+    m.bindPopup(`<div class="pop-name">${d.rest}</div><div class="pop-dish">${d.name}</div><div class="pop-price">$${d.price.toFixed(2)}</div><button class="pop-btn" onclick="openDish(${d.id})">Details →</button>`);
+    m._dish=d;markersArr.push(m);
+  });
 }
 
-function addPoints(n) {
-  userPoints += n;
-  document.getElementById('headerPtsNum').textContent = userPoints.toLocaleString();
+function initMobileMap(){
+  mMapInst=L.map('m-map-el',{zoomControl:false}).setView([40.728,-73.975],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(mMapInst);
+  L.control.zoom({position:'bottomright'}).addTo(mMapInst);
+  buildMarkers(mMapInst,mMarkers);buildMapList();
+}
+function initDesktopMap(){
+  dMapInst=L.map('d-map-el',{zoomControl:true}).setView([40.728,-73.975],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(dMapInst);
+  buildMarkers(dMapInst,dMarkers);buildDishGrid();
 }
 
-// ═══════════════════════════════════════════
-// BENCHMARK ENGINE
-// ═══════════════════════════════════════════
-function getBench(price, cat) {
-  const key = (cat||'other').toLowerCase().replace(/\s/g,'');
-  const b = CAT_BENCHMARKS[key] || CAT_BENCHMARKS.other;
-  const range = b.max - b.min;
-  const pct = Math.max(0, Math.min(100, ((price - b.min) / range) * 100));
-  const cheaperPct = Math.round(100 - pct);
-  const diff = b.avg - price;
-  const isGem = price <= b.avg * 0.72;
-  const isCheap = price < b.avg;
-  return { b, pct, cheaperPct, diff, isGem, isCheap };
+function filterMapCat(el,cat){
+  document.querySelectorAll('.m-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');mapActiveFilter=cat;applyMapFilters();
+}
+function filterMapPrice(val){applyMapFilters(val?parseFloat(val):null);}
+function applyMapFilters(maxP){
+  [mMarkers,dMarkers].forEach((arr,i)=>{
+    const inst=i===0?mMapInst:dMapInst;if(!inst)return;
+    arr.forEach(m=>{const d=m._dish;const ok=(mapActiveFilter==='all'||d.cat===mapActiveFilter)&&(!maxP||d.price<=maxP);ok?inst.addLayer(m):inst.removeLayer(m);});
+  });buildMapList();buildDishGrid();
+}
+function toggleMapPanel(){mapListOpen=!mapListOpen;document.getElementById('m-map-panel').classList.toggle('open',mapListOpen);}
+function buildMapList(){
+  const q=(document.getElementById('m-map-search')||{}).value||'';
+  const vis=DISHES.filter(d=>(mapActiveFilter==='all'||d.cat===mapActiveFilter)&&(!q||d.name.toLowerCase().includes(q.toLowerCase())||d.rest.toLowerCase().includes(q.toLowerCase())||d.hood.toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('m-map-list').innerHTML=vis.map(d=>`<div class="map-list-item" onclick="openDish(${d.id})"><div class="mli-emoji">${d.emoji}</div><div class="mli-info"><div class="mli-name">${d.name}</div><div class="mli-rest">${d.rest} · ${d.hood}</div></div><div class="mli-price">$${d.price.toFixed(2)}</div></div>`).join('');
+}
+function buildDishGrid(){
+  const el=document.getElementById('d-dish-grid');if(!el)return;
+  el.innerHTML=DISHES.map(d=>`<div class="deal-card" onclick="openDish(${d.id})" style="width:auto;">
+    <div class="dc-top"><div class="dc-emoji">${d.emoji}</div><div class="dc-price">$${d.price.toFixed(2)}</div></div>
+    <div class="dc-name">${d.name}</div><div class="dc-rest">${d.rest}</div>
+    <div class="dc-foot"><div class="dc-hood">${d.hood}</div>${d.hot?'<span class="dc-tag hot">🔥 HOT</span>':d.verified?'<span class="dc-tag ver">✓ verified</span>':''}</div>
+  </div>`).join('');
+}
+function mapSearch(){buildMapList();}
+
+// ════════════════════════════════
+// DISH SHEET
+// ════════════════════════════════
+function openDish(id){
+  const d=DISHES.find(x=>x.id===id);if(!d)return;
+  const{b,cheaperPct,isGem,isCheap,diff}=getBench(d.price,d.cat);
+  const bmsg=isGem?`💎 Hidden gem — cheaper than <strong>${cheaperPct}%</strong> of ${d.cat} in NYC. Avg is <strong>$${b.avg.toFixed(2)}</strong>.`:isCheap?`<strong>$${diff.toFixed(2)} below average</strong> for ${d.cat} (avg $${b.avg.toFixed(2)}). Cheaper than <strong>${cheaperPct}%</strong> of spots.`:`Above avg for ${d.cat} (avg $${b.avg.toFixed(2)}). Logging it helps others know the real price.`;
+  document.getElementById('ds-body').innerHTML=`
+    <div class="ds-emoji">${d.emoji}</div>
+    <div class="ds-price">$${d.price.toFixed(2)}</div>
+    <div class="ds-name">${d.name}</div>
+    <div class="ds-rest">${d.rest} · ${d.hood}</div>
+    <div class="ds-bench">${bmsg}</div>
+    <div class="ds-info-grid">
+      <div class="ds-ig"><div class="ds-ig-l">Neighborhood</div><div class="ds-ig-v">${d.hood}</div></div>
+      <div class="ds-ig"><div class="ds-ig-l">Category</div><div class="ds-ig-v">${d.cat}</div></div>
+      <div class="ds-ig"><div class="ds-ig-l">Logged by</div><div class="ds-ig-v" style="color:var(--or)">${d.by||'Anonymous'}</div></div>
+      <div class="ds-ig"><div class="ds-ig-l">Verified</div><div class="ds-ig-v">${d.verified?'✓ Yes':'Community'}</div></div>
+    </div>
+    ${d.tip?`<div class="ds-tip">💡 <strong>Order tip:</strong> ${d.tip}</div>`:''}
+    <div class="ds-acts">
+      <button class="ds-act verify" onclick="verifyDish(${d.id},this)">✓ Still correct</button>
+      <button class="ds-act flag" onclick="toast('Thanks — we\'ll review it');closeDish()">↑ Price changed</button>
+    </div>
+    <button class="ds-share" onclick="shareDish(${d.id})">Share This Deal 🔥</button>
+  `;
+  document.getElementById('dish-sheet').classList.add('open');
+}
+function closeDish(){document.getElementById('dish-sheet').classList.remove('open');}
+function verifyDish(id,btn){btn.textContent='✓ Verified!';btn.style.borderColor='rgba(58,154,92,0.5)';btn.style.color='var(--green)';addPts(5);toast('Price confirmed!',5);}
+function shareDish(id){
+  const d=DISHES.find(x=>x.id===id);
+  const txt=`${d.name} at ${d.rest} — $${d.price.toFixed(2)} 🔥 via CheapSheet NYC`;
+  if(navigator.share)navigator.share({title:'CheapSheet NYC',text:txt,url:location.href});
+  else if(navigator.clipboard){navigator.clipboard.writeText(txt);toast('Copied to clipboard!');}
+  closeDish();
 }
 
-// ═══════════════════════════════════════════
-// HOME SCREEN
-// ═══════════════════════════════════════════
-function renderHome() {
-  const username = USER ? USER.username : 'Friend';
-  const greeting = getGreeting();
-  const hot = DISHES.filter(d => d.hot || d.verified).slice(0, 6);
-  const nearby = DISHES.slice(0, 5);
+// ════════════════════════════════
+// HOME
+// ════════════════════════════════
+function greeting(){const h=new Date().getHours();return h<11?'Good morning':h<15?'Lunch time':h<18?'Good afternoon':h<21?'Dinner time':'Late night eats';}
+function getStreak(){
+  const days=['M','T','W','T','F','S','S'];
+  return days.map((d,i)=>i<userStreak-1?`<div class="sd done">${d}</div>`:i===userStreak-1?`<div class="sd today">${d}</div>`:`<div class="sd empty">${d}</div>`).join('');
+}
+function getDropCd(){
+  const now=new Date(),nm=new Date(now);
+  nm.setDate(now.getDate()+((1+7-now.getDay())%7||7));nm.setHours(0,0,0,0);
+  const diff=nm-now,h=Math.floor(diff/3600000);
+  return`${Math.floor(h/24)}d ${h%24}h ${Math.floor((diff%3600000)/60000)}m`;
+}
 
-  // Countdown to Monday
-  const now = new Date();
-  const nextMon = new Date(now);
-  nextMon.setDate(now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7));
-  nextMon.setHours(0,0,0,0);
-  const diff = nextMon - now;
-  const dh = Math.floor(diff/3600000);
-  const dm = Math.floor((diff%3600000)/60000);
-  const cdStr = `${Math.floor(dh/24)}d ${dh%24}h ${dm}m`;
-
-  // Streak days
-  const days = ['M','T','W','T','F','S','S'];
-  const todayDow = (now.getDay() + 6) % 7; // 0=Mon
-  const streakHTML = days.map((d,i) => {
-    if (i < userStreak - 1) return `<div class="sd done">${d}</div>`;
-    if (i === userStreak - 1) return `<div class="sd today">${d}</div>`;
-    return `<div class="sd empty">${d}</div>`;
-  }).join('');
-
-  document.getElementById('scHome').innerHTML = `
-    <div class="home-hero">
-      <div class="hh-greeting">${greeting},</div>
-      <div class="hh-title">@${username} <span>🔥</span></div>
-      <div class="savings-strip">
-        <div class="ss-left">
-          <div class="ss-amount" id="homeSavings">$${userTotalSaved.toFixed(2)}</div>
-          <div class="ss-label">YOUR TOTAL SAVED</div>
-        </div>
-        <div class="ss-cta">vs. avg NYC meal ($18.40)<br><b>Log a dish to grow this</b></div>
+function homeHTML(isMobile){
+  const hot=DISHES.filter(d=>d.hot||d.verified).slice(0,8);
+  const near=DISHES.slice(0,6);
+  const px=isMobile?'16px':'0';
+  return`
+    <div style="padding:${isMobile?'14px 16px':'0 0 20px'};">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px;">${greeting()},</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:${isMobile?'26px':'34px'};letter-spacing:1px;margin-bottom:12px;">@${USER?USER.username:'Friend'} <span style="color:var(--or);">🔥</span></div>
+      <div class="savings-strip" style="margin-bottom:10px;">
+        <div><div class="ss-num" id="${isMobile?'m':'d'}-savings">$${userSaved.toFixed(2)}</div><div class="ss-lbl">YOUR TOTAL SAVED</div></div>
+        <div class="ss-right">vs. avg NYC meal ($18.40)<br><b>Log a dish to grow this</b></div>
       </div>
       <div class="streak-bar">
-        <div class="streak-flame">🔥</div>
-        <div class="streak-info">
-          <div class="streak-label">${userStreak}-day streak · Keep it going</div>
-          <div class="streak-sub">Log a meal today to extend your streak</div>
-        </div>
-        <div class="streak-days">${streakHTML}</div>
+        <span style="font-size:18px;">🔥</span>
+        <div class="streak-info"><div class="streak-title">${userStreak}-day streak · Keep it going</div><div class="streak-sub">Log a meal today to extend</div></div>
+        <div class="streak-days">${getStreak()}</div>
       </div>
     </div>
-
-    <div class="sec-head">
-      <div class="sec-title">Hot Deals <span>Near You</span></div>
-      <div class="sec-link" onclick="switchTab('map')">See map →</div>
+    <div class="${isMobile?'sec-hrow':''}" style="${isMobile?'':'margin-bottom:12px;'}">
+      <div class="sec-title" style="font-size:${isMobile?'18px':'22px'};padding:${isMobile?'0':'0'};">Hot Deals <span>Near You</span></div>
+      <div class="sec-link" onclick="${isMobile?'mTab(\'map\')':'dTab(\'map\')'}">See map →</div>
     </div>
-    <div class="cards-scroll">
-      ${hot.map(d => `
-        <div class="deal-card" onclick="openDish(${d.id})">
-          ${d.hot ? '<div class="hot-tag">🔥 HOT</div>' : ''}
-          <div class="deal-card-top">
-            <div class="dc-emoji">${d.emoji}</div>
-            <div class="dc-price">$${d.price.toFixed(2)}</div>
-          </div>
-          <div class="dc-name">${d.name}</div>
-          <div class="dc-rest">${d.rest}</div>
-          <div class="dc-foot">
-            <div class="dc-hood">${d.hood}</div>
-            ${d.verified ? '<div class="dc-gem">✓ verified</div>' : ''}
-          </div>
-        </div>
-      `).join('')}
+    <div class="cards-scroll" style="padding:${isMobile?'0 16px 8px':'0 0 8px'};">
+      ${hot.map(d=>`<div class="deal-card" onclick="openDish(${d.id})">
+        ${d.hot?'<div style="position:absolute;top:8px;right:8px;background:var(--or);color:#fff;font-family:\'DM Mono\',monospace;font-size:7px;border-radius:3px;padding:2px 5px;">🔥 HOT</div>':''}
+        <div class="dc-top"><div class="dc-emoji">${d.emoji}</div><div class="dc-price">$${d.price.toFixed(2)}</div></div>
+        <div class="dc-name">${d.name}</div><div class="dc-rest">${d.rest}</div>
+        <div class="dc-foot"><div class="dc-hood">${d.hood}</div>${d.verified?'<span class="dc-tag ver">✓</span>':'<span class="dc-tag gem">💎</span>'}</div>
+      </div>`).join('')}
     </div>
-
-    <div class="sec-head" style="margin-top:8px;">
-      <div class="sec-title">Monday <span>Drop</span></div>
-      <div class="sec-link">${cdStr} away</div>
+    <div class="${isMobile?'sec-hrow':''}" style="${isMobile?'margin-top:8px;':'margin:20px 0 10px;'}">
+      <div class="sec-title" style="font-size:${isMobile?'18px':'22px'};">Monday <span>Drop</span></div>
+      <div class="sec-link">${getDropCd()} away</div>
     </div>
-    <div class="drop-teaser">
-      <div class="dt-head">
-        <span class="dt-title">This Week's Picks</span>
-        <span class="dt-cd">🔓 Top 5 free</span>
-      </div>
-      ${DISHES.slice(0,3).map((d,i) => `
-        <div class="drop-row" onclick="openDish(${d.id})">
-          <div class="dr-num">${i+1}</div>
-          <div class="dr-info">
-            <div class="dr-name">${d.emoji} ${d.name}</div>
-            <div class="dr-rest">${d.rest} · ${d.hood}</div>
-          </div>
-          <div class="dr-price">$${d.price.toFixed(2)}</div>
-        </div>
-      `).join('')}
-      ${DISHES.slice(3,5).map((d,i) => `
-        <div class="drop-row locked">
-          <div class="dr-num">${i+4}</div>
-          <div class="dr-info">
-            <div class="dr-name">${d.emoji} ${d.name}</div>
-            <div class="dr-rest">${d.rest} · ${d.hood}</div>
-          </div>
-          <div class="dr-price">$${d.price.toFixed(2)}</div>
-          <div class="lock-pill">🔒 Log 5 dishes</div>
-        </div>
-      `).join('')}
+    <div class="card drop-card" style="margin:${isMobile?'0 16px':'0 0 24px'};">
+      <div class="drop-head"><span class="drop-head-title">This Week's Picks</span><span class="drop-cd">🔓 Top 5 free</span></div>
+      ${DISHES.slice(0,3).map((d,i)=>`<div class="drop-row" onclick="openDish(${d.id})"><div class="drop-num">${i+1}</div><div class="drop-info"><div class="drop-name">${d.emoji} ${d.name}</div><div class="drop-rest">${d.rest} · ${d.hood}</div></div><div class="drop-price">$${d.price.toFixed(2)}</div></div>`).join('')}
+      ${DISHES.slice(3,5).map((d,i)=>`<div class="drop-row locked"><div class="drop-num">${i+4}</div><div class="drop-info"><div class="drop-name">${d.emoji} ${d.name}</div><div class="drop-rest">${d.rest} · ${d.hood}</div></div><div class="drop-price">$${d.price.toFixed(2)}</div><div class="lock-pill">🔒 Log 5 dishes</div></div>`).join('')}
     </div>
-
-    <div class="sec-head" style="margin-top:12px;">
-      <div class="sec-title">Around <span>NYC</span></div>
-      <div class="sec-link" onclick="switchTab('map')">Full map →</div>
+    <div class="${isMobile?'sec-hrow':''}" style="${isMobile?'margin-top:12px;':'margin:24px 0 10px;'}">
+      <div class="sec-title" style="font-size:${isMobile?'18px':'22px'};">Around <span>NYC</span></div>
+      <div class="sec-link" onclick="${isMobile?'mTab(\'map\')':'dTab(\'map\')'}">Full map →</div>
     </div>
-    ${nearby.map((d,i) => `
-      <div class="near-item" onclick="openDish(${d.id})">
-        <div class="ni-emoji">${d.emoji}</div>
-        <div class="ni-info">
-          <div class="ni-name">${d.name}</div>
-          <div class="ni-rest">${d.rest}</div>
-        </div>
-        <div class="ni-right">
-          <div class="ni-price">$${d.price.toFixed(2)}</div>
-          <div class="ni-dist">${(Math.random()*1.2+0.1).toFixed(1)} mi</div>
-        </div>
-      </div>
-    `).join('')}
-    <div style="height:16px;"></div>
-  `;
-}
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 11) return 'Good morning';
-  if (h < 15) return 'Lunch time';
-  if (h < 18) return 'Good afternoon';
-  if (h < 21) return 'Dinner time';
-  return 'Late night eats';
-}
-
-// ═══════════════════════════════════════════
-// MAP SCREEN
-// ═══════════════════════════════════════════
-function initMap() {
-  // Build filter chips
-  const cats = ['all','pizza','tacos','dumplings','bagels','ramen','falafel'];
-  document.getElementById('mapFilters').innerHTML = cats.map(c =>
-    `<button class="filter-chip ${c==='all'?'active':''}" onclick="filterMap(this,'${c}')">${c==='all'?'All Dishes':c.charAt(0).toUpperCase()+c.slice(1)}</button>`
-  ).join('') + `<select class="filter-chip" onchange="filterByPrice(this.value)" style="padding:5px 8px;">
-    <option value="">Any Price</option><option value="5">Under $5</option>
-    <option value="8">Under $8</option><option value="12">Under $12</option>
-  </select>`;
-
-  // Init Leaflet
-  mapInstance = L.map('map-el', { zoomControl:false }).setView([40.728,-73.975], 12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution:'© OpenStreetMap © CARTO', maxZoom:19
-  }).addTo(mapInstance);
-  L.control.zoom({position:'bottomright'}).addTo(mapInstance);
-
-  DISHES.forEach(d => {
-    const color = d.price < 5 ? '#D85A30' : d.price <= 10 ? '#C8820A' : '#555';
-    const icon = L.divIcon({
-      html:`<div style="background:${color};width:26px;height:26px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,0.5);"><span style="transform:rotate(45deg);font-size:12px;">${d.emoji}</span></div>`,
-      className:'',iconSize:[26,26],iconAnchor:[13,26]
-    });
-    const m = L.marker([d.lat,d.lng],{icon}).addTo(mapInstance);
-    m.bindPopup(`<div class="pop-name">${d.rest}</div><div class="pop-dish">${d.name}</div><div class="pop-price">$${d.price.toFixed(2)}</div><button class="pop-btn" onclick="openDish(${d.id})">View Details →</button>`);
-    m._dish = d;
-    allMarkers.push(m);
-  });
-  buildMapList();
-}
-
-function filterMap(el, cat) {
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  activeFilter = cat;
-  applyMapFilters();
-}
-function filterByPrice(val) {
-  applyMapFilters(val ? parseFloat(val) : null);
-}
-function applyMapFilters(maxPrice) {
-  allMarkers.forEach(m => {
-    const d = m._dish;
-    const catOk = activeFilter === 'all' || d.cat === activeFilter;
-    const priceOk = !maxPrice || d.price <= maxPrice;
-    catOk && priceOk ? mapInstance.addLayer(m) : mapInstance.removeLayer(m);
-  });
-  buildMapList();
-}
-function toggleMapList() {
-  mapListOpen = !mapListOpen;
-  document.getElementById('mapListPanel').classList.toggle('open', mapListOpen);
-}
-function buildMapList() {
-  const q = document.getElementById('mapSearchInput').value.toLowerCase();
-  const visible = DISHES.filter(d => {
-    const catOk = activeFilter === 'all' || d.cat === activeFilter;
-    const qOk = !q || d.name.toLowerCase().includes(q) || d.rest.toLowerCase().includes(q) || d.hood.toLowerCase().includes(q);
-    return catOk && qOk;
-  });
-  document.getElementById('mapListItems').innerHTML = visible.map(d => `
-    <div class="map-list-item" onclick="openDish(${d.id})">
-      <div class="mli-emoji">${d.emoji}</div>
-      <div class="mli-info"><div class="mli-name">${d.name}</div><div class="mli-rest">${d.rest} · ${d.hood}</div></div>
-      <div class="mli-price">$${d.price.toFixed(2)}</div>
+    <div style="border-radius:${isMobile?'0':'var(--r)'};border-top:1px solid var(--b);${isMobile?'':'border:1px solid var(--b);overflow:hidden;'}">
+      ${near.map(d=>`<div class="near-item" onclick="openDish(${d.id})"><div class="ni-emoji">${d.emoji}</div><div class="ni-info"><div class="ni-name">${d.name}</div><div class="ni-rest">${d.rest}</div></div><div class="ni-right"><div class="ni-price">$${d.price.toFixed(2)}</div><div class="ni-dist">${(Math.random()*1.2+0.1).toFixed(1)} mi</div></div></div>`).join('')}
     </div>
-  `).join('');
+    <div style="height:${isMobile?'20px':'40px'};"></div>`;
 }
-function filterMapList() { buildMapList(); }
-
-// ═══════════════════════════════════════════
-// DISH BOTTOM SHEET
-// ═══════════════════════════════════════════
-function openDish(id) {
-  const d = DISHES.find(x => x.id === id);
-  if (!d) return;
-  const { b, cheaperPct, isGem, isCheap, diff } = getBench(d.price, d.cat);
-  const benchMsg = isGem
-    ? `💎 Hidden gem — cheaper than <strong>${cheaperPct}%</strong> of ${d.cat} spots in NYC. Avg is <strong>$${b.avg.toFixed(2)}</strong>.`
-    : isCheap
-    ? `You pay <strong>$${diff.toFixed(2)} below average</strong> for ${d.cat} in NYC (avg $${b.avg.toFixed(2)}). Cheaper than <strong>${cheaperPct}%</strong> of spots.`
-    : `Average for ${d.cat} in NYC is $${b.avg.toFixed(2)}. This is above average — but now you know.`;
-
-  document.getElementById('dishContent').innerHTML = `
-    <div class="dish-emoji-big">${d.emoji}</div>
-    <div class="dish-price-big">$${d.price.toFixed(2)}</div>
-    <div class="dish-name-big">${d.name}</div>
-    <div class="dish-rest-big">${d.rest} · ${d.hood}</div>
-    <div style="margin:12px 0;background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--text2);">
-      ${benchMsg}
-    </div>
-    <div class="dish-info-grid">
-      <div class="dig-item"><div class="dig-label">Neighborhood</div><div class="dig-val">${d.hood}</div></div>
-      <div class="dig-item"><div class="dig-label">Category</div><div class="dig-val">${d.cat}</div></div>
-      <div class="dig-item"><div class="dig-label">Logged by</div><div class="dig-val" style="color:var(--orange);">${d.by||'Anonymous'}</div></div>
-      <div class="dig-item"><div class="dig-label">Verified</div><div class="dig-val">${d.verified?'✓ Yes':'Community'}</div></div>
-    </div>
-    ${d.tip ? `<div class="dish-tip-box">💡 <strong>Order tip:</strong> ${d.tip}</div>` : ''}
-    <div class="dish-actions">
-      <button class="dish-act-btn verify" onclick="verifyDish(${d.id},this)">✓ Still correct</button>
-      <button class="dish-act-btn flag" onclick="flagDish(${d.id})">↑ Price changed</button>
-    </div>
-    <button class="dish-share-btn" onclick="shareDish(${d.id})">Share This Deal 🔥</button>
-  `;
-  document.getElementById('dishSheet').classList.add('open');
-}
-function closeDishSheet() { document.getElementById('dishSheet').classList.remove('open'); }
-function verifyDish(id, btn) {
-  btn.textContent = '✓ Verified!';
-  btn.style.borderColor = 'rgba(58,154,92,0.5)';
-  btn.style.color = 'var(--green)';
-  addPoints(5);
-  showToast('Price verified!', 5);
-}
-function flagDish(id) { showToast('Thanks — we\'ll review it', 0); closeDishSheet(); }
-function shareDish(id) {
-  const d = DISHES.find(x => x.id === id);
-  const text = `${d.name} at ${d.rest} — $${d.price.toFixed(2)} 🔥 via CheapSheet NYC`;
-  if (navigator.share) navigator.share({title:'CheapSheet NYC',text,url:window.location.href});
-  else if (navigator.clipboard) { navigator.clipboard.writeText(text); showToast('Copied!',0); }
-  closeDishSheet();
+function buildHomeM(){document.getElementById('ms-home').innerHTML=homeHTML(true);}
+function buildHomeD(){
+  const el=document.getElementById('d-home-content');if(!el)return;
+  el.innerHTML=`<div style="max-width:1100px;margin:0 auto;padding:40px 32px 60px;">${homeHTML(false)}</div>`;
 }
 
-// ═══════════════════════════════════════════
+// ════════════════════════════════
 // LOG SCREEN
-// ═══════════════════════════════════════════
-function renderLog() {
-  document.getElementById('scLog').innerHTML = `
-    <div class="log-header">
-      <div class="log-title">Log a <span>Dish</span></div>
-      <div class="log-sub">What did you eat? Your log = your personal price memory + community data.</div>
-    </div>
-    <div class="bench-preview" id="benchPreview">
-      <div class="bp-tag">⚡ Live Benchmark</div>
-      <div class="bp-msg" id="benchMsg"></div>
-      <div class="bp-bar"><div class="bp-bar-fill" id="benchFill" style="width:0%"></div></div>
-      <div class="bp-meta"><span>Cheapest</span><span id="benchAvg"></span><span>Priciest</span></div>
-      <div class="gem-badge" id="gemBadge" style="display:none;">💎 Hidden gem — top find in this neighborhood</div>
-    </div>
-    <div class="form-field">
-      <div class="f-label">Restaurant Name *</div>
-      <input class="f-input" id="fRest" placeholder="e.g. Joe's Pizza" autocomplete="off">
-    </div>
-    <div class="form-field">
-      <div class="f-label">Exact Dish *</div>
-      <input class="f-input" id="fDish" placeholder="e.g. Plain slice, no toppings" autocomplete="off">
-    </div>
-    <div class="form-row">
-      <div class="form-field">
-        <div class="f-label">Price Paid *</div>
-        <input class="f-input" id="fPrice" type="number" step="0.25" min="0" placeholder="$0.00" oninput="onPriceInput()">
-      </div>
-      <div class="form-field">
-        <div class="f-label">Category *</div>
-        <select class="f-select" id="fCat" onchange="onPriceInput()">
-          <option value="">Select...</option>
-          <option>pizza</option><option>tacos</option><option>dumplings</option>
-          <option>bagels</option><option>ramen</option><option>falafel</option>
-          <option>burritos</option><option>burgers</option><option>other</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-field">
-      <div class="f-label">Neighborhood *</div>
-      <select class="f-select" id="fHood">
-        <option value="">Select...</option>
-        <option>Astoria</option><option>Bushwick</option><option>Chelsea</option>
-        <option>Chinatown</option><option>Crown Heights</option><option>East Village</option>
-        <option>Flushing</option><option>Greenpoint</option><option>Harlem</option>
-        <option>Jackson Heights</option><option>LES</option><option>Midtown</option>
-        <option>Park Slope</option><option>Prospect Heights</option><option>Ridgewood</option>
-        <option>Sunset Park</option><option>Upper West Side</option><option>West Village</option>
-        <option>Williamsburg</option>
-      </select>
-    </div>
-    <div class="price-tip"><strong>Pro tip:</strong> Say exactly what you ordered. "One plain slice" gets the $3.50 price. "A pizza" might get you the $5 version.</div>
-    <div class="form-field">
-      <div class="f-label">Order Script (optional)</div>
-      <input class="f-input" id="fTip" placeholder="What did you say to get this price?" autocomplete="off">
-    </div>
-    <div class="receipt-zone" onclick="document.getElementById('receiptFile').click()">
-      <div class="rz-icon">📸</div>
-      <div class="rz-text">Tap to attach receipt · +15 bonus points</div>
-      <input type="file" id="receiptFile" accept="image/*" style="display:none" onchange="receiptAdded(this)">
-    </div>
-    <div class="pts-preview">
-      <div class="pts-num" id="logPts">25</div>
-      <div class="pts-info">
-        <div class="pts-label">Points you'll earn</div>
-        <div class="pts-sub">+10 base · +15 receipt · +5 first in hood</div>
-      </div>
-    </div>
-    <button class="submit-btn" onclick="submitLog()">Log Dish & Earn Points 🔥</button>
-  `;
+// ════════════════════════════════
+function logHTML(){return`
+  <div style="margin-bottom:18px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;">Log a <span style="color:var(--or);">Dish</span></div>
+    <div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:1.5;">What did you eat? Your log = your personal price memory + community intel.</div>
+  </div>
+  <div class="bench-panel" id="bench-panel">
+    <div class="bench-tag">⚡ Live Benchmark</div>
+    <div class="bench-msg" id="bench-msg"></div>
+    <div class="bench-bar"><div class="bench-fill" id="bench-fill" style="width:0%"></div></div>
+    <div class="bench-meta"><span>Cheapest in NYC</span><span id="bench-avg"></span><span>Most expensive</span></div>
+    <div class="gem-badge" id="gem-badge" style="display:none;">💎 Hidden gem — top find in this neighborhood!</div>
+  </div>
+  <div class="f-group"><div class="f-label">Restaurant *</div><input class="f-input" id="f-rest" placeholder="e.g. Joe's Pizza" autocomplete="off"></div>
+  <div class="f-group"><div class="f-label">Exact dish *</div><input class="f-input" id="f-dish" placeholder="e.g. Plain slice, no toppings" autocomplete="off"></div>
+  <div class="f-row">
+    <div class="f-group"><div class="f-label">Price paid *</div><input class="f-input" id="f-price" type="number" step="0.25" min="0" placeholder="$0.00" oninput="onPriceInput()"></div>
+    <div class="f-group"><div class="f-label">Category *</div><select class="f-select" id="f-cat" onchange="onPriceInput()"><option value="">Select...</option><option>pizza</option><option>tacos</option><option>dumplings</option><option>bagels</option><option>ramen</option><option>falafel</option><option>burritos</option><option>burgers</option><option>other</option></select></div>
+  </div>
+  <div class="f-group"><div class="f-label">Neighborhood *</div><select class="f-select" id="f-hood"><option value="">Select...</option><option>Astoria</option><option>Bushwick</option><option>Chelsea</option><option>Chinatown</option><option>Crown Heights</option><option>East Village</option><option>Flushing</option><option>Greenpoint</option><option>Harlem</option><option>Jackson Heights</option><option>LES</option><option>Midtown</option><option>Park Slope</option><option>Prospect Heights</option><option>Ridgewood</option><option>Sunset Park</option><option>Upper West Side</option><option>West Village</option><option>Williamsburg</option></select></div>
+  <div style="background:var(--og);border:1px solid var(--ob);border-radius:var(--r);padding:10px 12px;font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:12px;"><strong style="color:var(--or);">Pro tip:</strong> Be specific. "One plain slice" gets $3.50. "A pizza" might get you the $5 version.</div>
+  <div class="f-group"><div class="f-label">Order script (optional)</div><input class="f-input" id="f-tip" placeholder="Exact words you used to order this price" autocomplete="off"></div>
+  <div id="receipt-zone" style="border:1.5px dashed var(--b2);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;margin-bottom:12px;" onclick="document.getElementById('receipt-file').click()">
+    <div style="font-size:20px;color:var(--t3);">📸</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9.5px;color:var(--t3);margin-top:5px;">Attach receipt photo · +15 bonus points</div>
+    <input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="receiptAdded(this)">
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--or);line-height:1;" id="log-pts">25</div>
+    <div><div style="font-size:13px;font-weight:500;">Points you'll earn</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);margin-top:2px;">+10 base · +15 receipt · +5 first in hood</div></div>
+  </div>
+  <button class="btn-primary" onclick="submitLog()">Log Dish & Earn Points 🔥</button>
+`;}
+
+function buildLogM(){document.getElementById('ms-log').innerHTML=`<div style="padding:16px;">${logHTML()}</div>`;}
+function buildLogD(){const el=document.getElementById('d-log-content');if(el)el.innerHTML=logHTML();}
+
+function onPriceInput(){
+  const price=parseFloat(document.getElementById('f-price').value);
+  const cat=document.getElementById('f-cat').value;
+  if(!price||!cat){document.getElementById('bench-panel').classList.remove('show');return;}
+  const{b,pct,cheaperPct,isGem,isCheap,diff}=getBench(price,cat);
+  const msg=isGem?`💎 <span class="gem">Hidden gem!</span> You paid <strong>$${price.toFixed(2)}</strong> — cheaper than <strong>${cheaperPct}%</strong> of ${cat} in NYC!`:isCheap?`Smart find — <strong>$${diff.toFixed(2)} below avg</strong> for ${cat} (avg $${b.avg.toFixed(2)}). Cheaper than <strong>${cheaperPct}%</strong> of spots.`:`You paid <strong>$${price.toFixed(2)}</strong> for ${cat}. Average is $${b.avg.toFixed(2)}. Logging this helps others.`;
+  document.getElementById('bench-msg').innerHTML=msg;
+  document.getElementById('bench-fill').style.width=(100-pct)+'%';
+  document.getElementById('bench-avg').textContent=`avg $${b.avg.toFixed(2)}`;
+  document.getElementById('gem-badge').style.display=isGem?'flex':'none';
+  document.getElementById('bench-panel').classList.add('show');
+}
+function receiptAdded(inp){if(inp.files&&inp.files[0]){document.getElementById('log-pts').textContent='40';document.getElementById('receipt-zone').innerHTML='<div style="font-size:20px;">✅</div><div style="font-family:\'DM Mono\',monospace;font-size:9.5px;color:var(--green);margin-top:5px;">Receipt attached · +15 pts unlocked</div>';}}
+function submitLog(){
+  const rest=document.getElementById('f-rest').value.trim();
+  const dish=document.getElementById('f-dish').value.trim();
+  const price=parseFloat(document.getElementById('f-price').value);
+  const cat=document.getElementById('f-cat').value;
+  const hood=document.getElementById('f-hood').value;
+  if(!rest||!dish||!price||!cat||!hood){toast('Fill all required fields');return;}
+  const{isGem,isCheap,diff}=getBench(price,cat);
+  const earned=parseInt(document.getElementById('log-pts').textContent)||25;
+  const newD={id:DISHES.length+1,name:dish,rest,hood,cat,price,emoji:'🍽️',lat:40.728+(Math.random()-0.5)*0.1,lng:-73.975+(Math.random()-0.5)*0.1,by:USER?'@'+USER.username:'Anonymous',tip:document.getElementById('f-tip').value.trim()};
+  DISHES.unshift(newD);
+  const saved=Math.max(0,NYC_AVG-price);
+  userDishes.unshift({...newD,date:new Date(),saved,isGem});
+  userSaved+=saved;if(isGem)userGems++;userStreak=Math.min(userStreak+1,7);
+  addPts(earned);
+  if(isGem)toast('💎 Hidden gem found!',earned);
+  else if(isCheap)toast(`$${diff.toFixed(2)} below average!`,earned);
+  else toast('Dish logged!',earned);
+  // Update savings displays
+  ['m-savings','d-savings'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='$'+userSaved.toFixed(2);});
+  buildProfileM();buildProfileD();
+  setTimeout(()=>{if(window.innerWidth<768)mTab('home');else{buildHomeD();dTab('home');}},800);
 }
 
-function onPriceInput() {
-  const price = parseFloat(document.getElementById('fPrice').value);
-  const cat = document.getElementById('fCat').value;
-  if (!price || !cat) { document.getElementById('benchPreview').classList.remove('show'); return; }
-  const {b, pct, cheaperPct, isGem, isCheap, diff} = getBench(price, cat);
-  const msg = isGem
-    ? `💎 <span class="gem">Hidden gem</span> — you paid <strong>$${price.toFixed(2)}</strong>, cheaper than <strong>${cheaperPct}%</strong> of ${cat} spots in NYC!`
-    : isCheap
-    ? `Smart find — <strong>$${diff.toFixed(2)} below average</strong> for ${cat} (avg $${b.avg.toFixed(2)}). Cheaper than <strong>${cheaperPct}%</strong>.`
-    : `Paid <strong>$${price.toFixed(2)}</strong> for ${cat}. Average is $${b.avg.toFixed(2)}. Logging this helps others know the real price.`;
-  document.getElementById('benchMsg').innerHTML = msg;
-  document.getElementById('benchFill').style.width = (100-pct) + '%';
-  document.getElementById('benchAvg').textContent = `avg $${b.avg.toFixed(2)}`;
-  document.getElementById('gemBadge').style.display = isGem ? 'flex' : 'none';
-  document.getElementById('benchPreview').classList.add('show');
-}
-
-function receiptAdded(input) {
-  if (input.files && input.files[0]) {
-    document.getElementById('logPts').textContent = '40';
-    input.parentElement.innerHTML = `<div class="rz-icon">✅</div><div class="rz-text">Receipt attached · +15 pts unlocked</div>`;
-  }
-}
-
-function submitLog() {
-  const rest = document.getElementById('fRest').value.trim();
-  const dish = document.getElementById('fDish').value.trim();
-  const price = parseFloat(document.getElementById('fPrice').value);
-  const cat = document.getElementById('fCat').value;
-  const hood = document.getElementById('fHood').value;
-  if (!rest || !dish || !price || !cat || !hood) { showToast('Fill all required fields',0); return; }
-
-  const {isGem, isCheap, diff} = getBench(price, cat);
-  const earned = parseInt(document.getElementById('logPts').textContent) || 25;
-
-  // Add to community dishes
-  const newDish = {
-    id: DISHES.length+1, name:dish, rest, hood, cat, price, emoji:'🍽️',
-    lat:40.728+(Math.random()-0.5)*0.1, lng:-73.975+(Math.random()-0.5)*0.1,
-    by: USER ? '@'+USER.username : 'Anonymous',
-    tip: document.getElementById('fTip').value.trim()
-  };
-  DISHES.unshift(newDish);
-
-  // Personal diary
-  const saved = Math.max(0, NYC_AVG - price);
-  userDishes.unshift({ ...newDish, date: new Date(), saved, isGem });
-  userTotalSaved += saved;
-  if (isGem) userGems++;
-  userStreak = Math.min(userStreak + 1, 7);
-
-  addPoints(earned);
-
-  // Contextual feedback
-  if (isGem) { showToast('💎 Hidden gem found!', earned); }
-  else if (isCheap) { showToast(`$${diff.toFixed(2)} below average 🔥`, earned); }
-  else { showToast('Dish logged — thanks!', earned); }
-
-  // Update home savings
-  const el = document.getElementById('homeSavings');
-  if (el) el.textContent = '$' + userTotalSaved.toFixed(2);
-
-  // Update profile
-  renderProfile();
-  renderHome();
-  renderLog();
-
-  // Switch to home after brief delay
-  setTimeout(() => switchTab('home'), 1000);
-}
-
-// ═══════════════════════════════════════════
-// LEADERBOARD SCREEN
-// ═══════════════════════════════════════════
-function renderBoard() {
-  const top3 = LEADERBOARD.slice(0,3);
-  const rest = LEADERBOARD.slice(3);
-  document.getElementById('scBoard').innerHTML = `
-    <div class="board-hero">
-      <div class="bh-title">Leader<span>board</span></div>
-      <div class="bh-sub">Top contributors this week · Resets Monday 00:00</div>
+// ════════════════════════════════
+// BOARD
+// ════════════════════════════════
+function boardHTML(){
+  const top3=LB.slice(0,3),rest=LB.slice(3);
+  return`
+    <div style="margin-bottom:12px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;">Leader<span style="color:var(--or);">board</span></div><div style="font-size:11.5px;color:var(--t2);">Top contributors · Resets every Monday</div></div>
+    <div class="lb-podium card" style="margin-bottom:12px;">
+      <div class="pod second"><div class="pod-avi">${top3[1].avi}</div><div class="pod-handle">${top3[1].handle}</div><div class="pod-pts">${top3[1].pts.toLocaleString()}</div><div class="pod-base"><span class="pod-base-n">2</span></div></div>
+      <div class="pod first"><div style="font-size:18px;text-align:center;">👑</div><div class="pod-avi">${top3[0].avi}</div><div class="pod-handle">${top3[0].handle}</div><div class="pod-pts">${top3[0].pts.toLocaleString()}</div><div class="pod-base"><span class="pod-base-n">1</span></div></div>
+      <div class="pod third"><div class="pod-avi">${top3[2].avi}</div><div class="pod-handle">${top3[2].handle}</div><div class="pod-pts">${top3[2].pts.toLocaleString()}</div><div class="pod-base"><span class="pod-base-n">3</span></div></div>
     </div>
-    <div class="podium">
-      <div class="pod-item second">
-        <div class="pod-avi">${top3[1].avi}</div>
-        <div class="pod-handle">${top3[1].handle}</div>
-        <div class="pod-pts">${top3[1].pts.toLocaleString()}</div>
-        <div class="pod-base">2</div>
-      </div>
-      <div class="pod-item first">
-        <div class="pod-crown">👑</div>
-        <div class="pod-avi">${top3[0].avi}</div>
-        <div class="pod-handle">${top3[0].handle}</div>
-        <div class="pod-pts">${top3[0].pts.toLocaleString()}</div>
-        <div class="pod-base">1</div>
-      </div>
-      <div class="pod-item third">
-        <div class="pod-avi">${top3[2].avi}</div>
-        <div class="pod-handle">${top3[2].handle}</div>
-        <div class="pod-pts">${top3[2].pts.toLocaleString()}</div>
-        <div class="pod-base">3</div>
-      </div>
+    <div class="your-rank card" style="margin:0 0 12px;">
+      <div><div style="font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--or);margin-bottom:3px;">Your Rank</div><div class="yr-num">#${userPts>0?Math.max(9,Math.floor(10-userPts/100)):'—'}</div></div>
+      <div class="yr-info"><div class="yr-pts">${userPts.toLocaleString()} pts</div><div class="yr-sub">${userDishes.length} dishes · ${userGems} gems</div></div>
     </div>
-    <div class="your-rank-card">
-      <div>
-        <div class="yrc-label">Your Rank</div>
-        <div class="yrc-rank">#${userPoints > 0 ? Math.floor(9 - userPoints/100) : '—'}</div>
-      </div>
-      <div class="yrc-info">
-        <div class="yrc-pts">${userPoints.toLocaleString()} pts</div>
-        <div class="yrc-sub">${userDishes.length} dishes logged · ${userGems} gems found</div>
-      </div>
+    <div class="card" style="overflow:hidden;">
+      ${rest.map(r=>`<div class="lb-row"><div class="lb-rank ${r.rank<=3?'g':''}">${r.rank}</div><div class="lb-avi">${r.avi}</div><div class="lb-info"><div class="lb-handle">${r.handle}</div><div class="lb-sub">${r.dishes} dishes · ${r.badges}</div></div><div class="lb-pts">${r.pts.toLocaleString()}</div></div>`).join('')}
     </div>
-    <div class="board-tabs">
-      <button class="board-tab active" onclick="lbTab(this,'weekly')">This Week</button>
-      <button class="board-tab" onclick="lbTab(this,'alltime')">All Time</button>
-      <button class="board-tab" onclick="lbTab(this,'hood')">By Hood</button>
-    </div>
-    <div id="lbRows">
-      ${rest.map(r => `
-        <div class="lb-row">
-          <div class="lb-rank ${r.rank<=3?'gold':''}">${r.rank}</div>
-          <div class="lb-avi">${r.avi}</div>
-          <div class="lb-info">
-            <div class="lb-handle">${r.handle}</div>
-            <div class="lb-sub">${r.dishes} dishes · ${r.badges}</div>
-          </div>
-          <div class="lb-pts">${r.pts.toLocaleString()}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+    <div style="height:20px;"></div>`;
 }
-function lbTab(el, tab) {
-  document.querySelectorAll('.board-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-}
+function buildBoardM(){document.getElementById('ms-board').innerHTML=`<div style="padding:16px;">${boardHTML()}</div>`;}
+function buildBoardD(){const el=document.getElementById('d-board-content');if(el)el.innerHTML=boardHTML();}
 
-// ═══════════════════════════════════════════
-// PROFILE SCREEN
-// ═══════════════════════════════════════════
-function renderProfile() {
-  if (!USER) return;
-  const username = USER.username || 'User';
-  const weekDishes = userDishes.slice(0, 7);
-  const weekSpent = weekDishes.reduce((s,d)=>s+d.price,0);
-  const weekSaved = weekDishes.reduce((s,d)=>s+d.saved,0);
-  const weekGems = weekDishes.filter(d=>d.isGem).length;
-  const dateStr = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
-  const BADGES = [
+// ════════════════════════════════
+// PROFILE
+// ════════════════════════════════
+function profileHTML(){
+  if(!USER)return'<div style="padding:20px;color:var(--t3);">Sign in to see your profile.</div>';
+  const wk=userDishes.slice(0,7);
+  const wkSpent=wk.reduce((s,d)=>s+d.price,0);
+  const wkSaved=wk.reduce((s,d)=>s+d.saved,0);
+  const wkGems=wk.filter(d=>d.isGem).length;
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const BADGES=[
     {icon:'🍕',title:'First Slice',sub:'Log your first pizza',earned:userDishes.some(d=>d.cat==='pizza')},
     {icon:'💎',title:'Gem Hunter',sub:'Find a hidden gem',earned:userGems>0},
     {icon:'🔥',title:'On Fire',sub:'3-day streak',earned:userStreak>=3},
@@ -2040,120 +1345,98 @@ function renderProfile() {
     {icon:'🗺️',title:'Explorer',sub:'Log in 5 neighborhoods',earned:false},
     {icon:'👑',title:'Top 10',sub:'Reach top 10 leaderboard',earned:false},
   ];
-
-  document.getElementById('scProfile').innerHTML = `
-    <div class="profile-hero">
-      <div class="ph-row1">
-        <div class="ph-avi">
-          ${USER.avatar||'😊'}
-          <div class="ph-edit-avi">✏️</div>
-        </div>
-        <div>
-          <div class="ph-name">${username}</div>
-          <div class="ph-handle">@${username.toLowerCase()}</div>
-          <div class="ph-rank-badge ${userPoints>1000?'elite':''}">
-            ${userPoints>1000?'🏆 Borough Expert':'🔰 New Eater'} · ${userPoints} pts
-          </div>
-        </div>
+  return`
+    <div class="profile-hero card" style="margin-bottom:12px;">
+      <div class="ph-top">
+        <div class="ph-avi">${USER.avatar||'😊'}<div class="ph-edit">✏️</div></div>
+        <div><div class="ph-name">${USER.username||'User'}</div><div class="ph-handle">@${(USER.username||'user').toLowerCase()}</div><div class="ph-badge ${userPts>1000?'elite':''}">${userPts>1000?'🏆 Borough Expert':'🔰 New Eater'} · ${userPts} pts</div></div>
       </div>
-      <div class="profile-stats">
-        <div class="pstat"><div class="pstat-num">${userDishes.length}</div><div class="pstat-label">Logged</div></div>
-        <div class="pstat"><div class="pstat-num">${userPoints.toLocaleString()}</div><div class="pstat-label">Points</div></div>
-        <div class="pstat"><div class="pstat-num">$${userTotalSaved.toFixed(0)}</div><div class="pstat-label">Saved</div></div>
-        <div class="pstat"><div class="pstat-num">${userGems}</div><div class="pstat-label">Gems</div></div>
+      <div class="ph-stats">
+        <div class="phs"><div class="phs-n">${userDishes.length}</div><div class="phs-l">Logged</div></div>
+        <div class="phs"><div class="phs-n">${userPts.toLocaleString()}</div><div class="phs-l">Points</div></div>
+        <div class="phs"><div class="phs-n">$${userSaved.toFixed(0)}</div><div class="phs-l">Saved</div></div>
+        <div class="phs"><div class="phs-n">${userGems}</div><div class="phs-l">Gems</div></div>
       </div>
     </div>
-
-    <div class="weekly-report">
-      <div class="wr-head">
-        <span class="wr-title">Weekly Report</span>
-        <span class="wr-date">${dateStr}</span>
-      </div>
-      <div class="wr-body">
-        <div class="wr-stats">
-          <div class="wr-stat"><div class="ws-num">${weekDishes.length}</div><div class="ws-label">Dishes this week</div></div>
-          <div class="wr-stat"><div class="ws-num">$${weekSpent.toFixed(2)}</div><div class="ws-label">Total spent</div></div>
-          <div class="wr-stat"><div class="ws-num">$${weekSaved.toFixed(2)}</div><div class="ws-label">Saved vs avg</div></div>
-          <div class="wr-stat"><div class="ws-num">${weekGems}</div><div class="ws-label">Gems found</div></div>
+    <div class="card weekly-card" style="margin-bottom:12px;">
+      <div class="wc-head"><span class="wc-title">Weekly Report</span><span class="wc-date">${dateStr}</span></div>
+      <div class="wc-body">
+        <div class="wc-stats">
+          <div><div class="wcs-n">${wk.length}</div><div class="wcs-l">Dishes</div></div>
+          <div><div class="wcs-n">$${wkSpent.toFixed(2)}</div><div class="wcs-l">Spent</div></div>
+          <div><div class="wcs-n">$${wkSaved.toFixed(2)}</div><div class="wcs-l">Saved</div></div>
+          <div><div class="wcs-n">${wkGems}</div><div class="wcs-l">Gems</div></div>
         </div>
-        <div class="wr-highlight">
-          ${weekDishes.length > 0
-            ? `This week: <strong>${weekDishes.length} meals</strong>, saved <strong>$${weekSaved.toFixed(2)}</strong> vs NYC average.${weekGems>0?' Found '+weekGems+' hidden gem'+( weekGems>1?'s':'')+' 💎.':''}`
-            : 'Log your first dish this week to see your personal report.'}
-        </div>
-        <button class="wr-share" onclick="shareWeek()">📊 Share your week →</button>
+        <div class="wc-highlight">${wk.length>0?'This week: <strong>'+wk.length+' meals</strong>, saved <strong>$'+wkSaved.toFixed(2)+'</strong> vs NYC avg.'+(wkGems>0?' Found '+wkGems+' hidden gem'+(wkGems>1?'s':'')+'  💎.':''):'Log your first dish this week to see your report.'}</div>
+        <button class="wc-share" onclick="shareWeek()">📊 Share your week →</button>
       </div>
     </div>
-
-    <div class="sec-head"><div class="sec-title">Your <span>Badges</span></div></div>
-    <div class="badges-section">
-      <div class="badge-grid">
-        ${BADGES.map(b=>`
-          <div class="badge-item ${b.earned?'earned':'locked'}">
-            <div class="bi-icon">${b.icon}</div>
-            <div class="bi-info"><div class="bi-title">${b.title}</div><div class="bi-sub">${b.sub}</div></div>
-          </div>
-        `).join('')}
-      </div>
+    <div style="margin-bottom:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;">Your <span style="color:var(--or);">Badges</span></div></div>
+    <div class="badge-grid" style="padding:0;margin-bottom:16px;">
+      ${BADGES.map(b=>`<div class="badge-item ${b.earned?'earned':'locked'}"><div class="bi-icon">${b.icon}</div><div><div class="bi-name">${b.title}</div><div class="bi-sub">${b.sub}</div></div></div>`).join('')}
     </div>
-
-    ${userDishes.length > 0 ? `
-    <div class="sec-head" style="margin-top:16px;"><div class="sec-title">Your <span>History</span></div></div>
-    <div class="price-hist-section">
-      ${userDishes.map((d,i) => {
-        const prev = userDishes[i+1];
-        let delta = '', deltaClass = '';
-        if (prev && prev.rest === d.rest) {
-          const df = d.price - prev.price;
-          if (df > 0) { delta=`↑ +$${df.toFixed(2)}`; deltaClass='up'; }
-          else if (df < 0) { delta=`↓ $${Math.abs(df).toFixed(2)}`; deltaClass='down'; }
-        }
-        return `<div class="ph-item" onclick="openDish(${d.id}||1)">
-          <div class="phi-emoji">${d.emoji}</div>
-          <div class="phi-info"><div class="phi-name">${d.name}</div><div class="phi-rest">${d.rest}</div></div>
-          <div class="phi-right">
-            <div class="phi-price">$${d.price.toFixed(2)}</div>
-            <div class="phi-date">${new Date(d.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
-            ${delta?`<div class="phi-delta ${deltaClass}">${delta}</div>`:''}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>` : ''}
-
-    <div class="sec-head" style="margin-top:16px;"><div class="sec-title">Settings</div></div>
-    <div class="settings-list">
-      <div class="settings-item"><div class="si-icon">🔔</div><div class="si-info"><div class="si-title">Notifications</div><div class="si-sub">New deals in your neighborhoods</div></div><div class="si-arrow">›</div></div>
-      <div class="settings-item"><div class="si-icon">🗺️</div><div class="si-info"><div class="si-title">My Neighborhoods</div><div class="si-sub">${obHoods.length>0?obHoods.join(', '):'Not set'}</div></div><div class="si-arrow">›</div></div>
-      <div class="settings-item" onclick="doLogout()"><div class="si-icon">🚪</div><div class="si-info"><div class="si-title">Log Out</div></div><div class="si-arrow">›</div></div>
+    ${userDishes.length>0?`
+    <div style="margin-bottom:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;">Your <span style="color:var(--or);">History</span></div></div>
+    <div class="card" style="overflow:hidden;margin-bottom:12px;">
+      ${userDishes.map((d,i)=>{const prev=userDishes[i+1];let dt='',dc='';if(prev&&prev.rest===d.rest){const df=d.price-prev.price;if(df>0){dt='↑ +$'+df.toFixed(2);dc='up';}else if(df<0){dt='↓ $'+Math.abs(df).toFixed(2);dc='down';}}return`<div class="ph-item"><div class="phi-emoji">${d.emoji}</div><div style="flex:1;"><div class="phi-name">${d.name}</div><div class="phi-rest">${d.rest}</div></div><div style="text-align:right;"><div class="phi-price">$${d.price.toFixed(2)}</div><div class="phi-date">${new Date(d.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>${dt?`<div class="phi-delta ${dc}">${dt}</div>`:''}</div></div>`;}).join('')}
+    </div>`:''}
+    <div style="margin-bottom:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;">Settings</div></div>
+    <div class="card settings-list" style="overflow:hidden;margin-bottom:12px;">
+      <div class="s-item"><div class="s-icon">🔔</div><div class="s-info"><div class="s-title">Notifications</div><div class="s-sub">New deals in your neighborhoods</div></div><span class="s-arrow">›</span></div>
+      <div class="s-item"><div class="s-icon">🗺️</div><div class="s-info"><div class="s-title">My Neighborhoods</div><div class="s-sub">${obHoods.length?obHoods.join(', '):'Not set yet'}</div></div><span class="s-arrow">›</span></div>
+      <div class="s-item" onclick="doLogout()"><div class="s-icon">🚪</div><div class="s-info"><div class="s-title">Log Out</div></div><span class="s-arrow">›</span></div>
     </div>
-    <div style="height:32px;"></div>
-  `;
+    <div style="height:20px;"></div>`;
+}
+function buildProfileM(){document.getElementById('ms-profile').innerHTML=`<div style="padding:16px;">${profileHTML()}</div>`;}
+function buildProfileD(){const el=document.getElementById('d-profile-content');if(el)el.innerHTML=profileHTML();}
+function shareWeek(){const txt=`This week on CheapSheet NYC: ${userDishes.length} dishes, $${userSaved.toFixed(2)} saved 🔥 cheapsheetnyc.com`;if(navigator.share)navigator.share({title:'My CheapSheet Week',text:txt});else if(navigator.clipboard){navigator.clipboard.writeText(txt);toast('Copied!');}}
+function doLogout(){USER=null;userPts=0;userDishes=[];userSaved=0;userGems=0;document.getElementById('auth-overlay').classList.remove('hidden');document.getElementById('m-pts-n').textContent='0';document.getElementById('d-pts-n').textContent='0';}
+
+// ════════════════════════════════
+// TICKER
+// ════════════════════════════════
+function buildTicker(){
+  const items=DISHES.map(d=>`<span class="d-ticker-item">${d.emoji} ${d.name} @ ${d.rest} <span class="d-ticker-dot">·</span> <strong>$${d.price.toFixed(2)}</strong> <span class="d-ticker-dot">·</span> ${d.hood}</span>`);
+  document.getElementById('d-ticker').innerHTML=[...items,...items].join('');
 }
 
-function shareWeek() {
-  const text = `This week on CheapSheet NYC: ${userDishes.length} dishes logged, $${userTotalSaved.toFixed(2)} saved vs avg NYC prices 🔥 cheapsheetnyc.com`;
-  if (navigator.share) navigator.share({title:'My CheapSheet Week',text});
-  else if (navigator.clipboard) { navigator.clipboard.writeText(text); showToast('Copied!',0); }
+// ════════════════════════════════
+// TAB NAVIGATION
+// ════════════════════════════════
+function mTab(tab){
+  if(!USER&&tab!=='home'){toast('Sign in to access this 🔒');return;}
+  document.querySelectorAll('.m-screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('active'));
+  const screenEl=document.getElementById('ms-'+tab);
+  const tabEl=document.getElementById('mt-'+tab);
+  if(screenEl)screenEl.classList.add('active');
+  if(tabEl)tabEl.classList.add('active');
+  mCurTab=tab;
+  if(tab==='map'&&!mMapInit){setTimeout(()=>{initMobileMap();mMapInit=true;},50);}
+  if(tab==='map')setTimeout(()=>{if(mMapInst)mMapInst.invalidateSize();},150);
+}
+function dTab(tab){
+  document.querySelectorAll('.d-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.d-nl').forEach(b=>b.classList.remove('active'));
+  document.getElementById('dt-'+tab+'-sec').classList.add('active');
+  document.getElementById('dt-'+tab).classList.add('active');
+  dCurTab=tab;
+  if(tab==='map'&&!dMapInit){setTimeout(()=>{initDesktopMap();dMapInit=true;},50);}
+  if(tab==='map')setTimeout(()=>{if(dMapInst)dMapInst.invalidateSize();},150);
+  if(tab==='home')buildHomeD();
+  if(tab==='log')buildLogD();
+  if(tab==='board')buildBoardD();
+  if(tab==='profile')buildProfileD();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function doLogout() {
-  USER = null;
-  userPoints = 0;
-  userDishes = [];
-  userTotalSaved = 0;
-  userGems = 0;
-  document.getElementById('authOverlay').classList.remove('hidden');
-  document.getElementById('headerPtsNum').textContent = '0';
-}
-
-// ═══════════════════════════════════════════
+// ════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  // Show auth overlay immediately
-  document.getElementById('authOverlay').classList.remove('hidden');
-  // Home renders partially (visible hero, blurred rest) for non-logged users
-  // Nothing else needed — auth drives everything
+// ════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  // Show auth immediately
+  document.getElementById('auth-overlay').classList.remove('hidden');
 });
 </script>
 </body>
